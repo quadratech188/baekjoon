@@ -1,18 +1,17 @@
-from typing import List, Optional
+from typing import List
 import copy
 
 class Matrix:
     @classmethod
-    def identity(cls, n: int, MOD: Optional[int] = None) -> 'Matrix':
-        return cls([[1 if i == j else 0 for i in range(n)] for j in range(n)], MOD)
+    def identity(cls, n: int) -> 'Matrix':
+        return cls([[True if i == j else False for i in range(n)] for j in range(n)])
 
     @classmethod
-    def zeros(cls, m: int, n: int, MOD: Optional[int] = None) -> 'Matrix':
-        return cls([[0 for _ in range(m)] for _ in range(n)], MOD)
+    def zeros(cls, m: int, n: int) -> 'Matrix':
+        return cls([[False for _ in range(m)] for _ in range(n)])
 
-    def __init__(self, values: List[List[int]], MOD: Optional[int] = None):
+    def __init__(self, values: List[List[int]]):
         self.values = values
-        self.MOD = MOD
 
     def __mul__(self: 'Matrix', other: 'Matrix'):
 
@@ -26,26 +25,26 @@ class Matrix:
         for y in range(n_y):
             result.append([])
             for x in range(m_x):
+                temp = 0
                 for depth in range(n_x):
-                    if self.values[y][depth] > 0 and other.values[depth][x] > 0:
-                        result[y].append(1)
+                    if self.values[y][depth] and other.values[depth][x]:
+                        result[y].append(True)
                         break
-
                 else:
-                    result[y].append(0)
+                    result[y].append(False)
 
-        return Matrix(result, self.MOD)
+        return Matrix(result)
 
     def __pow__(self: 'Matrix', power: int) -> 'Matrix':
         if power == 0:
-            return Matrix.identity(len(self.values), self.MOD)
+            return Matrix.identity(len(self.values))
 
         if power == 1:
                 return Matrix(copy.deepcopy(self.values))
 
         cache = {}
         
-        cache[0] = Matrix.identity(len(self.values), self.MOD)
+        cache[0] = Matrix.identity(len(self.values))
         cache[1] = self
         
         if power % 2 == 0:
@@ -68,7 +67,7 @@ class Matrix:
 
 import sys
 
-n, k, m = tuple(map(int, sys.stdin.readine().split()))
+n, k, m = tuple(map(int, sys.stdin.readline().split()))
 
 connections = Matrix.zeros(n, n)
 
@@ -83,10 +82,7 @@ power = connections ** k
 for _ in range(m):
     a, b = tuple(map(int, sys.stdin.readline().split()))
 
-    query = Matrix.zeros(n, 1)
-    query.values[0][a - 1] = 1
-
-    if (query * power).values[0][b - 1] > 0:
+    if power.values[a-1][b-1] > 0:
         print('death')
     else:
         print('life')

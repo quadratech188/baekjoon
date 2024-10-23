@@ -1,0 +1,5 @@
+cache = []
+
+string = input()
+
+for

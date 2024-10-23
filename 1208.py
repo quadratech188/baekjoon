@@ -1,18 +1,36 @@
-def main():
-    n, s = tuple(map(int, input().split()))
+n, s = tuple(map(int, input().split()))
 
-    values = map(int, input().split())
+values = list(map(int, input().split()))
 
-    sum = 0
-    sums = []
+total = 0
 
-    for value in values:
-        sum += value
+times_appeared = {}
 
-        sums.append(sum)
-    
-    def subsum(a, b):
-        if a == 0:
-            return sums[b]
-        else:
-            return sums[b] - sums[a - 1]
+def right(start: int, sum: int):
+    if start == n:
+        times_appeared[sum] = times_appeared.get(sum, 0) + 1
+        return
+
+    right(start + 1, sum)
+    right(start + 1, sum + values[start])
+
+def left(end: int, sum: int):
+    if end == -1:
+        if s - sum in times_appeared:
+            global total
+            total += times_appeared[s - sum]
+        return
+
+    left(end - 1, sum)
+    left(end - 1, sum + values[end])
+
+middle = int(n / 2)
+
+right(middle, 0)
+left(middle - 1, 0)
+
+if s == 0:
+    print(total - 1)
+else:
+    print(total)
+

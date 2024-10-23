@@ -1,26 +1,25 @@
-typedef int INDEX;
+#include <functional>
 
-template<typename IDX>
 struct Segment {
-	IDX start;
-	IDX end;
-	IDX size() {
+	size_t start;
+	size_t end;
+	size_t size() {
 		return end - start;
 	}
-	IDX center() {
+	size_t center() {
 		return (start + end) / 2;
 	}
 };
-template<typename IDX, typename VAL>
+template<typename VAL>
 class SegmentNode {
-	Segment<IDX> segment;
+	Segment segment;
 	VAL value;
 	VAL (*combine_func)(VAL, VAL);
-	VAL (*value_func)(INDEX);
-	SegmentNode<IDX, VAL>* left;
-	SegmentNode<IDX, VAL>* right;
+	VAL (*value_func)(size_t);
+	SegmentNode<VAL>* left;
+	SegmentNode<VAL>* right;
 public:
-	SegmentNode<IDX, VAL>(Segment<IDX> segment, VAL (*combine_func)(VAL, VAL), VAL(*value_func)(INDEX)) {
+	SegmentNode<VAL>(Segment segment, VAL (*combine_func)(VAL, VAL), VAL(*value_func)(size_t)) {
 		this->segment = segment;
 		this->combine_func = combine_func;
 		this->value_func = value_func;
@@ -30,13 +29,13 @@ public:
 			return;
 		}
 
-		this->left = new SegmentNode<IDX, VAL>({segment.start, segment.center()}, combine_func, value_func);
-		this->right = new SegmentNode<IDX, VAL>({segment.center(), segment.end}, combine_func, value_func);
+		this->left = new SegmentNode<VAL>({segment.start, segment.center()}, combine_func, value_func);
+		this->right = new SegmentNode<VAL>({segment.center(), segment.end}, combine_func, value_func);
 
 		this->value = combine_func(this->left->value, this->right->value);
 	}
 
-	VAL query(Segment<IDX> segment) {
+	VAL query(Segment segment) {
 		if (segment.start <= this->segment.start && this->segment.end <= segment.end) {
 			return this->value;
 		}
@@ -50,7 +49,7 @@ public:
 
 		return this->combine_func(this->left->query(segment), this->right->query(segment));
 	}
-	void update(INDEX index) {
+	void update(size_t index) {
 		if (this->segment.size() == 1) {
 			this->value = this->value_func(index);
 			return;
