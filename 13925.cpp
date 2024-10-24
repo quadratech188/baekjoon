@@ -1,17 +1,34 @@
-#include "modules/LazySegTree.h"
-#include <iostream>
+#include "modules/LazySegmentTree.h"
+#include "modules/ModInt.h"
+#include <stdio.h>
 #include <vector>
-#define MOD 1000000007
+
+typedef ModInt<long long int, 1000000007> INT;
 
 struct Action {
 	int type;
-	int v;
+	INT v;
 };
 
 struct Data {
-	long long int a;
-	long long int b;
-	long long int value;
+	INT a;
+	INT b;
+	INT value;
+	size_t length;
+	
+	inline INT resolvedValue() const {
+		return this->a * this->value + this->b * (INT)(int)(this->length);
+	}
+
+	Data operator+(const Data& other) {
+		return {
+			.a = 1,
+			.b = 0,
+			.value = this->resolvedValue() + other.resolvedValue(),
+			.length = this->length + other.length
+		};
+	}
+
 	void update(Action action) {
 		switch(action.type) {
 			case 1:
@@ -25,10 +42,8 @@ struct Data {
 				this->a = 0;
 				this->b = action.v;
 		}
-		this->a %= MOD;
-		this->b %= MOD;
 	}
-	void resolve(Data& child1, Data& child2, Segment segment) {
+	void resolve(Data& child1, Data& child2) {
 		child1.a *= this->a;
 		
 		child1.b *= this->a;
@@ -39,72 +54,51 @@ struct Data {
 		child2.b *= this->a;
 		child2.b += this->b;
 
-		child1.a %= MOD;
-		child1.b %= MOD;
-		child2.a %= MOD;
-		child2.b %= MOD;
-
-		*this = this->resolved(segment);
-	}
-	Data resolved(Segment segment) {
-		return {
-			.a = 1,
-			.b = 0,
-			.value = (this->a * this->value + this->b * segment.size()) % MOD
-		};
+		this->value = this->resolvedValue();
+		this->a = 1;
+		this->b = 0;
 	}
 };
 
-std::vector<int> values;
-
-Data combine_func(Data child1, Segment segment1, Data child2, Segment segment2) {
-	return {
-		.a = 1,
-		.b = 0,
-		.value = (child1.a * child1.value + child1.b * segment1.size() + child2.a * child2.value + child2.b * segment2.size()) % MOD
-	};
-}
-
-Data value_func(size_t index) {
-	return {
-		.a = 1,
-		.b = 0,
-		.value = values[index]
-	};
-}
-
 int main() {
-	size_t n;
-	std::cin >> n;
+	int n;
+	scanf("%d", &n);
 
-	values = std::vector<int>();
+	std::vector<Data> values;
+
+	values.reserve(n);
 
 	for (int i = 0; i < n; i++) {
 		int value;
-		std::cin >> value;
-		values.push_back(value % MOD);
+		scanf("%d", &value);
+		values.push_back({
+				.a = 1,
+				.b = 0,
+				.value = value,
+				.length = 1
+				});
 	}
 
-	LazySegNode<Data, Action> root({0, n}, combine_func, value_func);
+	LazySegmentTree<Data, Action> root(values);
 
 	int m;
-	std::cin >> m;
+	scanf("%d", &m);
 
 	for (int i = 0; i < m; i++) {
 		int a, x, y, v;
-		std::cin >> a;
+		scanf("%d", &a);
 		if (a != 4) {
-			std::cin >> x >> y >> v;
-			Action action = {a, v % MOD};
+			scanf("%d %d %d", &x, &y, &v);
+			Action action = {a, v};
 
 			root.update({x - 1, y}, action);
 		}
 		else {
-			std::cin >> x >> y;
+			scanf("%d %d", &x, &y);
 			
 			Data data = root.query({x - 1, y});
 
-			std::cout << (data.a * data.value + data.b) % MOD << std::endl;
+			printf("%d\n", (int)data.resolvedValue());
 		}
 	}
 }

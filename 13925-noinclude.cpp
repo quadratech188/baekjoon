@@ -1,5 +1,5 @@
-#include <functional>
-#include <iostream>
+#include <cstddef>
+#include <stdio.h>
 #include <vector>
 
 struct Segment {
@@ -8,85 +8,164 @@ struct Segment {
 	size_t size() {
 		return end - start;
 	}
-	size_t center() {
+	inline size_t center() {
 		return (start + end) / 2;
+	}
+	inline Segment left() {
+		return {start, center()};
+	}
+	inline Segment right() {
+		return {center(), end};
 	}
 };
 
 template<typename VAL, typename ACTION>
-class LazySegNode {
-	Segment segment;
-	std::function<VAL(VAL, Segment, VAL, Segment)> combine_func;
-	std::function<VAL(size_t)> value_func;
-	VAL value;
+class LazySegmentTree {
+	std::vector<VAL> values;
+	size_t length;
 
-	LazySegNode<VAL, ACTION>* left;
-	LazySegNode<VAL, ACTION>* right;
+	void init(Segment currentSegment, size_t currentIndex, std::vector<VAL> values) {
+		if (currentSegment.size() == 1) {
+			this->values[currentIndex] = values[currentSegment.start];
+			return;
+		}
+
+		size_t leftIndex = currentIndex * 2 + 1;
+		size_t rightIndex = currentIndex * 2 + 2;
+
+		init(currentSegment.left(), leftIndex, values);
+		init(currentSegment.right(), rightIndex, values);
+
+		this->values[currentIndex] = this->values[leftIndex] + this->values[rightIndex];
+	}
+
+	VAL query(Segment segment, Segment currentSegment, size_t currentIndex) {
+		if (segment.start <= currentSegment.start && currentSegment.end <= segment.end) {
+			return this->values[currentIndex];
+		}
+
+		size_t leftIndex = currentIndex * 2 + 1;
+		size_t rightIndex = currentIndex * 2 + 2;
+
+		this->values[currentIndex].resolve(this->values[leftIndex], this->values[rightIndex]);
+
+		if (currentSegment.center() <= segment.start) {
+			return query(segment, currentSegment.right(), rightIndex);
+		}
+		if (segment.end <= currentSegment.center()) {
+			return query(segment, currentSegment.left(), leftIndex);
+		}
+		return query(segment, currentSegment.left(), leftIndex)
+			+ query(segment, currentSegment.right(), rightIndex);
+	}
+
+	void update(Segment segment, ACTION action, Segment currentSegment, size_t currentIndex) {
+		if (segment.start <= currentSegment.start && currentSegment.end <= segment.end) {
+			this->values[currentIndex].update(action);
+			return;
+		}
+
+		size_t leftIndex = currentIndex * 2 + 1;
+		size_t rightIndex = currentIndex * 2 + 2;
+
+		this->values[currentIndex].resolve(this->values[leftIndex], this->values[rightIndex]);
+
+		if (segment.start < currentSegment.center()) {
+			update(segment, action, currentSegment.left(), leftIndex);
+		}
+		if (currentSegment.center() < segment.end) {
+			update(segment, action, currentSegment.right(), rightIndex);
+		}
+
+		this->values[currentIndex] = this->values[leftIndex] + this->values[rightIndex];
+	}
 
 public:
-
-	LazySegNode(Segment segment, std::function<VAL(VAL, Segment, VAL, Segment)> combine_func, std::function<VAL(size_t)> value_func) {
-
-		this->segment = segment;
-		this->combine_func = combine_func;
-		
-		if (this->segment.size() == 1) {
-			this->value = value_func(this->segment.start);
-			return;
-		}
-
-		this->left = new LazySegNode<VAL, ACTION>({segment.start, segment.center()}, combine_func, value_func);
-		this->right = new LazySegNode<VAL, ACTION>({segment.center(), segment.end}, combine_func, value_func);
-
-		this->value = combine_func(this->left->value, this->left->segment, this->right->value, this->right->segment);
+	LazySegmentTree(std::vector<VAL> values) {
+		this->length = values.size();
+		this->values.resize(this->length * 2);
+		init({0, this->length}, 0, values);
+	}
+	inline VAL query(Segment segment) {
+		return query(segment, {0, this->length}, 0);
 	}
 
-	VAL query(Segment segment) {
-		if (segment.start <= this->segment.start && this->segment.end <= segment.end) {
-			return this->value.resolved(this->segment);
-		}
-		this->value.resolve(this->left->value, this->right->value, this->segment);
-
-		if (this->segment.center() <= segment.start) {
-			return this->right->query(segment);
-		}
-		if (segment.end <= this->segment.center()) {
-			return this->left->query(segment);
-		}
-
-		return this->combine_func(this->left->query(segment), this->left->segment, this->right->query(segment), this->right->segment);
-	}
-
-	void update(Segment segment, ACTION action) {
-		if (segment.start <= this->segment.start && this->segment.end <= segment.end) {
-			this->value.update(action);
-			return;
-		}
-
-		this->value.resolve(this->left->value, this->right->value, this->segment);
-
-		if (segment.start < this->segment.center()) {
-			this->left->update(segment, action);
-		}
-		if (this->segment.center() < segment.end) {
-			this->right->update(segment, action);
-		}
-
-		this->value = combine_func(this->left->value, this->left->segment, this->right->value, this->right->segment);
+	inline void update(Segment segment, ACTION action) {
+		update(segment, action, {0, this->length}, 0);
 	}
 };
 
-#define MOD 1000000007
+template<typename TYPE, int MOD>
+struct ModInt{
+	TYPE value;
+
+	inline ModInt() {
+		this->value = 0;
+	}
+
+	inline ModInt(const TYPE other) {
+		this->value = other % MOD;
+	}
+	
+	inline ModInt operator=(const TYPE other) {
+		this->value = other % MOD;
+		return *this;
+	}
+
+	inline ModInt operator+(const ModInt& other) const {
+		return {(this->value + other.value) % MOD};
+	}
+
+	inline ModInt operator+=(const ModInt& other) {
+		this->value = (this->value + other.value) % MOD;
+		return *this;
+	}
+
+	inline ModInt operator*(const ModInt& other) const {
+		return {(this->value * other.value) % MOD};
+	}
+
+	inline ModInt operator*(const TYPE other) const {
+		return {(this->value * other) % MOD};
+	}
+
+	inline ModInt operator*=(const ModInt& other) {
+		this->value = (this->value * other.value) % MOD;
+
+		return *this;
+	}
+
+	inline operator int() const {
+		return this->value;
+	}
+};
+
+typedef ModInt<long long int, 1000000007> INT;
 
 struct Action {
 	int type;
-	int v;
+	INT v;
 };
 
 struct Data {
-	long long int a;
-	long long int b;
-	long long int value;
+	INT a;
+	INT b;
+	INT value;
+	size_t length;
+	
+	inline INT resolvedValue() const {
+		return this->a * this->value + this->b * (INT)(int)(this->length);
+	}
+
+	Data operator+(const Data& other) {
+		return {
+			.a = 1,
+			.b = 0,
+			.value = this->resolvedValue() + other.resolvedValue(),
+			.length = this->length + other.length
+		};
+	}
+
 	void update(Action action) {
 		switch(action.type) {
 			case 1:
@@ -100,10 +179,8 @@ struct Data {
 				this->a = 0;
 				this->b = action.v;
 		}
-		this->a %= MOD;
-		this->b %= MOD;
 	}
-	void resolve(Data& child1, Data& child2, Segment segment) {
+	void resolve(Data& child1, Data& child2) {
 		child1.a *= this->a;
 		
 		child1.b *= this->a;
@@ -114,72 +191,51 @@ struct Data {
 		child2.b *= this->a;
 		child2.b += this->b;
 
-		child1.a %= MOD;
-		child1.b %= MOD;
-		child2.a %= MOD;
-		child2.b %= MOD;
-
-		*this = this->resolved(segment);
-	}
-	Data resolved(Segment segment) {
-		return {
-			.a = 1,
-			.b = 0,
-			.value = (this->a * this->value + this->b * segment.size()) % MOD
-		};
+		this->value = this->resolvedValue();
+		this->a = 1;
+		this->b = 0;
 	}
 };
 
-std::vector<int> values;
-
-Data combine_func(Data child1, Segment segment1, Data child2, Segment segment2) {
-	return {
-		.a = 1,
-		.b = 0,
-		.value = (child1.a * child1.value + child1.b * segment1.size() + child2.a * child2.value + child2.b * segment2.size()) % MOD
-	};
-}
-
-Data value_func(size_t index) {
-	return {
-		.a = 1,
-		.b = 0,
-		.value = values[index]
-	};
-}
-
 int main() {
-	size_t n;
-	std::cin >> n;
+	int n;
+	scanf("%d", &n);
 
-	values = std::vector<int>();
+	std::vector<Data> values;
+
+	values.reserve(n);
 
 	for (int i = 0; i < n; i++) {
 		int value;
-		std::cin >> value;
-		values.push_back(value % MOD);
+		scanf("%d", &value);
+		values.push_back({
+				.a = 1,
+				.b = 0,
+				.value = value,
+				.length = 1
+				});
 	}
 
-	LazySegNode<Data, Action> root({0, n}, combine_func, value_func);
+	LazySegmentTree<Data, Action> root(values);
 
 	int m;
-	std::cin >> m;
+	scanf("%d", &m);
 
 	for (int i = 0; i < m; i++) {
 		int a, x, y, v;
-		std::cin >> a;
+		scanf("%d", &a);
 		if (a != 4) {
-			std::cin >> x >> y >> v;
-			Action action = {a, v % MOD};
+			scanf("%d %d %d", &x, &y, &v);
+			Action action = {a, v};
 
 			root.update({x - 1, y}, action);
 		}
 		else {
-			std::cin >> x >> y;
+			scanf("%d %d", &x, &y);
 			
 			Data data = root.query({x - 1, y});
 
-			std::cout << (data.a * data.value + data.b) % MOD << std::endl;
+			printf("%d\n", (int)data.resolvedValue());
 		}
 	}
 }
