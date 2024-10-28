@@ -1,0 +1,693 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+ no time accumulated
+
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  Ts/call  Ts/call  name    
+  0.00      0.00     0.00      115     0.00     0.00  ModInt<long long, 1000000007>::ModInt(long long)
+  0.00      0.00     0.00       80     0.00     0.00  __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >::base() const
+  0.00      0.00     0.00       47     0.00     0.00  std::vector<Data, std::allocator<Data> >::operator[](unsigned long)
+  0.00      0.00     0.00       44     0.00     0.00  operator new(unsigned long, void*)
+  0.00      0.00     0.00       40     0.00     0.00  bool __gnu_cxx::operator!=<Data const*, std::vector<Data, std::allocator<Data> > >(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > > const&, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > > const&)
+  0.00      0.00     0.00       40     0.00     0.00  ModInt<long long, 1000000007>::operator*(ModInt<long long, 1000000007> const&) const
+  0.00      0.00     0.00       40     0.00     0.00  Data* std::__addressof<Data>(Data&)
+  0.00      0.00     0.00       32     0.00     0.00  __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >::operator++()
+  0.00      0.00     0.00       32     0.00     0.00  __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >::operator*() const
+  0.00      0.00     0.00       32     0.00     0.00  void std::_Construct<Data, Data const&>(Data*, Data const&)
+  0.00      0.00     0.00       32     0.00     0.00  Data const& std::forward<Data const&>(std::remove_reference<Data const&>::type&)
+  0.00      0.00     0.00       27     0.00     0.00  ModInt<long long, 1000000007>::operator+(ModInt<long long, 1000000007> const&) const
+  0.00      0.00     0.00       24     0.00     0.00  ModInt<long long, 1000000007>::ModInt()
+  0.00      0.00     0.00       21     0.00     0.00  std::_Vector_base<Data, std::allocator<Data> >::_M_get_Tp_allocator()
+  0.00      0.00     0.00       20     0.00     0.00  ModInt<long long, 1000000007>::operator*=(ModInt<long long, 1000000007> const&)
+  0.00      0.00     0.00       20     0.00     0.00  Segment::center()
+  0.00      0.00     0.00       20     0.00     0.00  Data::resolvedValue() const
+  0.00      0.00     0.00       18     0.00     0.00  std::__new_allocator<Data>::~__new_allocator()
+  0.00      0.00     0.00       17     0.00     0.00  std::vector<Data, std::allocator<Data> >::size() const
+  0.00      0.00     0.00       16     0.00     0.00  __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >::__normal_iterator(Data const* const&)
+  0.00      0.00     0.00       13     0.00     0.00  std::_Vector_base<Data, std::allocator<Data> >::_M_get_Tp_allocator() const
+  0.00      0.00     0.00       12     0.00     0.00  Data&& std::forward<Data>(std::remove_reference<Data>::type&)
+  0.00      0.00     0.00       11     0.00     0.00  std::_Vector_base<Data, std::allocator<Data> >::_M_deallocate(Data*, unsigned long)
+  0.00      0.00     0.00       10     0.00     0.00  ModInt<long long, 1000000007>::operator+=(ModInt<long long, 1000000007> const&)
+  0.00      0.00     0.00       10     0.00     0.00  void std::_Destroy_aux<true>::__destroy<Data*>(Data*, Data*)
+  0.00      0.00     0.00       10     0.00     0.00  std::_Vector_base<Data, std::allocator<Data> >::_M_allocate(unsigned long)
+  0.00      0.00     0.00       10     0.00     0.00  std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl::~_Vector_impl()
+  0.00      0.00     0.00       10     0.00     0.00  std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl_data::_Vector_impl_data()
+  0.00      0.00     0.00       10     0.00     0.00  std::_Vector_base<Data, std::allocator<Data> >::~_Vector_base()
+  0.00      0.00     0.00       10     0.00     0.00  std::__new_allocator<Data>::deallocate(Data*, unsigned long)
+  0.00      0.00     0.00       10     0.00     0.00  std::__new_allocator<Data>::allocate(unsigned long, void const*)
+  0.00      0.00     0.00       10     0.00     0.00  std::vector<Data, std::allocator<Data> >::~vector()
+  0.00      0.00     0.00       10     0.00     0.00  void std::_Destroy<Data*>(Data*, Data*)
+  0.00      0.00     0.00        8     0.00     0.00  Data::Data()
+  0.00      0.00     0.00        8     0.00     0.00  ModInt<long long, 1000000007>::operator=(long long)
+  0.00      0.00     0.00        8     0.00     0.00  __gnu_cxx::__normal_iterator<Data*, std::vector<Data, std::allocator<Data> > >::__normal_iterator(Data* const&)
+  0.00      0.00     0.00        8     0.00     0.00  std::vector<Data, std::allocator<Data> >::end() const
+  0.00      0.00     0.00        8     0.00     0.00  std::vector<Data, std::allocator<Data> >::begin() const
+  0.00      0.00     0.00        8     0.00     0.00  std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl::_Vector_impl(std::allocator<Data> const&)
+  0.00      0.00     0.00        8     0.00     0.00  std::_Vector_base<Data, std::allocator<Data> >::_M_create_storage(unsigned long)
+  0.00      0.00     0.00        8     0.00     0.00  std::_Vector_base<Data, std::allocator<Data> >::_Vector_base(unsigned long, std::allocator<Data> const&)
+  0.00      0.00     0.00        8     0.00     0.00  Data* std::__uninitialized_copy<false>::__uninit_copy<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*)
+  0.00      0.00     0.00        8     0.00     0.00  std::vector<Data, std::allocator<Data> >::vector(std::vector<Data, std::allocator<Data> > const&)
+  0.00      0.00     0.00        8     0.00     0.00  void std::_Construct<Data>(Data*)
+  0.00      0.00     0.00        8     0.00     0.00  Data* std::__do_uninit_copy<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*)
+  0.00      0.00     0.00        8     0.00     0.00  Data* std::uninitialized_copy<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*)
+  0.00      0.00     0.00        8     0.00     0.00  Data* std::__uninitialized_copy_a<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*, Data>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*, std::allocator<Data>&)
+  0.00      0.00     0.00        7     0.00     0.00  Data::operator+(Data const&)
+  0.00      0.00     0.00        7     0.00     0.00  Segment::size()
+  0.00      0.00     0.00        6     0.00     0.00  Segment::left()
+  0.00      0.00     0.00        6     0.00     0.00  Segment::right()
+  0.00      0.00     0.00        6     0.00     0.00  Data* std::__niter_base<Data*>(Data*)
+  0.00      0.00     0.00        5     0.00     0.00  std::vector<Data, std::allocator<Data> >::max_size() const
+  0.00      0.00     0.00        5     0.00     0.00  std::vector<Data, std::allocator<Data> >::_S_max_size(std::allocator<Data> const&)
+  0.00      0.00     0.00        5     0.00     0.00  unsigned long const& std::min<unsigned long>(unsigned long const&, unsigned long const&)
+  0.00      0.00     0.00        4     0.00     0.00  Data::update(Action)
+  0.00      0.00     0.00        4     0.00     0.00  Data::resolve(Data&, Data&)
+  0.00      0.00     0.00        4     0.00     0.00  __gnu_cxx::__normal_iterator<Data*, std::vector<Data, std::allocator<Data> > >::operator*() const
+  0.00      0.00     0.00        4     0.00     0.00  __gnu_cxx::__normal_iterator<Data*, std::vector<Data, std::allocator<Data> > >::operator-(long) const
+  0.00      0.00     0.00        4     0.00     0.00  Data& std::vector<Data, std::allocator<Data> >::emplace_back<Data>(Data&&)
+  0.00      0.00     0.00        4     0.00     0.00  std::vector<Data, std::allocator<Data> >::end()
+  0.00      0.00     0.00        4     0.00     0.00  std::vector<Data, std::allocator<Data> >::back()
+  0.00      0.00     0.00        4     0.00     0.00  std::vector<Data, std::allocator<Data> >::push_back(Data&&)
+  0.00      0.00     0.00        4     0.00     0.00  std::remove_reference<Data&>::type&& std::move<Data&>(Data&)
+  0.00      0.00     0.00        2     0.00     0.00  LazySegmentTree<Data, Action>::query(Segment)
+  0.00      0.00     0.00        2     0.00     0.00  LazySegmentTree<Data, Action>::query(Segment, Segment, unsigned long)
+  0.00      0.00     0.00        2     0.00     0.00  LazySegmentTree<Data, Action>::update(Segment, Action)
+  0.00      0.00     0.00        2     0.00     0.00  LazySegmentTree<Data, Action>::update(Segment, Action, Segment, unsigned long)
+  0.00      0.00     0.00        2     0.00     0.00  ModInt<long long, 1000000007>::operator int() const
+  0.00      0.00     0.00        2     0.00     0.00  std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl::_Vector_impl()
+  0.00      0.00     0.00        2     0.00     0.00  std::_Vector_base<Data, std::allocator<Data> >::_Vector_base()
+  0.00      0.00     0.00        2     0.00     0.00  std::vector<Data, std::allocator<Data> >::_S_relocate(Data*, Data*, Data*, std::allocator<Data>&)
+  0.00      0.00     0.00        2     0.00     0.00  std::vector<Data, std::allocator<Data> >::vector()
+  0.00      0.00     0.00        2     0.00     0.00  Data* std::__relocate_a<Data*, Data*, std::allocator<Data> >(Data*, Data*, Data*, std::allocator<Data>&)
+  0.00      0.00     0.00        2     0.00     0.00  Data* std::__relocate_a_1<Data*, Data*, std::allocator<Data> >(Data*, Data*, Data*, std::allocator<Data>&)
+  0.00      0.00     0.00        1     0.00     0.00  LazySegmentTree<Data, Action>::init(Segment, unsigned long, std::vector<Data, std::allocator<Data> >)
+  0.00      0.00     0.00        1     0.00     0.00  LazySegmentTree<Data, Action>::LazySegmentTree(std::vector<Data, std::allocator<Data> >)
+  0.00      0.00     0.00        1     0.00     0.00  LazySegmentTree<Data, Action>::~LazySegmentTree()
+  0.00      0.00     0.00        1     0.00     0.00  std::vector<Data, std::allocator<Data> >::_M_check_len(unsigned long, char const*) const
+  0.00      0.00     0.00        1     0.00     0.00  std::vector<Data, std::allocator<Data> >::capacity() const
+  0.00      0.00     0.00        1     0.00     0.00  Data* std::__uninitialized_default_n_1<false>::__uninit_default_n<Data*, unsigned long>(Data*, unsigned long)
+  0.00      0.00     0.00        1     0.00     0.00  std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long)
+  0.00      0.00     0.00        1     0.00     0.00  std::vector<Data, std::allocator<Data> >::resize(unsigned long)
+  0.00      0.00     0.00        1     0.00     0.00  std::vector<Data, std::allocator<Data> >::reserve(unsigned long)
+  0.00      0.00     0.00        1     0.00     0.00  Data* std::__uninitialized_default_n<Data*, unsigned long>(Data*, unsigned long)
+  0.00      0.00     0.00        1     0.00     0.00  Data* std::__uninitialized_default_n_a<Data*, unsigned long, Data>(Data*, unsigned long, std::allocator<Data>&)
+  0.00      0.00     0.00        1     0.00     0.00  unsigned long const& std::max<unsigned long>(unsigned long const&, unsigned long const&)
+  0.00      0.00     0.00        1     0.00     0.00  std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long)::_Guard::_Guard(Data*, unsigned long, std::allocator<Data>&)
+  0.00      0.00     0.00        1     0.00     0.00  std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long)::_Guard::~_Guard()
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+Copyright (C) 2012-2023 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 4 byte(s) no time propagated
+
+index % time    self  children    called     name
+                0.00    0.00      14/115         main [6]
+                0.00    0.00      14/115         Data::operator+(Data const&) [55]
+                0.00    0.00      20/115         Data::resolvedValue() const [24]
+                0.00    0.00      27/115         ModInt<long long, 1000000007>::operator+(ModInt<long long, 1000000007> const&) const [19]
+                0.00    0.00      40/115         ModInt<long long, 1000000007>::operator*(ModInt<long long, 1000000007> const&) const [13]
+[8]      0.0    0.00    0.00     115         ModInt<long long, 1000000007>::ModInt(long long) [8]
+-----------------------------------------------
+                0.00    0.00      80/80          bool __gnu_cxx::operator!=<Data const*, std::vector<Data, std::allocator<Data> > >(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > > const&, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > > const&) [12]
+[9]      0.0    0.00    0.00      80         __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >::base() const [9]
+-----------------------------------------------
+                0.00    0.00       2/47          LazySegmentTree<Data, Action>::query(Segment, Segment, unsigned long) [73]
+                0.00    0.00      17/47          LazySegmentTree<Data, Action>::init(Segment, unsigned long, std::vector<Data, std::allocator<Data> >) [83]
+                0.00    0.00      28/47          LazySegmentTree<Data, Action>::update(Segment, Action, Segment, unsigned long) [75]
+[10]     0.0    0.00    0.00      47         std::vector<Data, std::allocator<Data> >::operator[](unsigned long) [10]
+-----------------------------------------------
+                0.00    0.00       4/44          Data& std::vector<Data, std::allocator<Data> >::emplace_back<Data>(Data&&) [67]
+                0.00    0.00       8/44          void std::_Construct<Data>(Data*) [51]
+                0.00    0.00      32/44          void std::_Construct<Data, Data const&>(Data*, Data const&) [17]
+[11]     0.0    0.00    0.00      44         operator new(unsigned long, void*) [11]
+-----------------------------------------------
+                0.00    0.00      40/40          Data* std::__do_uninit_copy<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*) [52]
+[12]     0.0    0.00    0.00      40         bool __gnu_cxx::operator!=<Data const*, std::vector<Data, std::allocator<Data> > >(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > > const&, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > > const&) [12]
+                0.00    0.00      80/80          __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >::base() const [9]
+-----------------------------------------------
+                0.00    0.00      40/40          Data::resolvedValue() const [24]
+[13]     0.0    0.00    0.00      40         ModInt<long long, 1000000007>::operator*(ModInt<long long, 1000000007> const&) const [13]
+                0.00    0.00      40/115         ModInt<long long, 1000000007>::ModInt(long long) [8]
+-----------------------------------------------
+                0.00    0.00       8/40          Data* std::__uninitialized_default_n_1<false>::__uninit_default_n<Data*, unsigned long>(Data*, unsigned long) [88]
+                0.00    0.00      32/40          Data* std::__do_uninit_copy<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*) [52]
+[14]     0.0    0.00    0.00      40         Data* std::__addressof<Data>(Data&) [14]
+-----------------------------------------------
+                0.00    0.00      32/32          Data* std::__do_uninit_copy<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*) [52]
+[15]     0.0    0.00    0.00      32         __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >::operator++() [15]
+-----------------------------------------------
+                0.00    0.00      32/32          Data* std::__do_uninit_copy<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*) [52]
+[16]     0.0    0.00    0.00      32         __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >::operator*() const [16]
+-----------------------------------------------
+                0.00    0.00      32/32          Data* std::__do_uninit_copy<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*) [52]
+[17]     0.0    0.00    0.00      32         void std::_Construct<Data, Data const&>(Data*, Data const&) [17]
+                0.00    0.00      32/44          operator new(unsigned long, void*) [11]
+                0.00    0.00      32/32          Data const& std::forward<Data const&>(std::remove_reference<Data const&>::type&) [18]
+-----------------------------------------------
+                0.00    0.00      32/32          void std::_Construct<Data, Data const&>(Data*, Data const&) [17]
+[18]     0.0    0.00    0.00      32         Data const& std::forward<Data const&>(std::remove_reference<Data const&>::type&) [18]
+-----------------------------------------------
+                0.00    0.00       7/27          Data::operator+(Data const&) [55]
+                0.00    0.00      20/27          Data::resolvedValue() const [24]
+[19]     0.0    0.00    0.00      27         ModInt<long long, 1000000007>::operator+(ModInt<long long, 1000000007> const&) const [19]
+                0.00    0.00      27/115         ModInt<long long, 1000000007>::ModInt(long long) [8]
+-----------------------------------------------
+                0.00    0.00      24/24          Data::Data() [41]
+[20]     0.0    0.00    0.00      24         ModInt<long long, 1000000007>::ModInt() [20]
+-----------------------------------------------
+                0.00    0.00       1/21          std::vector<Data, std::allocator<Data> >::reserve(unsigned long) [91]
+                0.00    0.00       2/21          std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long) [89]
+                0.00    0.00       8/21          std::vector<Data, std::allocator<Data> >::vector(std::vector<Data, std::allocator<Data> > const&) [50]
+                0.00    0.00      10/21          std::vector<Data, std::allocator<Data> >::~vector() [39]
+[21]     0.0    0.00    0.00      21         std::_Vector_base<Data, std::allocator<Data> >::_M_get_Tp_allocator() [21]
+-----------------------------------------------
+                0.00    0.00       4/20          Data::update(Action) [63]
+                0.00    0.00      16/20          Data::resolve(Data&, Data&) [64]
+[22]     0.0    0.00    0.00      20         ModInt<long long, 1000000007>::operator*=(ModInt<long long, 1000000007> const&) [22]
+-----------------------------------------------
+                0.00    0.00       6/20          Segment::left() [57]
+                0.00    0.00       6/20          Segment::right() [58]
+                0.00    0.00       8/20          LazySegmentTree<Data, Action>::update(Segment, Action, Segment, unsigned long) [75]
+[23]     0.0    0.00    0.00      20         Segment::center() [23]
+-----------------------------------------------
+                0.00    0.00       2/20          main [6]
+                0.00    0.00       4/20          Data::resolve(Data&, Data&) [64]
+                0.00    0.00      14/20          Data::operator+(Data const&) [55]
+[24]     0.0    0.00    0.00      20         Data::resolvedValue() const [24]
+                0.00    0.00      40/40          ModInt<long long, 1000000007>::operator*(ModInt<long long, 1000000007> const&) const [13]
+                0.00    0.00      20/115         ModInt<long long, 1000000007>::ModInt(long long) [8]
+                0.00    0.00      20/27          ModInt<long long, 1000000007>::operator+(ModInt<long long, 1000000007> const&) const [19]
+-----------------------------------------------
+                0.00    0.00       8/18          std::vector<Data, std::allocator<Data> >::vector(std::vector<Data, std::allocator<Data> > const&) [50]
+                0.00    0.00      10/18          std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl::~_Vector_impl() [34]
+[25]     0.0    0.00    0.00      18         std::__new_allocator<Data>::~__new_allocator() [25]
+-----------------------------------------------
+                0.00    0.00       1/17          std::vector<Data, std::allocator<Data> >::reserve(unsigned long) [91]
+                0.00    0.00       1/17          LazySegmentTree<Data, Action>::LazySegmentTree(std::vector<Data, std::allocator<Data> >) [84]
+                0.00    0.00       1/17          std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long) [89]
+                0.00    0.00       2/17          std::vector<Data, std::allocator<Data> >::resize(unsigned long) [90]
+                0.00    0.00       4/17          std::vector<Data, std::allocator<Data> >::_M_check_len(unsigned long, char const*) const [86]
+                0.00    0.00       8/17          std::vector<Data, std::allocator<Data> >::vector(std::vector<Data, std::allocator<Data> > const&) [50]
+[26]     0.0    0.00    0.00      17         std::vector<Data, std::allocator<Data> >::size() const [26]
+-----------------------------------------------
+                0.00    0.00       8/16          std::vector<Data, std::allocator<Data> >::begin() const [45]
+                0.00    0.00       8/16          std::vector<Data, std::allocator<Data> >::end() const [44]
+[27]     0.0    0.00    0.00      16         __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >::__normal_iterator(Data const* const&) [27]
+-----------------------------------------------
+                0.00    0.00       5/13          std::vector<Data, std::allocator<Data> >::max_size() const [60]
+                0.00    0.00       8/13          std::vector<Data, std::allocator<Data> >::vector(std::vector<Data, std::allocator<Data> > const&) [50]
+[28]     0.0    0.00    0.00      13         std::_Vector_base<Data, std::allocator<Data> >::_M_get_Tp_allocator() const [28]
+-----------------------------------------------
+                0.00    0.00      12/12          Data& std::vector<Data, std::allocator<Data> >::emplace_back<Data>(Data&&) [67]
+[29]     0.0    0.00    0.00      12         Data&& std::forward<Data>(std::remove_reference<Data>::type&) [29]
+-----------------------------------------------
+                0.00    0.00       1/11          std::vector<Data, std::allocator<Data> >::reserve(unsigned long) [91]
+                0.00    0.00      10/11          std::_Vector_base<Data, std::allocator<Data> >::~_Vector_base() [36]
+[30]     0.0    0.00    0.00      11         std::_Vector_base<Data, std::allocator<Data> >::_M_deallocate(Data*, unsigned long) [30]
+                0.00    0.00      10/10          std::__new_allocator<Data>::deallocate(Data*, unsigned long) [37]
+-----------------------------------------------
+                0.00    0.00       2/10          Data::update(Action) [63]
+                0.00    0.00       8/10          Data::resolve(Data&, Data&) [64]
+[31]     0.0    0.00    0.00      10         ModInt<long long, 1000000007>::operator+=(ModInt<long long, 1000000007> const&) [31]
+-----------------------------------------------
+                0.00    0.00      10/10          void std::_Destroy<Data*>(Data*, Data*) [40]
+[32]     0.0    0.00    0.00      10         void std::_Destroy_aux<true>::__destroy<Data*>(Data*, Data*) [32]
+-----------------------------------------------
+                0.00    0.00       1/10          std::vector<Data, std::allocator<Data> >::reserve(unsigned long) [91]
+                0.00    0.00       1/10          std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long) [89]
+                0.00    0.00       8/10          std::_Vector_base<Data, std::allocator<Data> >::_M_create_storage(unsigned long) [47]
+[33]     0.0    0.00    0.00      10         std::_Vector_base<Data, std::allocator<Data> >::_M_allocate(unsigned long) [33]
+                0.00    0.00      10/10          std::__new_allocator<Data>::allocate(unsigned long, void const*) [38]
+-----------------------------------------------
+                0.00    0.00      10/10          std::_Vector_base<Data, std::allocator<Data> >::~_Vector_base() [36]
+[34]     0.0    0.00    0.00      10         std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl::~_Vector_impl() [34]
+                0.00    0.00      10/18          std::__new_allocator<Data>::~__new_allocator() [25]
+-----------------------------------------------
+                0.00    0.00       2/10          std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl::_Vector_impl() [77]
+                0.00    0.00       8/10          std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl::_Vector_impl(std::allocator<Data> const&) [46]
+[35]     0.0    0.00    0.00      10         std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl_data::_Vector_impl_data() [35]
+-----------------------------------------------
+                0.00    0.00      10/10          std::vector<Data, std::allocator<Data> >::~vector() [39]
+[36]     0.0    0.00    0.00      10         std::_Vector_base<Data, std::allocator<Data> >::~_Vector_base() [36]
+                0.00    0.00      10/11          std::_Vector_base<Data, std::allocator<Data> >::_M_deallocate(Data*, unsigned long) [30]
+                0.00    0.00      10/10          std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl::~_Vector_impl() [34]
+-----------------------------------------------
+                0.00    0.00      10/10          std::_Vector_base<Data, std::allocator<Data> >::_M_deallocate(Data*, unsigned long) [30]
+[37]     0.0    0.00    0.00      10         std::__new_allocator<Data>::deallocate(Data*, unsigned long) [37]
+-----------------------------------------------
+                0.00    0.00      10/10          std::_Vector_base<Data, std::allocator<Data> >::_M_allocate(unsigned long) [33]
+[38]     0.0    0.00    0.00      10         std::__new_allocator<Data>::allocate(unsigned long, void const*) [38]
+-----------------------------------------------
+                0.00    0.00       1/10          LazySegmentTree<Data, Action>::~LazySegmentTree() [85]
+                0.00    0.00       1/10          LazySegmentTree<Data, Action>::LazySegmentTree(std::vector<Data, std::allocator<Data> >) [84]
+                0.00    0.00       2/10          main [6]
+                0.00    0.00       6/10          LazySegmentTree<Data, Action>::init(Segment, unsigned long, std::vector<Data, std::allocator<Data> >) [83]
+[39]     0.0    0.00    0.00      10         std::vector<Data, std::allocator<Data> >::~vector() [39]
+                0.00    0.00      10/21          std::_Vector_base<Data, std::allocator<Data> >::_M_get_Tp_allocator() [21]
+                0.00    0.00      10/10          void std::_Destroy<Data*>(Data*, Data*) [40]
+                0.00    0.00      10/10          std::_Vector_base<Data, std::allocator<Data> >::~_Vector_base() [36]
+-----------------------------------------------
+                0.00    0.00      10/10          std::vector<Data, std::allocator<Data> >::~vector() [39]
+[40]     0.0    0.00    0.00      10         void std::_Destroy<Data*>(Data*, Data*) [40]
+                0.00    0.00      10/10          void std::_Destroy_aux<true>::__destroy<Data*>(Data*, Data*) [32]
+-----------------------------------------------
+                0.00    0.00       8/8           void std::_Construct<Data>(Data*) [51]
+[41]     0.0    0.00    0.00       8         Data::Data() [41]
+                0.00    0.00      24/24          ModInt<long long, 1000000007>::ModInt() [20]
+-----------------------------------------------
+                0.00    0.00       8/8           Data::resolve(Data&, Data&) [64]
+[42]     0.0    0.00    0.00       8         ModInt<long long, 1000000007>::operator=(long long) [42]
+-----------------------------------------------
+                0.00    0.00       4/8           std::vector<Data, std::allocator<Data> >::end() [68]
+                0.00    0.00       4/8           __gnu_cxx::__normal_iterator<Data*, std::vector<Data, std::allocator<Data> > >::operator-(long) const [66]
+[43]     0.0    0.00    0.00       8         __gnu_cxx::__normal_iterator<Data*, std::vector<Data, std::allocator<Data> > >::__normal_iterator(Data* const&) [43]
+-----------------------------------------------
+                0.00    0.00       8/8           std::vector<Data, std::allocator<Data> >::vector(std::vector<Data, std::allocator<Data> > const&) [50]
+[44]     0.0    0.00    0.00       8         std::vector<Data, std::allocator<Data> >::end() const [44]
+                0.00    0.00       8/16          __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >::__normal_iterator(Data const* const&) [27]
+-----------------------------------------------
+                0.00    0.00       8/8           std::vector<Data, std::allocator<Data> >::vector(std::vector<Data, std::allocator<Data> > const&) [50]
+[45]     0.0    0.00    0.00       8         std::vector<Data, std::allocator<Data> >::begin() const [45]
+                0.00    0.00       8/16          __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >::__normal_iterator(Data const* const&) [27]
+-----------------------------------------------
+                0.00    0.00       8/8           std::_Vector_base<Data, std::allocator<Data> >::_Vector_base(unsigned long, std::allocator<Data> const&) [48]
+[46]     0.0    0.00    0.00       8         std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl::_Vector_impl(std::allocator<Data> const&) [46]
+                0.00    0.00       8/10          std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl_data::_Vector_impl_data() [35]
+-----------------------------------------------
+                0.00    0.00       8/8           std::_Vector_base<Data, std::allocator<Data> >::_Vector_base(unsigned long, std::allocator<Data> const&) [48]
+[47]     0.0    0.00    0.00       8         std::_Vector_base<Data, std::allocator<Data> >::_M_create_storage(unsigned long) [47]
+                0.00    0.00       8/10          std::_Vector_base<Data, std::allocator<Data> >::_M_allocate(unsigned long) [33]
+-----------------------------------------------
+                0.00    0.00       8/8           std::vector<Data, std::allocator<Data> >::vector(std::vector<Data, std::allocator<Data> > const&) [50]
+[48]     0.0    0.00    0.00       8         std::_Vector_base<Data, std::allocator<Data> >::_Vector_base(unsigned long, std::allocator<Data> const&) [48]
+                0.00    0.00       8/8           std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl::_Vector_impl(std::allocator<Data> const&) [46]
+                0.00    0.00       8/8           std::_Vector_base<Data, std::allocator<Data> >::_M_create_storage(unsigned long) [47]
+-----------------------------------------------
+                0.00    0.00       8/8           Data* std::uninitialized_copy<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*) [53]
+[49]     0.0    0.00    0.00       8         Data* std::__uninitialized_copy<false>::__uninit_copy<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*) [49]
+                0.00    0.00       8/8           Data* std::__do_uninit_copy<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*) [52]
+-----------------------------------------------
+                0.00    0.00       1/8           main [6]
+                0.00    0.00       1/8           LazySegmentTree<Data, Action>::LazySegmentTree(std::vector<Data, std::allocator<Data> >) [84]
+                0.00    0.00       6/8           LazySegmentTree<Data, Action>::init(Segment, unsigned long, std::vector<Data, std::allocator<Data> >) [83]
+[50]     0.0    0.00    0.00       8         std::vector<Data, std::allocator<Data> >::vector(std::vector<Data, std::allocator<Data> > const&) [50]
+                0.00    0.00       8/13          std::_Vector_base<Data, std::allocator<Data> >::_M_get_Tp_allocator() const [28]
+                0.00    0.00       8/17          std::vector<Data, std::allocator<Data> >::size() const [26]
+                0.00    0.00       8/18          std::__new_allocator<Data>::~__new_allocator() [25]
+                0.00    0.00       8/8           std::_Vector_base<Data, std::allocator<Data> >::_Vector_base(unsigned long, std::allocator<Data> const&) [48]
+                0.00    0.00       8/21          std::_Vector_base<Data, std::allocator<Data> >::_M_get_Tp_allocator() [21]
+                0.00    0.00       8/8           std::vector<Data, std::allocator<Data> >::begin() const [45]
+                0.00    0.00       8/8           std::vector<Data, std::allocator<Data> >::end() const [44]
+                0.00    0.00       8/8           Data* std::__uninitialized_copy_a<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*, Data>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*, std::allocator<Data>&) [54]
+-----------------------------------------------
+                0.00    0.00       8/8           Data* std::__uninitialized_default_n_1<false>::__uninit_default_n<Data*, unsigned long>(Data*, unsigned long) [88]
+[51]     0.0    0.00    0.00       8         void std::_Construct<Data>(Data*) [51]
+                0.00    0.00       8/44          operator new(unsigned long, void*) [11]
+                0.00    0.00       8/8           Data::Data() [41]
+-----------------------------------------------
+                0.00    0.00       8/8           Data* std::__uninitialized_copy<false>::__uninit_copy<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*) [49]
+[52]     0.0    0.00    0.00       8         Data* std::__do_uninit_copy<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*) [52]
+                0.00    0.00      40/40          bool __gnu_cxx::operator!=<Data const*, std::vector<Data, std::allocator<Data> > >(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > > const&, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > > const&) [12]
+                0.00    0.00      32/32          __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >::operator*() const [16]
+                0.00    0.00      32/32          void std::_Construct<Data, Data const&>(Data*, Data const&) [17]
+                0.00    0.00      32/40          Data* std::__addressof<Data>(Data&) [14]
+                0.00    0.00      32/32          __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >::operator++() [15]
+-----------------------------------------------
+                0.00    0.00       8/8           Data* std::__uninitialized_copy_a<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*, Data>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*, std::allocator<Data>&) [54]
+[53]     0.0    0.00    0.00       8         Data* std::uninitialized_copy<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*) [53]
+                0.00    0.00       8/8           Data* std::__uninitialized_copy<false>::__uninit_copy<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*) [49]
+-----------------------------------------------
+                0.00    0.00       8/8           std::vector<Data, std::allocator<Data> >::vector(std::vector<Data, std::allocator<Data> > const&) [50]
+[54]     0.0    0.00    0.00       8         Data* std::__uninitialized_copy_a<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*, Data>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*, std::allocator<Data>&) [54]
+                0.00    0.00       8/8           Data* std::uninitialized_copy<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*) [53]
+-----------------------------------------------
+                0.00    0.00       3/7           LazySegmentTree<Data, Action>::init(Segment, unsigned long, std::vector<Data, std::allocator<Data> >) [83]
+                0.00    0.00       4/7           LazySegmentTree<Data, Action>::update(Segment, Action, Segment, unsigned long) [75]
+[55]     0.0    0.00    0.00       7         Data::operator+(Data const&) [55]
+                0.00    0.00      14/115         ModInt<long long, 1000000007>::ModInt(long long) [8]
+                0.00    0.00      14/20          Data::resolvedValue() const [24]
+                0.00    0.00       7/27          ModInt<long long, 1000000007>::operator+(ModInt<long long, 1000000007> const&) const [19]
+-----------------------------------------------
+                0.00    0.00       7/7           LazySegmentTree<Data, Action>::init(Segment, unsigned long, std::vector<Data, std::allocator<Data> >) [83]
+[56]     0.0    0.00    0.00       7         Segment::size() [56]
+-----------------------------------------------
+                0.00    0.00       3/6           LazySegmentTree<Data, Action>::init(Segment, unsigned long, std::vector<Data, std::allocator<Data> >) [83]
+                0.00    0.00       3/6           LazySegmentTree<Data, Action>::update(Segment, Action, Segment, unsigned long) [75]
+[57]     0.0    0.00    0.00       6         Segment::left() [57]
+                0.00    0.00       6/20          Segment::center() [23]
+-----------------------------------------------
+                0.00    0.00       3/6           LazySegmentTree<Data, Action>::init(Segment, unsigned long, std::vector<Data, std::allocator<Data> >) [83]
+                0.00    0.00       3/6           LazySegmentTree<Data, Action>::update(Segment, Action, Segment, unsigned long) [75]
+[58]     0.0    0.00    0.00       6         Segment::right() [58]
+                0.00    0.00       6/20          Segment::center() [23]
+-----------------------------------------------
+                0.00    0.00       6/6           Data* std::__relocate_a<Data*, Data*, std::allocator<Data> >(Data*, Data*, Data*, std::allocator<Data>&) [81]
+[59]     0.0    0.00    0.00       6         Data* std::__niter_base<Data*>(Data*) [59]
+-----------------------------------------------
+                0.00    0.00       1/5           std::vector<Data, std::allocator<Data> >::reserve(unsigned long) [91]
+                0.00    0.00       2/5           std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long) [89]
+                0.00    0.00       2/5           std::vector<Data, std::allocator<Data> >::_M_check_len(unsigned long, char const*) const [86]
+[60]     0.0    0.00    0.00       5         std::vector<Data, std::allocator<Data> >::max_size() const [60]
+                0.00    0.00       5/13          std::_Vector_base<Data, std::allocator<Data> >::_M_get_Tp_allocator() const [28]
+                0.00    0.00       5/5           std::vector<Data, std::allocator<Data> >::_S_max_size(std::allocator<Data> const&) [61]
+-----------------------------------------------
+                0.00    0.00       5/5           std::vector<Data, std::allocator<Data> >::max_size() const [60]
+[61]     0.0    0.00    0.00       5         std::vector<Data, std::allocator<Data> >::_S_max_size(std::allocator<Data> const&) [61]
+                0.00    0.00       5/5           unsigned long const& std::min<unsigned long>(unsigned long const&, unsigned long const&) [62]
+-----------------------------------------------
+                0.00    0.00       5/5           std::vector<Data, std::allocator<Data> >::_S_max_size(std::allocator<Data> const&) [61]
+[62]     0.0    0.00    0.00       5         unsigned long const& std::min<unsigned long>(unsigned long const&, unsigned long const&) [62]
+-----------------------------------------------
+                0.00    0.00       4/4           LazySegmentTree<Data, Action>::update(Segment, Action, Segment, unsigned long) [75]
+[63]     0.0    0.00    0.00       4         Data::update(Action) [63]
+                0.00    0.00       4/20          ModInt<long long, 1000000007>::operator*=(ModInt<long long, 1000000007> const&) [22]
+                0.00    0.00       2/10          ModInt<long long, 1000000007>::operator+=(ModInt<long long, 1000000007> const&) [31]
+-----------------------------------------------
+                0.00    0.00       4/4           LazySegmentTree<Data, Action>::update(Segment, Action, Segment, unsigned long) [75]
+[64]     0.0    0.00    0.00       4         Data::resolve(Data&, Data&) [64]
+                0.00    0.00      16/20          ModInt<long long, 1000000007>::operator*=(ModInt<long long, 1000000007> const&) [22]
+                0.00    0.00       8/10          ModInt<long long, 1000000007>::operator+=(ModInt<long long, 1000000007> const&) [31]
+                0.00    0.00       8/8           ModInt<long long, 1000000007>::operator=(long long) [42]
+                0.00    0.00       4/20          Data::resolvedValue() const [24]
+-----------------------------------------------
+                0.00    0.00       4/4           std::vector<Data, std::allocator<Data> >::back() [69]
+[65]     0.0    0.00    0.00       4         __gnu_cxx::__normal_iterator<Data*, std::vector<Data, std::allocator<Data> > >::operator*() const [65]
+-----------------------------------------------
+                0.00    0.00       4/4           std::vector<Data, std::allocator<Data> >::back() [69]
+[66]     0.0    0.00    0.00       4         __gnu_cxx::__normal_iterator<Data*, std::vector<Data, std::allocator<Data> > >::operator-(long) const [66]
+                0.00    0.00       4/8           __gnu_cxx::__normal_iterator<Data*, std::vector<Data, std::allocator<Data> > >::__normal_iterator(Data* const&) [43]
+-----------------------------------------------
+                0.00    0.00       4/4           std::vector<Data, std::allocator<Data> >::push_back(Data&&) [70]
+[67]     0.0    0.00    0.00       4         Data& std::vector<Data, std::allocator<Data> >::emplace_back<Data>(Data&&) [67]
+                0.00    0.00      12/12          Data&& std::forward<Data>(std::remove_reference<Data>::type&) [29]
+                0.00    0.00       4/44          operator new(unsigned long, void*) [11]
+                0.00    0.00       4/4           std::vector<Data, std::allocator<Data> >::back() [69]
+-----------------------------------------------
+                0.00    0.00       4/4           std::vector<Data, std::allocator<Data> >::back() [69]
+[68]     0.0    0.00    0.00       4         std::vector<Data, std::allocator<Data> >::end() [68]
+                0.00    0.00       4/8           __gnu_cxx::__normal_iterator<Data*, std::vector<Data, std::allocator<Data> > >::__normal_iterator(Data* const&) [43]
+-----------------------------------------------
+                0.00    0.00       4/4           Data& std::vector<Data, std::allocator<Data> >::emplace_back<Data>(Data&&) [67]
+[69]     0.0    0.00    0.00       4         std::vector<Data, std::allocator<Data> >::back() [69]
+                0.00    0.00       4/4           std::vector<Data, std::allocator<Data> >::end() [68]
+                0.00    0.00       4/4           __gnu_cxx::__normal_iterator<Data*, std::vector<Data, std::allocator<Data> > >::operator-(long) const [66]
+                0.00    0.00       4/4           __gnu_cxx::__normal_iterator<Data*, std::vector<Data, std::allocator<Data> > >::operator*() const [65]
+-----------------------------------------------
+                0.00    0.00       4/4           main [6]
+[70]     0.0    0.00    0.00       4         std::vector<Data, std::allocator<Data> >::push_back(Data&&) [70]
+                0.00    0.00       4/4           std::remove_reference<Data&>::type&& std::move<Data&>(Data&) [71]
+                0.00    0.00       4/4           Data& std::vector<Data, std::allocator<Data> >::emplace_back<Data>(Data&&) [67]
+-----------------------------------------------
+                0.00    0.00       4/4           std::vector<Data, std::allocator<Data> >::push_back(Data&&) [70]
+[71]     0.0    0.00    0.00       4         std::remove_reference<Data&>::type&& std::move<Data&>(Data&) [71]
+-----------------------------------------------
+                0.00    0.00       2/2           main [6]
+[72]     0.0    0.00    0.00       2         LazySegmentTree<Data, Action>::query(Segment) [72]
+                0.00    0.00       2/2           LazySegmentTree<Data, Action>::query(Segment, Segment, unsigned long) [73]
+-----------------------------------------------
+                0.00    0.00       2/2           LazySegmentTree<Data, Action>::query(Segment) [72]
+[73]     0.0    0.00    0.00       2         LazySegmentTree<Data, Action>::query(Segment, Segment, unsigned long) [73]
+                0.00    0.00       2/47          std::vector<Data, std::allocator<Data> >::operator[](unsigned long) [10]
+-----------------------------------------------
+                0.00    0.00       2/2           main [6]
+[74]     0.0    0.00    0.00       2         LazySegmentTree<Data, Action>::update(Segment, Action) [74]
+                0.00    0.00       2/2           LazySegmentTree<Data, Action>::update(Segment, Action, Segment, unsigned long) [75]
+-----------------------------------------------
+                                   6             LazySegmentTree<Data, Action>::update(Segment, Action, Segment, unsigned long) [75]
+                0.00    0.00       2/2           LazySegmentTree<Data, Action>::update(Segment, Action) [74]
+[75]     0.0    0.00    0.00       2+6       LazySegmentTree<Data, Action>::update(Segment, Action, Segment, unsigned long) [75]
+                0.00    0.00      28/47          std::vector<Data, std::allocator<Data> >::operator[](unsigned long) [10]
+                0.00    0.00       8/20          Segment::center() [23]
+                0.00    0.00       4/4           Data::update(Action) [63]
+                0.00    0.00       4/4           Data::resolve(Data&, Data&) [64]
+                0.00    0.00       4/7           Data::operator+(Data const&) [55]
+                0.00    0.00       3/6           Segment::left() [57]
+                0.00    0.00       3/6           Segment::right() [58]
+                                   6             LazySegmentTree<Data, Action>::update(Segment, Action, Segment, unsigned long) [75]
+-----------------------------------------------
+                0.00    0.00       2/2           main [6]
+[76]     0.0    0.00    0.00       2         ModInt<long long, 1000000007>::operator int() const [76]
+-----------------------------------------------
+                0.00    0.00       2/2           std::_Vector_base<Data, std::allocator<Data> >::_Vector_base() [78]
+[77]     0.0    0.00    0.00       2         std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl::_Vector_impl() [77]
+                0.00    0.00       2/10          std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl_data::_Vector_impl_data() [35]
+-----------------------------------------------
+                0.00    0.00       2/2           std::vector<Data, std::allocator<Data> >::vector() [80]
+[78]     0.0    0.00    0.00       2         std::_Vector_base<Data, std::allocator<Data> >::_Vector_base() [78]
+                0.00    0.00       2/2           std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl::_Vector_impl() [77]
+-----------------------------------------------
+                0.00    0.00       1/2           std::vector<Data, std::allocator<Data> >::reserve(unsigned long) [91]
+                0.00    0.00       1/2           std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long) [89]
+[79]     0.0    0.00    0.00       2         std::vector<Data, std::allocator<Data> >::_S_relocate(Data*, Data*, Data*, std::allocator<Data>&) [79]
+                0.00    0.00       2/2           Data* std::__relocate_a<Data*, Data*, std::allocator<Data> >(Data*, Data*, Data*, std::allocator<Data>&) [81]
+-----------------------------------------------
+                0.00    0.00       1/2           main [6]
+                0.00    0.00       1/2           LazySegmentTree<Data, Action>::LazySegmentTree(std::vector<Data, std::allocator<Data> >) [84]
+[80]     0.0    0.00    0.00       2         std::vector<Data, std::allocator<Data> >::vector() [80]
+                0.00    0.00       2/2           std::_Vector_base<Data, std::allocator<Data> >::_Vector_base() [78]
+-----------------------------------------------
+                0.00    0.00       2/2           std::vector<Data, std::allocator<Data> >::_S_relocate(Data*, Data*, Data*, std::allocator<Data>&) [79]
+[81]     0.0    0.00    0.00       2         Data* std::__relocate_a<Data*, Data*, std::allocator<Data> >(Data*, Data*, Data*, std::allocator<Data>&) [81]
+                0.00    0.00       6/6           Data* std::__niter_base<Data*>(Data*) [59]
+                0.00    0.00       2/2           Data* std::__relocate_a_1<Data*, Data*, std::allocator<Data> >(Data*, Data*, Data*, std::allocator<Data>&) [82]
+-----------------------------------------------
+                0.00    0.00       2/2           Data* std::__relocate_a<Data*, Data*, std::allocator<Data> >(Data*, Data*, Data*, std::allocator<Data>&) [81]
+[82]     0.0    0.00    0.00       2         Data* std::__relocate_a_1<Data*, Data*, std::allocator<Data> >(Data*, Data*, Data*, std::allocator<Data>&) [82]
+-----------------------------------------------
+                                   6             LazySegmentTree<Data, Action>::init(Segment, unsigned long, std::vector<Data, std::allocator<Data> >) [83]
+                0.00    0.00       1/1           LazySegmentTree<Data, Action>::LazySegmentTree(std::vector<Data, std::allocator<Data> >) [84]
+[83]     0.0    0.00    0.00       1+6       LazySegmentTree<Data, Action>::init(Segment, unsigned long, std::vector<Data, std::allocator<Data> >) [83]
+                0.00    0.00      17/47          std::vector<Data, std::allocator<Data> >::operator[](unsigned long) [10]
+                0.00    0.00       7/7           Segment::size() [56]
+                0.00    0.00       6/8           std::vector<Data, std::allocator<Data> >::vector(std::vector<Data, std::allocator<Data> > const&) [50]
+                0.00    0.00       6/10          std::vector<Data, std::allocator<Data> >::~vector() [39]
+                0.00    0.00       3/6           Segment::left() [57]
+                0.00    0.00       3/6           Segment::right() [58]
+                0.00    0.00       3/7           Data::operator+(Data const&) [55]
+                                   6             LazySegmentTree<Data, Action>::init(Segment, unsigned long, std::vector<Data, std::allocator<Data> >) [83]
+-----------------------------------------------
+                0.00    0.00       1/1           main [6]
+[84]     0.0    0.00    0.00       1         LazySegmentTree<Data, Action>::LazySegmentTree(std::vector<Data, std::allocator<Data> >) [84]
+                0.00    0.00       1/17          std::vector<Data, std::allocator<Data> >::size() const [26]
+                0.00    0.00       1/2           std::vector<Data, std::allocator<Data> >::vector() [80]
+                0.00    0.00       1/1           std::vector<Data, std::allocator<Data> >::resize(unsigned long) [90]
+                0.00    0.00       1/8           std::vector<Data, std::allocator<Data> >::vector(std::vector<Data, std::allocator<Data> > const&) [50]
+                0.00    0.00       1/10          std::vector<Data, std::allocator<Data> >::~vector() [39]
+                0.00    0.00       1/1           LazySegmentTree<Data, Action>::init(Segment, unsigned long, std::vector<Data, std::allocator<Data> >) [83]
+-----------------------------------------------
+                0.00    0.00       1/1           main [6]
+[85]     0.0    0.00    0.00       1         LazySegmentTree<Data, Action>::~LazySegmentTree() [85]
+                0.00    0.00       1/10          std::vector<Data, std::allocator<Data> >::~vector() [39]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long) [89]
+[86]     0.0    0.00    0.00       1         std::vector<Data, std::allocator<Data> >::_M_check_len(unsigned long, char const*) const [86]
+                0.00    0.00       4/17          std::vector<Data, std::allocator<Data> >::size() const [26]
+                0.00    0.00       2/5           std::vector<Data, std::allocator<Data> >::max_size() const [60]
+                0.00    0.00       1/1           unsigned long const& std::max<unsigned long>(unsigned long const&, unsigned long const&) [94]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<Data, std::allocator<Data> >::reserve(unsigned long) [91]
+[87]     0.0    0.00    0.00       1         std::vector<Data, std::allocator<Data> >::capacity() const [87]
+-----------------------------------------------
+                0.00    0.00       1/1           Data* std::__uninitialized_default_n<Data*, unsigned long>(Data*, unsigned long) [92]
+[88]     0.0    0.00    0.00       1         Data* std::__uninitialized_default_n_1<false>::__uninit_default_n<Data*, unsigned long>(Data*, unsigned long) [88]
+                0.00    0.00       8/40          Data* std::__addressof<Data>(Data&) [14]
+                0.00    0.00       8/8           void std::_Construct<Data>(Data*) [51]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<Data, std::allocator<Data> >::resize(unsigned long) [90]
+[89]     0.0    0.00    0.00       1         std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long) [89]
+                0.00    0.00       2/5           std::vector<Data, std::allocator<Data> >::max_size() const [60]
+                0.00    0.00       2/21          std::_Vector_base<Data, std::allocator<Data> >::_M_get_Tp_allocator() [21]
+                0.00    0.00       1/17          std::vector<Data, std::allocator<Data> >::size() const [26]
+                0.00    0.00       1/1           std::vector<Data, std::allocator<Data> >::_M_check_len(unsigned long, char const*) const [86]
+                0.00    0.00       1/10          std::_Vector_base<Data, std::allocator<Data> >::_M_allocate(unsigned long) [33]
+                0.00    0.00       1/1           std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long)::_Guard::_Guard(Data*, unsigned long, std::allocator<Data>&) [95]
+                0.00    0.00       1/1           Data* std::__uninitialized_default_n_a<Data*, unsigned long, Data>(Data*, unsigned long, std::allocator<Data>&) [93]
+                0.00    0.00       1/2           std::vector<Data, std::allocator<Data> >::_S_relocate(Data*, Data*, Data*, std::allocator<Data>&) [79]
+                0.00    0.00       1/1           std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long)::_Guard::~_Guard() [96]
+-----------------------------------------------
+                0.00    0.00       1/1           LazySegmentTree<Data, Action>::LazySegmentTree(std::vector<Data, std::allocator<Data> >) [84]
+[90]     0.0    0.00    0.00       1         std::vector<Data, std::allocator<Data> >::resize(unsigned long) [90]
+                0.00    0.00       2/17          std::vector<Data, std::allocator<Data> >::size() const [26]
+                0.00    0.00       1/1           std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long) [89]
+-----------------------------------------------
+                0.00    0.00       1/1           main [6]
+[91]     0.0    0.00    0.00       1         std::vector<Data, std::allocator<Data> >::reserve(unsigned long) [91]
+                0.00    0.00       1/5           std::vector<Data, std::allocator<Data> >::max_size() const [60]
+                0.00    0.00       1/1           std::vector<Data, std::allocator<Data> >::capacity() const [87]
+                0.00    0.00       1/17          std::vector<Data, std::allocator<Data> >::size() const [26]
+                0.00    0.00       1/10          std::_Vector_base<Data, std::allocator<Data> >::_M_allocate(unsigned long) [33]
+                0.00    0.00       1/21          std::_Vector_base<Data, std::allocator<Data> >::_M_get_Tp_allocator() [21]
+                0.00    0.00       1/2           std::vector<Data, std::allocator<Data> >::_S_relocate(Data*, Data*, Data*, std::allocator<Data>&) [79]
+                0.00    0.00       1/11          std::_Vector_base<Data, std::allocator<Data> >::_M_deallocate(Data*, unsigned long) [30]
+-----------------------------------------------
+                0.00    0.00       1/1           Data* std::__uninitialized_default_n_a<Data*, unsigned long, Data>(Data*, unsigned long, std::allocator<Data>&) [93]
+[92]     0.0    0.00    0.00       1         Data* std::__uninitialized_default_n<Data*, unsigned long>(Data*, unsigned long) [92]
+                0.00    0.00       1/1           Data* std::__uninitialized_default_n_1<false>::__uninit_default_n<Data*, unsigned long>(Data*, unsigned long) [88]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long) [89]
+[93]     0.0    0.00    0.00       1         Data* std::__uninitialized_default_n_a<Data*, unsigned long, Data>(Data*, unsigned long, std::allocator<Data>&) [93]
+                0.00    0.00       1/1           Data* std::__uninitialized_default_n<Data*, unsigned long>(Data*, unsigned long) [92]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<Data, std::allocator<Data> >::_M_check_len(unsigned long, char const*) const [86]
+[94]     0.0    0.00    0.00       1         unsigned long const& std::max<unsigned long>(unsigned long const&, unsigned long const&) [94]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long) [89]
+[95]     0.0    0.00    0.00       1         std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long)::_Guard::_Guard(Data*, unsigned long, std::allocator<Data>&) [95]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long) [89]
+[96]     0.0    0.00    0.00       1         std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long)::_Guard::~_Guard() [96]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function is in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+Copyright (C) 2012-2023 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+Index by function name
+
+  [83] LazySegmentTree<Data, Action>::init(Segment, unsigned long, std::vector<Data, std::allocator<Data> >) [9] __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >::base() const [68] std::vector<Data, std::allocator<Data> >::end()
+  [72] LazySegmentTree<Data, Action>::query(Segment) [16] __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >::operator*() const [69] std::vector<Data, std::allocator<Data> >::back()
+  [73] LazySegmentTree<Data, Action>::query(Segment, Segment, unsigned long) [28] std::_Vector_base<Data, std::allocator<Data> >::_M_get_Tp_allocator() const [90] std::vector<Data, std::allocator<Data> >::resize(unsigned long)
+  [74] LazySegmentTree<Data, Action>::update(Segment, Action) [86] std::vector<Data, std::allocator<Data> >::_M_check_len(unsigned long, char const*) const [91] std::vector<Data, std::allocator<Data> >::reserve(unsigned long)
+  [75] LazySegmentTree<Data, Action>::update(Segment, Action, Segment, unsigned long) [44] std::vector<Data, std::allocator<Data> >::end() const [70] std::vector<Data, std::allocator<Data> >::push_back(Data&&)
+  [84] LazySegmentTree<Data, Action>::LazySegmentTree(std::vector<Data, std::allocator<Data> >) [26] std::vector<Data, std::allocator<Data> >::size() const [50] std::vector<Data, std::allocator<Data> >::vector(std::vector<Data, std::allocator<Data> > const&)
+  [85] LazySegmentTree<Data, Action>::~LazySegmentTree() [45] std::vector<Data, std::allocator<Data> >::begin() const [80] std::vector<Data, std::allocator<Data> >::vector()
+  [63] Data::update(Action)   [87] std::vector<Data, std::allocator<Data> >::capacity() const [39] std::vector<Data, std::allocator<Data> >::~vector()
+  [64] Data::resolve(Data&, Data&) [60] std::vector<Data, std::allocator<Data> >::max_size() const [10] std::vector<Data, std::allocator<Data> >::operator[](unsigned long)
+  [41] Data::Data()           [32] void std::_Destroy_aux<true>::__destroy<Data*>(Data*, Data*) [51] void std::_Construct<Data>(Data*)
+  [55] Data::operator+(Data const&) [33] std::_Vector_base<Data, std::allocator<Data> >::_M_allocate(unsigned long) [17] void std::_Construct<Data, Data const&>(Data*, Data const&)
+   [8] ModInt<long long, 1000000007>::ModInt(long long) [46] std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl::_Vector_impl(std::allocator<Data> const&) [14] Data* std::__addressof<Data>(Data&)
+  [20] ModInt<long long, 1000000007>::ModInt() [77] std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl::_Vector_impl() [59] Data* std::__niter_base<Data*>(Data*)
+  [42] ModInt<long long, 1000000007>::operator=(long long) [34] std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl::~_Vector_impl() [81] Data* std::__relocate_a<Data*, Data*, std::allocator<Data> >(Data*, Data*, Data*, std::allocator<Data>&)
+  [22] ModInt<long long, 1000000007>::operator*=(ModInt<long long, 1000000007> const&) [30] std::_Vector_base<Data, std::allocator<Data> >::_M_deallocate(Data*, unsigned long) [82] Data* std::__relocate_a_1<Data*, Data*, std::allocator<Data> >(Data*, Data*, Data*, std::allocator<Data>&)
+  [31] ModInt<long long, 1000000007>::operator+=(ModInt<long long, 1000000007> const&) [47] std::_Vector_base<Data, std::allocator<Data> >::_M_create_storage(unsigned long) [52] Data* std::__do_uninit_copy<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*)
+  [57] Segment::left()        [35] std::_Vector_base<Data, std::allocator<Data> >::_Vector_impl_data::_Vector_impl_data() [53] Data* std::uninitialized_copy<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*)
+  [56] Segment::size()        [21] std::_Vector_base<Data, std::allocator<Data> >::_M_get_Tp_allocator() [54] Data* std::__uninitialized_copy_a<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*, Data>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*, std::allocator<Data>&)
+  [58] Segment::right()       [48] std::_Vector_base<Data, std::allocator<Data> >::_Vector_base(unsigned long, std::allocator<Data> const&) [92] Data* std::__uninitialized_default_n<Data*, unsigned long>(Data*, unsigned long)
+  [23] Segment::center()      [78] std::_Vector_base<Data, std::allocator<Data> >::_Vector_base() [93] Data* std::__uninitialized_default_n_a<Data*, unsigned long, Data>(Data*, unsigned long, std::allocator<Data>&)
+  [43] __gnu_cxx::__normal_iterator<Data*, std::vector<Data, std::allocator<Data> > >::__normal_iterator(Data* const&) [36] std::_Vector_base<Data, std::allocator<Data> >::~_Vector_base() [94] unsigned long const& std::max<unsigned long>(unsigned long const&, unsigned long const&)
+  [27] __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >::__normal_iterator(Data const* const&) [37] std::__new_allocator<Data>::deallocate(Data*, unsigned long) [62] unsigned long const& std::min<unsigned long>(unsigned long const&, unsigned long const&)
+  [15] __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >::operator++() [38] std::__new_allocator<Data>::allocate(unsigned long, void const*) [71] std::remove_reference<Data&>::type&& std::move<Data&>(Data&)
+  [12] bool __gnu_cxx::operator!=<Data const*, std::vector<Data, std::allocator<Data> > >(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > > const&, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > > const&) [25] std::__new_allocator<Data>::~__new_allocator() [29] Data&& std::forward<Data>(std::remove_reference<Data>::type&)
+  [24] Data::resolvedValue() const [49] Data* std::__uninitialized_copy<false>::__uninit_copy<__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*>(__gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, __gnu_cxx::__normal_iterator<Data const*, std::vector<Data, std::allocator<Data> > >, Data*) [18] Data const& std::forward<Data const&>(std::remove_reference<Data const&>::type&)
+  [76] ModInt<long long, 1000000007>::operator int() const [88] Data* std::__uninitialized_default_n_1<false>::__uninit_default_n<Data*, unsigned long>(Data*, unsigned long) [40] void std::_Destroy<Data*>(Data*, Data*)
+  [13] ModInt<long long, 1000000007>::operator*(ModInt<long long, 1000000007> const&) const [61] std::vector<Data, std::allocator<Data> >::_S_max_size(std::allocator<Data> const&) [95] std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long)::_Guard::_Guard(Data*, unsigned long, std::allocator<Data>&)
+  [19] ModInt<long long, 1000000007>::operator+(ModInt<long long, 1000000007> const&) const [79] std::vector<Data, std::allocator<Data> >::_S_relocate(Data*, Data*, Data*, std::allocator<Data>&) [96] std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long)::_Guard::~_Guard()
+  [65] __gnu_cxx::__normal_iterator<Data*, std::vector<Data, std::allocator<Data> > >::operator*() const [67] Data& std::vector<Data, std::allocator<Data> >::emplace_back<Data>(Data&&) [11] operator new(unsigned long, void*)
+  [66] __gnu_cxx::__normal_iterator<Data*, std::vector<Data, std::allocator<Data> > >::operator-(long) const [89] std::vector<Data, std::allocator<Data> >::_M_default_append(unsigned long)

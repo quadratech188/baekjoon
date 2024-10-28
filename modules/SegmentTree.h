@@ -3,7 +3,7 @@
 #include "Segment.h"
 
 template<typename VAL, typename ACTION>
-class LazySegmentTree {
+class SegmentTree {
 	std::vector<VAL> values;
 	size_t length;
 
@@ -30,20 +30,17 @@ class LazySegmentTree {
 		size_t leftIndex = currentIndex * 2 + 1;
 		size_t rightIndex = currentIndex * 2 + 2;
 
-		this->values[currentIndex].resolve(this->values[leftIndex], this->values[rightIndex]);
-
 		if (currentSegment.center() <= segment.start) {
 			return query(segment, currentSegment.right(), rightIndex);
 		}
 		if (segment.end <= currentSegment.center()) {
 			return query(segment, currentSegment.left(), leftIndex);
 		}
-		return query(segment, currentSegment.left(), leftIndex)
-			+ query(segment, currentSegment.right(), rightIndex);
+		return query(segment, currentSegment.left(), leftIndex) + query(segment, currentSegment.right(), rightIndex);
 	}
 
-	void update(Segment segment, ACTION action, Segment currentSegment, size_t currentIndex) {
-		if (segment.start <= currentSegment.start && currentSegment.end <= segment.end) {
+	void update(size_t index, ACTION action, Segment currentSegment, size_t currentIndex) {
+		if (currentSegment.size() == 1) {
 			this->values[currentIndex].update(action);
 			return;
 		}
@@ -51,29 +48,27 @@ class LazySegmentTree {
 		size_t leftIndex = currentIndex * 2 + 1;
 		size_t rightIndex = currentIndex * 2 + 2;
 
-		this->values[currentIndex].resolve(this->values[leftIndex], this->values[rightIndex]);
-
-		if (segment.start < currentSegment.center()) {
-			update(segment, action, currentSegment.left(), leftIndex);
+		if (index < currentSegment.center()) {
+			update(index, action, currentSegment.left(), leftIndex);
 		}
-		if (currentSegment.center() < segment.end) {
-			update(segment, action, currentSegment.right(), rightIndex);
+		else {
+			update(index, action, currentSegment.right(), rightIndex);
 		}
 
 		this->values[currentIndex] = this->values[leftIndex] + this->values[rightIndex];
 	}
 
 public:
-	LazySegmentTree(std::vector<VAL>& values) {
+	SegmentTree(std::vector<VAL>& values) {
 		this->length = values.size();
-		this->values.resize(this->length * 4);
+		this->values = std::vector<VAL>(4 * this->length);
 		init({0, this->length}, 0, values);
 	}
 	inline VAL query(Segment segment) {
 		return query(segment, {0, this->length}, 0);
 	}
 
-	inline void update(Segment segment, ACTION action) {
-		update(segment, action, {0, this->length}, 0);
+	inline void update(size_t index, ACTION action) {
+		update(index, action, {0, this->length}, 0);
 	}
 };

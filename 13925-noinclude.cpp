@@ -24,7 +24,7 @@ class LazySegmentTree {
 	std::vector<VAL> values;
 	size_t length;
 
-	void init(Segment currentSegment, size_t currentIndex, std::vector<VAL> values) {
+	void init(Segment currentSegment, size_t currentIndex, std::vector<VAL>& values) {
 		if (currentSegment.size() == 1) {
 			this->values[currentIndex] = values[currentSegment.start];
 			return;
@@ -81,9 +81,9 @@ class LazySegmentTree {
 	}
 
 public:
-	LazySegmentTree(std::vector<VAL> values) {
+	LazySegmentTree(std::vector<VAL>& values) {
 		this->length = values.size();
-		this->values.resize(this->length * 2);
+		this->values.resize(this->length * 4);
 		init({0, this->length}, 0, values);
 	}
 	inline VAL query(Segment segment) {
