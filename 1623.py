@@ -1,45 +1,62 @@
-class ListSum:
-    def __init__(self, value, lis):
-        self.value = value
-        self.lis = lis
-
-    def __add__(self, other):
-        return ListSum(self.value + other.value, self.lis + other.lis)
-
-
-
-cache = {}
-class Person:
-
-    def __init__(self, index, value, children = []):
-        self.index = index
-        self.value = value
-        self.children = children
-
-    def max_value(self, used_parent):
-        if self.index in cache:
-            return cache[self.index]
-
-        if self.children == []:
-            return ListSum(self.value, [self.value])
-        
-        if used_parent:
-            cache[self.index] =  sum(max(child.max_value(False), 0) for child in self.children)
-
-        else:
-            cache[self.index] = sum(max(child.max_value(False), 0) for child in self.children), max(self.value) + sum(max(child.max_value(True) for child in self.children))
-
-        return cache[self.index]
-
+import sys
 n = int(input())
+
+sys.setrecursionlimit(300000)
 
 values = list(map(int, input().split()))
 
-indices = list(map(int, input().split()))
+managers = list(map(int, input().split()))
 
-people = [Person(index, value) for index, value in enumerate(values)]
+children = {}
 
-for i, index in enumerate(indices):
-    people[i + 1].children.append(people[index - 1])
+for child, parent in enumerate(managers):
+    if parent - 1 not in children:
+        children[parent - 1] = []
 
-print(people[0].max_value(False))
+    children[parent - 1].append(child + 1)
+
+cache = {}
+
+def solution(index, self_used):
+    if index not in children:
+        if self_used:
+            return values[index], [index]
+        else:
+            return 0, []
+
+    if (index, self_used) in cache:
+        return cache[(index, self_used)]
+
+    sum = 0
+    indices = []
+
+    if not self_used:
+        for child in children[index]:
+            used_value, used_indices = solution(child, True)
+            not_used_value, not_used_indices = solution(child, False)
+            if used_value > not_used_value:
+                if used_value > 0:
+                    sum += used_value
+                    indices += used_indices
+            elif not_used_value > 0:
+                sum += not_used_value
+                indices += not_used_indices
+
+    else:
+        sum += values[index]
+        indices.append(index)
+        for child in children[index]:
+            not_used_value, not_used_indices = solution(child, False)
+            if not_used_value > 0:
+                sum += not_used_value
+                indices += not_used_indices
+    
+    cache[(index, self_used)] = (sum, indices)
+
+    return sum, indices
+
+n_value, n_indices = solution(0, False)
+y_value, y_indices = solution(0, True)
+print(y_value, n_value)
+print(*sorted(map(lambda x: x + 1, y_indices)), -1)
+print(*sorted(map(lambda x: x + 1, n_indices)), -1)
