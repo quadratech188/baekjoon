@@ -1,39 +1,28 @@
+MAX = 20
+
 m = int(input())
+data = list(map(int, input().split()))
 
-values = list(map(int, input().split()))
-
-loop_counts = [0 for _ in range(m)]
+cache = [[0] * m for _ in range(MAX + 1)]
 
 for i in range(m):
-    if loop_counts[i] != 0:
-        continue
+    cache[0][i] = data[i]
 
-    used = set()
+for i in range(1, MAX):
+    for j in range(m):
+        temp = cache[i - 1][j]
+        cache[i][j] = cache[i - 1][temp - 1]
 
-    used.add(i)
+def solution(steps, start):
+    current_position = start
 
-    loop_count = 1
-    
-    temp = i
-    while True:
-        temp = values[temp] - 1
-        if temp in used:
-            break
-        loop_count += 1
-        used.add(temp)
+    for k in range(MAX):
+        if steps & (1 << k):
+            current_position = cache[k][current_position - 1]
 
-    for t in used:
-        loop_counts[t] = loop_count
-
-print(loop_counts)
+    return current_position
 
 q = int(input())
-
-for _ in range(q):
+for i in range(q):
     n, x = tuple(map(int, input().split()))
-
-    result = x - 1
-    for _ in range(n % values[x - 1]):
-        result = values[result] - 1
-
-    print(result + 1)
+    print(solution(n, x))

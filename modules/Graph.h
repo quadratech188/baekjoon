@@ -11,19 +11,22 @@ class Graph {
 public:
 	struct Node {
 	private:
-		Graph& graph;
+		Graph* graph;
 	public:
 		size_t index;
-		T& value;
 
 	private:
 
-		Node(Graph& graph, int index, T& value): graph(graph), index(index), value(value) {}
+		Node(Graph* graph, int index, T& value): graph(graph), index(index) {}
 	
 	public:
 
+		T& value() {
+			return graph->values[index];
+		}
+
 		void forEachChild(std::function<void(Node)> func) {
-			for (size_t childIndex: graph.children[index]) {
+			for (size_t childIndex: graph->children[index]) {
 				func(Node(graph, childIndex, graph.values[childIndex]));
 			}
 		}
@@ -60,9 +63,14 @@ public:
 		return values[index];
 	}
 
-	void add(T& value) {
+	Node add(T value) {
 		values.push_back(value);
 		children.emplace_back();
+		return *this[values.size() - 1];
+	}
+
+	void link(Node parent, Node child) {
+		children[parent.index].insert(child.index);
 	}
 
 	void link(size_t parent, size_t child) {

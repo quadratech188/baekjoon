@@ -13,7 +13,7 @@ struct Tensor {
 
 	std::vector<T> values;
 
-	Tensor(INDEX size, FUNC func, bool rowsFirst = false) {
+	Tensor(INDEX size, FUNC func) {
 		this->size = size;
 
 		size_t valueSize = 1;
@@ -22,12 +22,7 @@ struct Tensor {
 		}
 		this->values.resize(valueSize);
 		
-		if (rowsFirst) {
-			forEachRow(func);
-		}
-		else {
-			forEach(func);
-		}
+		forEachRow(func);
 	}
 
 	T& operator[] (INDEX indices) {
@@ -69,9 +64,5 @@ struct Tensor {
 				index[i] -= 1;
 			}
 		}
-	}
-
-	void forEach(std::function<void(INDEX, T&)> func) {
-		//TODO: Implement
 	}
 };

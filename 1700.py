@@ -1,34 +1,37 @@
-n, k = tuple([int(x) for x in input().split()])
+n, k = tuple(map(int, input().split()))
 
-names = [int(x) for x in input().split()]
+appliances = list(map(int, input().split()))
 
-cache = set()
-
-last_used = [0] * (len(names) + 1)
-
-for reversed_index, value in enumerate(reversed(names)):
-    index = len(names) - 1 - reversed_index
-    if value not in cache:
-        cache.add(value)
-        last_used[value] = index
-
-print(last_used)
-multi_tap = set()
+current_appliances = set()
 
 count = 0
 
-for index, value in enumerate(names):
-    print(multi_tap)
-    if value in multi_tap:
+for index, appliance in enumerate(appliances):
+    if appliance in current_appliances:
         continue
 
-    if len(multi_tap) < n:
-        multi_tap.add(value)
+    if len(current_appliances) < n:
+        current_appliances.add(appliance)
         continue
-   
-    removed_value = min(multi_tap, key = lambda x: last_used[x])
-    multi_tap.remove(removed_value)
-    multi_tap.add(value)
+
+    m = 0
+    m_i = 0
+
+    for used_appliance in current_appliances:
+        try:
+            last_used = appliances.index(used_appliance, index + 1)
+        except:
+            last_used = k
+
+        if last_used >= m:
+            m = last_used
+            m_i = used_appliance
+
+    current_appliances.remove(m_i)
+
     count += 1
+
+    current_appliances.add(appliance)
+
 
 print(count)
