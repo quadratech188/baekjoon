@@ -34,6 +34,60 @@ struct Tensor {
 		return this->values[valueIndex];
 	}
 
+	class RowIterator {
+	public:
+		RowIterator(Tensor& tensor): tensor(tensor), index({0}), count(0) {}
+		RowIterator(Tensor& tensor, int count): tensor(tensor), count(count) {}
+
+		std::pair<INDEX, T&> operator*() {
+			return {index, tensor[index]};
+		}
+
+		INDEX index;
+
+		RowIterator& operator++() {
+			index[0] += 1;
+
+			if (index[0] == tensor.size[0]) {
+				for (size_t i = 0; index[i] == tensor.size[i]; i++) {
+					index[i] = 0;
+					index[i + 1] ++;
+				}
+			}
+
+			count += 1;
+
+			return *this;
+		}
+
+		bool operator!=(RowIterator& other) const {
+			return this->count != other.count;
+		}
+
+	private:
+		Tensor& tensor;
+		int count;
+	};
+
+	class RowTensor {
+	public:
+		RowTensor(Tensor& tensor): tensor(tensor) {}
+
+		RowIterator begin() {
+			return RowIterator(tensor);
+		}
+	
+		RowIterator end() {
+			return RowIterator(tensor, tensor.values.size());
+		}
+	private:
+		Tensor& tensor;
+	};
+
+	RowTensor forEachRow() {
+		return RowTensor(*this);
+	}
+
 	void forEachRow(FUNC func) {
 		INDEX index = {0};
 

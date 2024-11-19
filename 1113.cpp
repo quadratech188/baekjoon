@@ -56,7 +56,9 @@ int main() {
 
 	int sum = 0;
 
-	waterHeights.forEachRow([&sum, &landscape](auto index, int& value) {sum += value - landscape[index];});
+	for (const auto& value: waterHeights.forEachRow()) {
+		sum += value.second - landscape[value.first];
+	}
 
 	std::cout << sum;
 }
