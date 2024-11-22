@@ -24,6 +24,15 @@ struct Tensor {
 		
 		forEachRow(func);
 	}
+	Tensor (INDEX size, T& defaultValue) {
+		this->size = size;
+
+		size_t valueSize = 1;
+		for (auto i: size) {
+			valueSize *= i;
+		}
+		this->values.resize(valueSize, defaultValue);
+	}
 
 	T& operator[] (INDEX indices) {
 		size_t valueIndex = 0;

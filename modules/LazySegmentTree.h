@@ -7,6 +7,21 @@ class LazySegmentTree {
 	std::vector<VAL> values;
 	size_t length;
 
+	void init(Segment currentSegment, size_t currentIndex, VAL defaultValue) {
+		if (currentSegment.size() == 1) {
+			this->values[currentIndex] = defaultValue;
+			return;
+		}
+
+		size_t leftIndex = currentIndex * 2 + 1;
+		size_t rightIndex = currentIndex * 2 + 2;
+
+		init(currentSegment.left(), leftIndex, values);
+		init(currentSegment.right(), rightIndex, values);
+
+		this->values[currentIndex] = this->values[leftIndex] + this->values[rightIndex];
+	}
+
 	void init(Segment currentSegment, size_t currentIndex, std::vector<VAL>& values) {
 		if (currentSegment.size() == 1) {
 			this->values[currentIndex] = values[currentSegment.start];
@@ -69,6 +84,13 @@ public:
 		this->values.resize(this->length * 4);
 		init({0, this->length}, 0, values);
 	}
+	
+	LazySegmentTree(size_t n, VAL defaultValue) {
+		this->length = n;
+		this->values.resize(this->length * 4);
+		init({0, this->length}, 0, defaultValue);
+	}
+
 	inline VAL query(Segment segment) {
 		return query(segment, {0, this->length}, 0);
 	}

@@ -8,6 +8,7 @@ struct ModInt{
 
 	inline ModInt(const TYPE other) {
 		this->value = other % MOD;
+		if (value < 0) value += MOD;
 	}
 	
 	inline ModInt operator=(const TYPE other) {
@@ -36,6 +37,10 @@ struct ModInt{
 		this->value = (this->value * other.value) % MOD;
 
 		return *this;
+	}
+
+	inline ModInt operator-(const ModInt& other) {
+		return {(this->value - other.value + MOD) % MOD};
 	}
 
 	inline operator int() const {
