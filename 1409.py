@@ -4,10 +4,22 @@ values = set()
 
 for _ in range(n):
     values.add(int(input()))
-max_value = 0
+
+result = 0
+
 for angle in range(1, 360):
-    new_values = set(map(lambda x: (x + angle) % 360, values))
+    colors = [0] * 360
+    for k in values:
+        if k + angle in values:
+            if colors[k] == 0:
+                colors[k] = 1
+                colors[k + angle] = 2
 
-    max_value = max(max_value, len(new_values & values))
+    cnt = 0
+    for i in range(360):
+        if colors[i] != 0:
+            cnt += 1
 
-print(max_value * 2)
+    result = max(result, cnt)
+
+print(result)

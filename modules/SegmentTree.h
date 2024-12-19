@@ -4,6 +4,7 @@
 
 template<typename VAL, typename ACTION>
 class SegmentTree {
+protected:
 	std::vector<VAL> values;
 	size_t length;
 
@@ -78,7 +79,7 @@ public:
 		this->values = std::vector<VAL>(4 * this->length);
 		init({0, this->length}, 0, values);
 	}
-	SegmentTree(size_t size, VAL defaultValue) {
+	SegmentTree(size_t size, VAL defaultValue = VAL()) {
 		this->length = size;
 		this->values = std::vector<VAL>(4 * size);
 		init({0, size}, 0, defaultValue);

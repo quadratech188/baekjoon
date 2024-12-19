@@ -1,49 +1,64 @@
-template<typename TYPE, int MOD>
-struct ModInt{
-	TYPE value;
+#include <istream>
 
-	inline ModInt() {
-		this->value = 0;
+class ModInt {
+public:
+	ModInt(const int value, const int mod) {
+		this->value = value % mod;
+		if (this->value < 0) this->value += mod;
+		this->mod = mod;
 	}
 
-	inline ModInt(const TYPE other) {
-		this->value = other % MOD;
-		if (value < 0) value += MOD;
+	ModInt(const int mod): value(0), mod(mod) {}
+
+	ModInt(): value(0), mod(0) {}
+
+	ModInt operator+(const int& other) const {
+		return ModInt(value + other, mod);
 	}
-	
-	inline ModInt operator=(const TYPE other) {
-		this->value = other % MOD;
+
+	ModInt& operator++() {
+		value = (value + 1) % mod;
 		return *this;
 	}
 
-	inline ModInt operator+(const ModInt& other) const {
-		return {(this->value + other.value) % MOD};
+	ModInt operator++(int) {
+		ModInt temp = *this;
+		value = (value + 1) % mod;
+		return temp;
 	}
 
-	inline ModInt operator+=(const ModInt& other) {
-		this->value = (this->value + other.value) % MOD;
+	ModInt& operator+=(const ModInt& other) {
+		value = (value + other.value) % other.mod;
+		mod = other.mod;
 		return *this;
 	}
 
-	inline ModInt operator*(const ModInt& other) const {
-		return {(this->value * other.value) % MOD};
+	ModInt operator*(const ModInt& other) {
+		return ModInt(value * other.value, other.mod);
 	}
 
-	inline ModInt operator*(const TYPE other) const {
-		return {(this->value * other) % MOD};
+	void operator=(const int other) {
+		value = other % mod;
+		if (value < 0) value += mod;
 	}
 
-	inline ModInt operator*=(const ModInt& other) {
-		this->value = (this->value * other.value) % MOD;
-
-		return *this;
+	bool operator<(const int other) {
+		return value < other;
 	}
 
-	inline ModInt operator-(const ModInt& other) {
-		return {(this->value - other.value + MOD) % MOD};
+	operator int() {
+		return value;
 	}
 
-	inline operator int() const {
-		return this->value;
-	}
+private:
+	int value;
+	int mod;
 };
+
+std::istream& operator>>(std::istream& is, ModInt& data) {
+	int value;
+	is >> value;
+	data = value;
+
+	return is;
+}

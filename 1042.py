@@ -1,11 +1,13 @@
 code = input()
 n = int(input())
 
-proteins = set()
+proteins = {
 
-for _ in range(n):
+        }
+
+for i in range(n):
     code, _ = input().split()
-    proteins.add(code)
+    proteins[code] = i
 
 def solution(head: int):
     if head > len(code) - 3:
@@ -15,4 +17,3 @@ def solution(head: int):
         result += solution(head + 3)
 
     return result
-

@@ -4,35 +4,37 @@ values = list(map(int, input().split()))
 
 center = n // 2
 
-cache = {}
-
+l_cache = {}
 def left(index, currentValue):
     if index == center:
-        if currentValue not in cache:
-            cache[currentValue] = 0
-        cache[currentValue] += 1
+        if currentValue not in l_cache:
+            l_cache[currentValue] = 0
+        l_cache[currentValue] += 1
         return
     left(index + 1, currentValue + values[index])
-    left(index + 1, values[index])
+    left(index + 1, currentValue)
 
-def right(index, maxValue):
+r_cache = {}
+def right(index, currentValue):
     if index == c:
-        if maxValue >= 0:
-            return 1
-        else:
-            return 0
-
-    if maxValue < 0:
-        return 0
-
-    return right(index + 1, maxValue) + right(index + 1, maxValue - values[index])
+        if currentValue not in l_cache:
+            l_cache[currentValue] = 0
+        l_cache[currentValue] += 1
+        return
+    right(index + 1, currentValue + values[index])
+    right(index + 1, currentValue)
 
 left(0, 0)
+right(center, 0)
 
-result = 0
+sum = 0
 
-for i, j in cache.items():
-    result += j * right(center, n - i)
+print(l_cache)
+print(r_cache)
 
-print(result)
+for l, lt in l_cache.items():
+    for r, rt in r_cache.items():
+        if l + r > c: continue
+        sum += lt * rt
 
+print(sum)
