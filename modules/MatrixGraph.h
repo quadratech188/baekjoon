@@ -8,7 +8,7 @@ class MatrixGraph {
 	int _size;
 
 public:
-	MatrixGraph(int size): data(size), connections(size, size), _size(size) {}
+	MatrixGraph(int size, Vertex defaultV = Vertex()): data(size, defaultV), connections(size, size), _size(size) {}
 	MatrixGraph(std::vector<Vertex>&& values):
 		data(std::move(values)),
 		connections(values.size(), values.size()),

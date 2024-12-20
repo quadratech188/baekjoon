@@ -8,7 +8,7 @@ class ListGraph {
 	int _size;
 
 public:
-	ListGraph(int size): data(size), connections(size), _size(size) {}
+	ListGraph(int size, Vertex defaultV): data(size, defaultV), connections(size), _size(size) {}
 	ListGraph(std::vector<Vertex>&& values):
 		data(std::move(values)),
 		connections(data.size()),

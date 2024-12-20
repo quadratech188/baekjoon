@@ -1,5 +1,12 @@
+#include <istream>
 #include <vector>
 #include <iostream>
+
+template<typename T1, typename T2>
+std::istream& operator>>(std::istream& is, std::pair<T1, T2>& data) {
+	is >> data.first >> data.second;
+	return is;
+}
 
 namespace Input {
 	template<typename T>
@@ -14,3 +21,4 @@ namespace Input {
 		return result;
 	}
 }
+
