@@ -1,6 +1,8 @@
+#include <array>
+
 namespace Math {
 	template<typename T>
-	T power(T& data, int exponent) {
+	T power(T data, long long int exponent) {
 		if (exponent == 1) return data;
 
 		T half = power(data, exponent / 2);
@@ -10,4 +12,15 @@ namespace Math {
 		else
 			return half * half * data;
 	}
+
+	template <typename T>
+	T powerCeil(T power, T n) {
+		T result = 1;
+
+		while (result < n) result *= power;
+		return result;
+	}
+
+	constexpr double pi = 3.1415926535897932384626;
+	constexpr double tau = 2 * pi;
 }

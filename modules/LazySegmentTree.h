@@ -1,104 +1,108 @@
+#include <locale>
 #include <vector>
 
 #include "Segment.h"
+#include "DummyIterator.h"
 
-template<typename VAL, typename ACTION>
+template<typename T>
 class LazySegmentTree {
-	std::vector<VAL> values;
-	size_t length;
-
-	void init(Segment currentSegment, size_t currentIndex, VAL defaultValue) {
-		if (currentSegment.size() == 1) {
-			this->values[currentIndex] = defaultValue;
-			return;
-		}
-
-		size_t leftIndex = currentIndex * 2 + 1;
-		size_t rightIndex = currentIndex * 2 + 2;
-
-		init(currentSegment.left(), leftIndex, values);
-		init(currentSegment.right(), rightIndex, values);
-
-		this->values[currentIndex] = this->values[leftIndex] + this->values[rightIndex];
-	}
-
-	void init(Segment currentSegment, size_t currentIndex, std::vector<VAL>& values) {
-		if (currentSegment.size() == 1) {
-			this->values[currentIndex] = values[currentSegment.start];
-			return;
-		}
-
-		size_t leftIndex = currentIndex * 2 + 1;
-		size_t rightIndex = currentIndex * 2 + 2;
-
-		init(currentSegment.left(), leftIndex, values);
-		init(currentSegment.right(), rightIndex, values);
-
-		this->values[currentIndex] = this->values[leftIndex] + this->values[rightIndex];
-	}
-
-	VAL query(Segment segment, Segment currentSegment, size_t currentIndex) {
-		if (segment.start <= currentSegment.start && currentSegment.end <= segment.end) {
-			return this->values[currentIndex];
-		}
-
-		size_t leftIndex = currentIndex * 2 + 1;
-		size_t rightIndex = currentIndex * 2 + 2;
-
-		this->values[currentIndex].resolve(this->values[leftIndex], this->values[rightIndex]);
-
-		if (currentSegment.center() <= segment.start) {
-			return query(segment, currentSegment.right(), rightIndex);
-		}
-		if (segment.end <= currentSegment.center()) {
-			return query(segment, currentSegment.left(), leftIndex);
-		}
-		return query(segment, currentSegment.left(), leftIndex)
-			+ query(segment, currentSegment.right(), rightIndex);
-	}
-
-	void update(Segment segment, ACTION action, Segment currentSegment, size_t currentIndex) {
-		if (segment.start <= currentSegment.start && currentSegment.end <= segment.end) {
-			this->values[currentIndex].update(action);
-			return;
-		}
-
-		size_t leftIndex = currentIndex * 2 + 1;
-		size_t rightIndex = currentIndex * 2 + 2;
-
-		this->values[currentIndex].resolve(this->values[leftIndex], this->values[rightIndex]);
-
-		if (segment.start < currentSegment.center()) {
-			update(segment, action, currentSegment.left(), leftIndex);
-		}
-		if (currentSegment.center() < segment.end) {
-			update(segment, action, currentSegment.right(), rightIndex);
-		}
-
-		this->values[currentIndex] = this->values[leftIndex] + this->values[rightIndex];
-	}
-
 public:
-	LazySegmentTree(std::vector<VAL>& values) {
-		this->length = values.size();
-		this->values.resize(this->length * 4);
-		init({0, this->length}, 0, values);
-	}
-	
-	LazySegmentTree(size_t n, VAL defaultValue) {
-		this->length = n;
-		this->values.resize(this->length * 4);
-		init({0, this->length}, 0, defaultValue);
+	LazySegmentTree(const size_t size, const T& val = T()):
+	_size(size), _values(4 * size) {
+		init(Segment(0, _size), 0, DummyIterator<T>(val));
 	}
 
-	inline VAL query(Segment segment) {
-		return query(segment, {0, this->length}, 0);
+	template <typename Iter>
+	LazySegmentTree(const size_t size, Iter iterator):
+		_size(size), _values(4 * size) {
+		init(Segment(0, _size), 0, iterator);
 	}
 
-	inline void update(Segment segment, ACTION action) {
-		update(segment, action, {0, this->length}, 0);
+	T sum(Segment segment) {
+		return sum(segment, Segment(0, _size), 0);
 	}
-	inline VAL root() {
-		return this->values[0];
+
+	T sum(size_t start, size_t end) {
+		return sum(Segment(start, end));
 	}
+
+	template <typename Callable>
+	void update(Segment segment, Callable func) {
+		return update(segment, 0, Segment(0, _size), func);
+	}
+
+	template <typename Callable>
+	void update(size_t index, Callable func) {
+		return update(Segment(index, index + 1), func);
+	}
+
+	size_t size() {
+		return _size;
+	}
+
+	inline T root() {
+		return this->_values[0];
+	}
+
+private:
+	std::vector<T> _values;
+	const size_t _size;
+
+	template <typename Iter>
+	void init(Segment segment, size_t index, Iter iterator) {
+		if (segment.size() == 1) {
+			this->_values[index] = *iterator;
+			++iterator;
+			return;
+		}
+
+		size_t left = index * 2 + 1;
+		size_t right = index * 2 + 2;
+
+		init(segment.left(), left, iterator);
+		init(segment.right(), right, iterator);
+
+		_values[index] = _values[left] + _values[right];
+	}
+
+	T sum(Segment query, Segment segment, size_t index) {
+		if (query.includes(segment))
+			return _values[index];
+
+		size_t left = index * 2 + 1;
+		size_t right = index * 2 + 2;
+
+		_values[index].resolve(_values[left], _values[right]);
+
+		if (segment.center() <= query.start)
+			return sum(query, segment.right(), right);
+
+		if (query.end <= segment.center())
+			return sum(query, segment.left(), left);
+
+		return sum(query, segment.left(), left)
+		     + sum(query, segment.right(), right);
+	}
+
+	template <typename Callable>
+	void update(Segment index, size_t value_index, Segment segment, Callable func) {
+		if (index.includes(segment)) {
+			func(_values[value_index]);
+			return;
+		}
+
+		size_t left = value_index * 2 + 1;
+		size_t right = value_index * 2 + 2;
+
+		this->_values[value_index].resolve(this->_values[left], this->_values[right]);
+
+		if (index.start < segment.center())
+			update(index, left, segment.left(), func);
+
+		if (segment.center() < index.end)
+			update(index, right, segment.right(), func);
+
+		_values[value_index] = _values[left] + _values[right];
+	}
+
 };
