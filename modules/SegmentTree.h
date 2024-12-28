@@ -3,17 +3,17 @@
 #include "Segment.h"
 #include "DummyIterator.h"
 
-template <typename T>
+template <typename T, typename Operator = std::plus<T>>
 class SegmentTree {
 public:
-	SegmentTree(const size_t size, const T& val = T()):
-		_size(size), _values(4 * size) {
+	SegmentTree(const size_t size, const T& val = T(), Operator op = Operator()):
+		_values(4 * size), _size(size), _operator(op) {
 		init(Segment(0, _size), 0, DummyIterator<T>(val));
 	}
 
 	template <typename Iter>
-	SegmentTree(const size_t size, Iter iterator):
-		_size(size), _values(4 * size) {
+	SegmentTree(const size_t size, Iter iterator, Operator op = Operator()):
+		_size(size), _values(4 * size), _operator(op) {
 		init(Segment(0, _size), 0, iterator);
 	}
 
@@ -37,12 +37,13 @@ public:
 private:
 	std::vector<T> _values;
 	const size_t _size;
+	const Operator _operator;
 
 	template <typename Iter>
 	void init(Segment segment, size_t index, Iter iterator) {
 		if (segment.size() == 1) {
 			_values[index] = *iterator;
-			iterator++;
+			++iterator;
 			return;
 		}
 
@@ -51,7 +52,7 @@ private:
 		init(segment.left(), left, iterator);
 		init(segment.right(), right, iterator);
 
-		_values[index] = _values[left] + _values[right];
+		_values[index] = _operator(_values[left], _values[right]);
 	}
 
 	T sum(Segment query, Segment segment, size_t index) {
@@ -67,8 +68,8 @@ private:
 		if (query.end <= segment.center())
 			return sum(query, segment.left(), left);
 
-		return sum(query, segment.left(), left)
-		     + sum(query, segment.right(), right);
+		return _operator(sum(query, segment.left(), left)
+		          ,sum(query, segment.right(), right));
 	}
 
 	template <typename Callable>
@@ -86,6 +87,6 @@ private:
 		else
 		 	update(index, right, segment.right(), func);
 
-		_values[value_index] = _values[left] + _values[right];
+		_values[value_index] = _operator(_values[left], _values[right]);
 	}
 };

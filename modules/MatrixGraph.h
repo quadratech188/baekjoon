@@ -1,5 +1,6 @@
 #include "Matrix.h"
 #include <functional>
+#include <vector>
 
 template <typename Vertex, typename Edge>
 class MatrixGraph {

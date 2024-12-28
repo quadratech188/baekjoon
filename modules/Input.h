@@ -1,4 +1,5 @@
 #include <istream>
+#include <iterator>
 #include <vector>
 #include <iostream>
 

@@ -1,5 +1,7 @@
+#include <algorithm>
 #include <cstddef>
-#include <stdio.h>
+#include <cstdio>
+#include <iostream>
 #include <vector>
 
 struct Segment {
@@ -43,17 +45,17 @@ private:
 	const T& _val;
 };
 
-template <typename T>
+template <typename T, typename Operator = std::plus<T>>
 class SegmentTree {
 public:
-	SegmentTree(const size_t size, const T& val = T()):
-		_size(size), _values(4 * size) {
+	SegmentTree(const size_t size, const T& val = T(), Operator op = Operator()):
+		_size(size), _values(4 * size), _operator(op) {
 		init(Segment(0, _size), 0, DummyIterator<T>(val));
 	}
 
 	template <typename Iter>
-	SegmentTree(const size_t size, Iter iterator):
-		_size(size), _values(4 * size) {
+	SegmentTree(const size_t size, Iter iterator, Operator op = Operator()):
+		_size(size), _values(4 * size), _operator(op) {
 		init(Segment(0, _size), 0, iterator);
 	}
 
@@ -77,12 +79,13 @@ public:
 private:
 	std::vector<T> _values;
 	const size_t _size;
+	const Operator _operator;
 
 	template <typename Iter>
 	void init(Segment segment, size_t index, Iter iterator) {
 		if (segment.size() == 1) {
 			_values[index] = *iterator;
-			iterator++;
+			++iterator;
 			return;
 		}
 
@@ -91,7 +94,7 @@ private:
 		init(segment.left(), left, iterator);
 		init(segment.right(), right, iterator);
 
-		_values[index] = _values[left] + _values[right];
+		_values[index] = _operator(_values[left], _values[right]);
 	}
 
 	T sum(Segment query, Segment segment, size_t index) {
@@ -107,8 +110,8 @@ private:
 		if (query.end <= segment.center())
 			return sum(query, segment.left(), left);
 
-		return sum(query, segment.left(), left)
-		     + sum(query, segment.right(), right);
+		return _operator(sum(query, segment.left(), left)
+		          ,sum(query, segment.right(), right));
 	}
 
 	template <typename Callable>
@@ -126,33 +129,70 @@ private:
 		else
 		 	update(index, right, segment.right(), func);
 
-		_values[value_index] = _values[left] + _values[right];
+		_values[value_index] = _operator(_values[left], _values[right]);
 	}
 };
 
-int main() {
-	int n, m;
-	scanf("%d %d", &n, &m);
-	SegmentTree<int> data(n);
+template <typename T>
+class Min {
+public:
+	T operator()(const T& l, const T& r) const {
+		return std::min(l, r);
+	}
+};
 
-	std::vector<std::vector<int>>values(m);
+inline void FastIO() {
+	std::ios::sync_with_stdio(false);
+	std::cin.tie(nullptr);
+	std::cout.tie(nullptr);
+}
+
+template <typename T>
+class InputIterator {
+public:
+	using iterator_category = std::input_iterator_tag;
+
+	InputIterator(const std::istream& is = std::cin): _input(is) {
+	}
+
+	T operator*() {
+		T temp;
+		std::cin >> temp;
+		return temp;
+	}
+
+	InputIterator& operator++() {
+		return *this;
+	}
+
+	InputIterator operator++(int) {
+		return *this;
+	}
+private:
+	const std::istream& _input;
+};
+
+int main() {
+	FastIO();
+
+	int n;
+	std::cin >> n;
+
+	SegmentTree<int, Min<int>> tree(n, InputIterator<int>());
+
+	int m;
+	std::cin >> m;
 
 	for (int i = 0; i < m; i++) {
-		int a, b;
-		scanf("%d %d", &a, &b);
-		values[a - 1].push_back(b - 1);
-	}
+		int a, b, c;
+		std::cin >> a >> b >> c;
 
-	long long int sum = 0;
-
-	for (auto& start: values) {
-		for (auto& end: start) {
-			if (end < n - 1)
-				sum += data.sum(end + 1, n);
-		}
-		for (auto& end: start) {
-			data.update(end, [](int& data) {data++;});
+		switch(a) {
+			case 1:
+				tree.update(b - 1, [&c](int& val){val = c;});
+				break;
+			case 2:
+				std::cout << tree.sum(b - 1, c) << '\n';
 		}
 	}
-	printf("%lld\n", sum);
 }

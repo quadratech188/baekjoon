@@ -1,28 +1,12 @@
-#include <iostream>
-#include <unordered_set>
-#include <vector>
 #include "modules/LazySegmentTree.h"
-
-const int maxHeight = 1000000000;
-
-std::vector<int> indexToHeight(100000);
-
-struct Count {
-
-};
+#include "modules/Input.h"
+#include <iostream>
 
 int main() {
 	int n, m;
 	std::cin >> n >> m;
 
-	std::unordered_set<int> heights;
-	std::vector<int> heights;
+	std::vector<int> heights = Input::toVec<int>(n);
 
-	for (int _ = 0; _ < n; _++) {
-		int height;
-		std::cin >> height;
-		heights.insert(height);
-	}
-
-
+	LazySegmentTree<int> tree(heights);
 }

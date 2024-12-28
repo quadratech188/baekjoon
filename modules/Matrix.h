@@ -2,7 +2,7 @@
 
 #include <functional>
 #include <iostream>
-#include <valarray>
+#include <vector>
 
 #include "Vec2.h"
 #include "Bounds2.h"
@@ -12,30 +12,30 @@ class Matrix {
 public:
 
 	Matrix(int columns, int rows, T defaultValue = T()):
-		_size(columns, rows), values(columns * rows, defaultValue) {}
+		_values(columns * rows, defaultValue), _size(columns, rows) {}
 
-	Matrix(): _size(Int2::zero()), values() {}
+	Matrix(): _size(Int2::zero()), _values() {}
 
 	T& operator()(int column, int row) {
-		return this->values[row * _size.x + column];
+		return this->_values[row * _size.x + column];
 	}
 
 	const T& operator()(int column, int row) const {
-		return this->values[row * _size.x + column];
+		return this->_values[row * _size.x + column];
 	}
 
 	T& operator[](Int2 index) {
-		return *this(index.x, index.y);
+		return this->_values[index.y * _size.x + index.x];
 	}
 
 	bool operator==(const Matrix<T>& other) const {
-		return _size == other._size && values == other.values;
+		return _size == other._size && _values == other._values;
 	}
 	
 	bool operator<(const Matrix<T>& other) const {
 		if (_size != other._size) return _size < other._size;
 
-		return values < other.values;
+		return _values < other._values;
 	}
 
 	Matrix operator*(const Matrix& other) {
@@ -63,8 +63,7 @@ public:
 	}
 
 private:
-	std::valarray<T> values;
-
+	std::vector<T> _values;
 	Int2 _size;
 };
 

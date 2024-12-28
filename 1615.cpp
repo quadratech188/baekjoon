@@ -1,24 +1,10 @@
 #include "modules/SegmentTree.h"
-#include <algorithm>
 #include <stdio.h>
-#include <utility>
-
-struct Count {
-	int value;
-	Count operator+(const Count other) const {
-		return {
-			.value = this->value + other.value
-		};
-	}
-	void update(int action) {
-		this->value += action;
-	}
-};
 
 int main() {
 	int n, m;
 	scanf("%d %d", &n, &m);
-	SegmentTree<Count, int> data(n, {0});
+	SegmentTree<int> data(n);
 
 	std::vector<std::vector<int>>values(m);
 
@@ -33,10 +19,10 @@ int main() {
 	for (auto& start: values) {
 		for (auto& end: start) {
 			if (end < n - 1)
-				sum += data.query({end + 1, n}).value;
+				sum += data.sum(end + 1, n);
 		}
 		for (auto& end: start) {
-			data.update(end, 1);
+			data.update(end, [](int& data) {data++;});
 		}
 	}
 	printf("%lld\n", sum);
