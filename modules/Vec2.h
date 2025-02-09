@@ -4,6 +4,8 @@
 
 template<typename T, typename T2 = T>
 struct Vec2 {
+	using type = T;
+	
 	T x, y;
 
 	Vec2(T x, T y): x(x), y(y) {}

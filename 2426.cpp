@@ -8,5 +8,5 @@ int main() {
 
 	std::vector<int> heights = Input::toVec<int>(n);
 
-	LazySegmentTree<int> tree(heights);
+	LazySegmentTree<int> tree(heights.size(), heights.begin());
 }

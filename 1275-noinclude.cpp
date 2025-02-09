@@ -1,7 +1,54 @@
+#include <cstddef>
+#include <cstdio>
+#include <iostream>
 #include <vector>
 
-#include "Segment.h"
-#include "DummyIterator.h"
+inline void FastIO() {
+	std::ios::sync_with_stdio(false);
+	std::cin.tie(nullptr);
+	std::cout.tie(nullptr);
+}
+
+struct Segment {
+	Segment(size_t start, size_t end): start(start), end(end) {}
+
+	size_t start;
+	size_t end;
+	size_t size() {
+		return end - start;
+	}
+	inline size_t center() {
+		return (start + end) / 2;
+	}
+	inline Segment left() {
+		return Segment(start, center());
+	}
+	inline Segment right() {
+		return Segment(center(), end);
+	}
+
+	bool includes(const Segment& other) {
+		return start <= other.start && other.end <= end;
+	}
+};
+
+template <typename T>
+class DummyIterator {
+public:
+	DummyIterator(const T& val): _val(val) {}
+
+	const T& operator*() const {
+		return _val;
+	}
+
+	DummyIterator& operator++() {
+		return *this;
+	}
+	void operator++(int) {}
+
+private:
+	const T& _val;
+};
 
 template <typename T, typename Operator = std::plus<T>>
 class SegmentTree {
@@ -17,22 +64,12 @@ public:
 		init(Segment(0, _size), 0, iterator);
 	}
 
-	template <std::ranges::range R>
-	SegmentTree(R&& range, Operator op = Operator()):
-		_size(std::ranges::distance(range)), _values(4 * _size), _operator(op) {
-		init(Segment(0, _size), 0, std::ranges::begin(range)); 
-	}
-
 	T sum(Segment segment) {
 		return sum(segment, Segment(0, _size), 0);
 	}
 
 	T sum(size_t start, size_t end) {
 		return sum(Segment(start, end));
-	}
-
-	T at(size_t index) {
-		return sum(Segment(index, index + 1));
 	}
 
 	template <typename Callable>
@@ -50,7 +87,7 @@ private:
 	const Operator _operator;
 
 	template <typename Iter>
-	void init(Segment segment, size_t index, Iter& iterator) {
+	void init(Segment segment, size_t index, Iter iterator) {
 		if (segment.size() == 1) {
 			_values[index] = T(*iterator);
 			++iterator;
@@ -100,3 +137,45 @@ private:
 		_values[value_index] = _operator(_values[left], _values[right]);
 	}
 };
+
+template <typename T>
+class InputIterator {
+public:
+	using iterator_category = std::input_iterator_tag;
+
+	InputIterator(const std::istream& is = std::cin): _input(is) {
+	}
+
+	T operator*() {
+		T temp;
+		std::cin >> temp;
+		return temp;
+	}
+
+	InputIterator& operator++() {
+		return *this;
+	}
+
+	InputIterator operator++(int) {
+		return *this;
+	}
+private:
+	const std::istream& _input;
+};
+
+int main() {
+	FastIO();
+	int n, q;
+	std::cin >> n >> q;
+
+	SegmentTree<int> tree(n, InputIterator<int>());
+
+	for (int i = 0; i < q; i++) {
+		int x, y, a, b;
+		std::cin >> x >> y >> a >> b;
+		if (y < x)
+			std::swap(x, y);
+		std::cout << tree.sum(x - 1, y) << '\n';
+		tree.update(a - 1, [b](int& val) {val = b;});
+	}
+}

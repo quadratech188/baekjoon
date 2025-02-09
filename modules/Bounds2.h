@@ -4,11 +4,11 @@
 #include <iterator>
 
 template <typename V2>
-class Bounds {
+class Bounds2 {
 
 public:
-	Bounds(V2 start, V2 end): left(start), right(end) {}
-	Bounds(V2 end): left(V2::zero()), right(end) {}
+	Bounds2(V2 start, V2 end): left(start), right(end) {}
+	Bounds2(V2 end): left(V2::zero()), right(end) {}
 
 	struct iterator {
 		using value_type = V2;
@@ -17,7 +17,7 @@ public:
 		using reference = const V2&;
 		using iterator_category = std::forward_iterator_tag;
 
-		iterator(V2 pos, const Bounds& bounds): pos(pos), bounds(bounds) {}
+		iterator(V2 pos, const Bounds2& bounds): pos(pos), bounds(bounds) {}
 		V2 operator*() {
 			return pos;
 		}
@@ -41,7 +41,7 @@ public:
 		
 	private:
 		V2 pos;
-		const Bounds& bounds;
+		const Bounds2& bounds;
 	};
 
 	iterator begin() const {
@@ -57,8 +57,27 @@ public:
 			&& left.y <= pos.y && pos.y < right.y;
 	}
 
+	V2::type& x1() {
+		return left.x;
+	}
+	V2::type& x2() {
+		return right.x;
+	}
+	V2::type& y1() {
+		return left.y;
+	}
+	V2::type& y2() {
+		return right.y;
+	}
+
 private:
 	V2 left, right;
 };
 
-typedef Bounds<Int2> Range2;
+template <typename T>
+std::istream& operator>>(std::istream& is, Bounds2<T>& bounds2) {
+	is >> bounds2.lt() >> bounds2.rd();
+	return is;
+}
+
+typedef Bounds2<Int2> Range2;

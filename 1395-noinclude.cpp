@@ -1,8 +1,55 @@
+#include <cstddef>
+#include <cstdio>
+#include <iostream>
 #include <locale>
 #include <vector>
 
-#include "Segment.h"
-#include "DummyIterator.h"
+inline void FastIO() {
+	std::ios::sync_with_stdio(false);
+	std::cin.tie(nullptr);
+	std::cout.tie(nullptr);
+}
+
+struct Segment {
+	Segment(size_t start, size_t end): start(start), end(end) {}
+
+	size_t start;
+	size_t end;
+	size_t size() {
+		return end - start;
+	}
+	inline size_t center() {
+		return (start + end) / 2;
+	}
+	inline Segment left() {
+		return Segment(start, center());
+	}
+	inline Segment right() {
+		return Segment(center(), end);
+	}
+
+	bool includes(const Segment& other) {
+		return start <= other.start && other.end <= end;
+	}
+};
+
+template <typename T>
+class DummyIterator {
+public:
+	DummyIterator(const T& val): _val(val) {}
+
+	const T& operator*() const {
+		return _val;
+	}
+
+	DummyIterator& operator++() {
+		return *this;
+	}
+	void operator++(int) {}
+
+private:
+	const T& _val;
+};
 
 template<typename T>
 class LazySegmentTree {
@@ -24,10 +71,6 @@ public:
 
 	T sum(size_t start, size_t end) {
 		return sum(Segment(start, end));
-	}
-
-	T at(size_t index) {
-		return sum(Segment(index, index + 1));
 	}
 
 	template <typename Callable>
@@ -58,7 +101,7 @@ private:
 	const size_t _size;
 
 	template <typename Iter>
-	void init(Segment segment, size_t index, Iter& iterator) {
+	void init(Segment segment, size_t index, Iter iterator) {
 		if (segment.size() == 1) {
 			this->_values[index] = *iterator;
 			++iterator;
@@ -115,3 +158,51 @@ private:
 	}
 
 };
+
+struct Data {
+	int length;
+	int on;
+	bool flipped;
+
+	Data(): length(1), on(0), flipped(false) {}
+	Data(int length, int on, int flipped):
+		length(length), on(on), flipped(flipped) {}
+
+	void flip() {
+		flipped = !flipped;
+		on = length - on;
+	}
+
+	Data operator+(const Data& other) const {
+		return Data(length + other.length, on + other.on, false);
+	}
+
+	void resolve(Data& left, Data& right) {
+		if (flipped) {
+			left.flip();
+			right.flip();
+			flipped = false;
+		}
+	}
+};
+
+int main() {
+	FastIO();
+	int n, m;
+	std::cin >> n >> m;
+
+	LazySegmentTree<Data> tree(n);
+
+	for (int i = 0; i < m; i++) {
+		int o, s, t;
+		std::cin >> o >> s >> t;
+
+		switch(o) {
+			case 0:
+			tree.update(s - 1, t, [](Data& data) {data.flip();});
+			break;
+			case 1:
+			std::cout << tree.sum(s - 1, t).on << '\n';
+		};
+	}
+}

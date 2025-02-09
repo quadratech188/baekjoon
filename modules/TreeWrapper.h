@@ -1,0 +1,39 @@
+#include <ranges>
+#include <vector>
+
+template <typename G>
+class TreeWrapper {
+public:
+	using index_t = G::index_t;
+	using vertex_t = G::vertex_t;
+	using edge_t = G::edge_t;
+
+private:
+	G& graph;
+	index_t root;
+	std::vector<index_t> parents;
+
+	void init(index_t parent, index_t before_parent) {
+		parents[parent] = before_parent;
+		for (auto it: graph.children(parent)) {
+			if (it == before_parent) continue;
+			init(it, parent);
+		}
+	}
+
+public:
+	TreeWrapper(G& graph, index_t root):
+		graph(graph), root(root), parents(graph.size()) {
+		init(root, root);
+	}
+
+	vertex_t& operator[](index_t index) {
+		return graph[index];
+	}
+
+	auto children(index_t parent) {
+		return graph.children(parent) | std::views::filter([this, parent](auto it) {
+				return it != parents[parent];
+				});
+	}
+};
