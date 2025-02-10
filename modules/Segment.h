@@ -1,6 +1,7 @@
 #include <cstddef>
 
 struct Segment {
+	Segment(): start(0), end(0) {}
 	Segment(size_t start, size_t end): start(start), end(end) {}
 
 	size_t start;

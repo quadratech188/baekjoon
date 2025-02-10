@@ -91,6 +91,7 @@ public:
 struct None {};
 
 struct Segment {
+	Segment(): start(0), end(0) {}
 	Segment(size_t start, size_t end): start(start), end(end) {}
 
 	size_t start;
@@ -136,7 +137,8 @@ class LazySegmentTree {
 public:
 	LazySegmentTree(const size_t size, const T& val = T()):
 	_size(size), _values(4 * size) {
-		init(Segment(0, _size), 0, DummyIterator<T>(val));
+		DummyIterator<T> iter(val);
+		init(Segment(0, _size), 0, iter);
 	}
 
 	template <typename Iter>
@@ -256,7 +258,7 @@ inline void FastIO() {
 	std::cout.tie(nullptr);
 }
 
-std::vector<std::pair<int, int>> segtree_indices;
+std::vector<Segment> segtree_indices;
 int segtree_index = 0;
 
 struct Data {
@@ -289,7 +291,7 @@ void calculate_indices(ListGraph<int, None>& graph, int parent) {
 	for (auto child: graph.children(parent))
 		calculate_indices(graph, child);
 
-	segtree_indices[parent] = std::make_pair(prev_index, segtree_index);
+	segtree_indices[parent] = Segment(prev_index, segtree_index);
 }
 
 int main() {
@@ -299,11 +301,12 @@ int main() {
 
 	ListGraph<int, None> graph(n);
 
-	std::cin >> graph[0];
+	int garbage;
+	std::cin >> garbage;
 
 	for (int i = 1; i < n; i++) {
 		int parent;
-		std::cin >> graph[i] >> parent;
+		std::cin >> parent;
 		graph.connect(parent - 1, i);
 	}
 
@@ -311,27 +314,23 @@ int main() {
 
 	calculate_indices(graph, 0);
 
-	std::vector<int> segtree_values(n);
-	for (int i = 0; i < n; i++) {
-		segtree_values[segtree_indices[i].first] = graph[i];
-	}
-
-	LazySegmentTree<Data> salaries(segtree_values);
+	LazySegmentTree<Data> salaries(n);
 
 	for (int i = 0; i < m; i++) {
-		char type;
+		int type;
 		int a, x;
 		std::cin >> type;
+
 		switch(type) {
-			case 'p':
+			case 1:
 				std::cin >> a >> x;
-				if (segtree_indices[a - 1].second - segtree_indices[a - 1].first == 1) break;
-				salaries.update(segtree_indices[a - 1].first + 1, segtree_indices[a - 1].second,
+				salaries.update(segtree_indices[a - 1].start + 1, n,
 						[x](Data& val) {val.delta += x;});
 				break;
-			case 'u':
+			case 2:
 				std::cin >> a;
-				std::cout << salaries.at(segtree_indices[a - 1].first).value() << '\n';
+				std::cout << salaries.at(segtree_indices[a - 1].end - 1).value()
+					- salaries.at(segtree_indices[a - 1].start).value() << '\n';
 		}
 	}
 }

@@ -1,8 +1,51 @@
+#include <cstddef>
+#include <cstdio>
+#include <iomanip>
+#include <ios>
+#include <iostream>
 #include <locale>
 #include <vector>
 
-#include "Segment.h"
-#include "DummyIterator.h"
+struct Segment {
+	Segment(size_t start, size_t end): start(start), end(end) {}
+
+	size_t start;
+	size_t end;
+	size_t size() {
+		return end - start;
+	}
+	inline size_t center() {
+		return (start + end) / 2;
+	}
+	inline Segment left() {
+		return Segment(start, center());
+	}
+	inline Segment right() {
+		return Segment(center(), end);
+	}
+
+	bool includes(const Segment& other) {
+		return start <= other.start && other.end <= end;
+	}
+};
+
+template <typename T>
+class DummyIterator {
+public:
+	DummyIterator(const T& val): _val(val) {}
+
+	const T& operator*() const {
+		return _val;
+	}
+
+	DummyIterator& operator++() {
+		return *this;
+	}
+	void operator++(int) {}
+
+private:
+	const T& _val;
+};
 
 template<typename T>
 class LazySegmentTree {
@@ -68,7 +111,7 @@ private:
 	template <typename Iter>
 	void init(Segment segment, size_t index, Iter& iterator) {
 		if (segment.size() == 1) {
-			this->_values[index] = T(*iterator);
+			this->_values[index] = *iterator;
 			++iterator;
 			return;
 		}
@@ -123,3 +166,81 @@ private:
 	}
 
 };
+
+class LazyFill {
+	enum FillType {
+		PARTIAL,
+		FULL
+	};
+	int length;
+	int filled;
+	FillType type;
+
+	LazyFill(int length, int filled, FillType type):
+		length(length), filled(filled), type(type) {}
+
+public:
+	LazyFill():
+		length(1), filled(0), type(PARTIAL) {}
+
+	LazyFill operator+(const LazyFill& other) const {
+		if (this->type == FULL && other.type == FULL)
+			return LazyFill(length + other.length, filled + other.filled, FULL);
+		else
+			return LazyFill(length + other.length, filled + other.filled, PARTIAL);
+	}
+
+	void fill() {
+		filled = length;
+		type = FULL;
+	}
+
+	int sum() {
+		return filled;
+	}
+
+	void resolve(LazyFill& left, LazyFill& right) {
+		if (type == FULL) {
+			left.fill();
+			right.fill();
+		}
+	}
+};
+
+inline void FastIO() {
+	std::ios::sync_with_stdio(false);
+	std::cin.tie(nullptr);
+	std::cout.tie(nullptr);
+}
+
+bool loop() {
+	int n;
+	std::cin >> n;
+	if (n == 0) return false;
+
+	std::vector<LazySegmentTree<LazyFill>> trees(2001, LazySegmentTree<LazyFill>(2001));
+
+	for (int i = 0; i < n; i++) {
+		int x1, y1, x2, y2;
+		std::cin >> x1 >> y1 >> x2 >> y2;
+
+		for (int y = y1; y < y2; y++) {
+			trees[y + 1000].update(x1 + 1000, x2 + 1000, [](LazyFill& val) {
+					val.fill();
+					});
+		}
+	}
+	int sum = 0;
+	for (auto& tree: trees)
+		sum += tree.root().sum();
+
+	std::cout << sum << '\n';
+
+	return true;
+}
+
+int main() {
+	FastIO();
+	std::cout << std::fixed << std::setprecision(2);
+	while (loop()) {}
+}

@@ -1,7 +1,47 @@
+#include <cstddef>
+#include <iostream>
 #include <vector>
 
-#include "Segment.h"
-#include "DummyIterator.h"
+struct Segment {
+	Segment(size_t start, size_t end): start(start), end(end) {}
+
+	size_t start;
+	size_t end;
+	size_t size() {
+		return end - start;
+	}
+	inline size_t center() {
+		return (start + end) / 2;
+	}
+	inline Segment left() {
+		return Segment(start, center());
+	}
+	inline Segment right() {
+		return Segment(center(), end);
+	}
+
+	bool includes(const Segment& other) {
+		return start <= other.start && other.end <= end;
+	}
+};
+
+template <typename T>
+class DummyIterator {
+public:
+	DummyIterator(const T& val): _val(val) {}
+
+	const T& operator*() const {
+		return _val;
+	}
+
+	DummyIterator& operator++() {
+		return *this;
+	}
+	void operator++(int) {}
+
+private:
+	const T& _val;
+};
 
 template <typename T, typename Operator = std::plus<T>>
 class SegmentTree {
@@ -20,7 +60,8 @@ public:
 	template <std::ranges::range R>
 	SegmentTree(R&& range, Operator op = Operator()):
 		_size(std::ranges::distance(range)), _values(4 * _size), _operator(op) {
-		init(Segment(0, _size), 0, std::ranges::begin(range)); 
+		auto it = std::ranges::begin(range);
+		init(Segment(0, _size), 0, it); 
 	}
 
 	T sum(Segment segment) {
@@ -29,10 +70,6 @@ public:
 
 	T sum(size_t start, size_t end) {
 		return sum(Segment(start, end));
-	}
-
-	T root() {
-		return sum(0, _size);
 	}
 
 	T at(size_t index) {
@@ -54,7 +91,7 @@ private:
 	const Operator _operator;
 
 	template <typename Iter>
-	void init(Segment segment, size_t index, Iter&& iterator) {
+	void init(Segment segment, size_t index, Iter& iterator) {
 		if (segment.size() == 1) {
 			_values[index] = T(*iterator);
 			++iterator;
@@ -104,3 +141,61 @@ private:
 		_values[value_index] = _operator(_values[left], _values[right]);
 	}
 };
+
+template <typename T>
+class InputIterator {
+public:
+	using iterator_category = std::input_iterator_tag;
+
+	InputIterator(const std::istream& is = std::cin): _input(is) {
+	}
+
+	T operator*() {
+		T temp;
+		std::cin >> temp;
+		return temp;
+	}
+
+	InputIterator& operator++() {
+		return *this;
+	}
+
+	InputIterator operator++(int) {
+		return *this;
+	}
+private:
+	const std::istream& _input;
+};
+
+std::vector<int> cache;
+int n;
+
+int solve(SegmentTree<int>& tree, int index) {
+	if (index == n) return 1;
+
+	if (cache[index] != -1) return cache[index];
+
+	if (tree.sum(index, n) < 0) return 0;
+
+	int sum = 0;
+
+	for (int i = index + 1; i <= n; i++) {
+		if (tree.sum(index, i) >= 0) {
+			sum += solve(tree, i);
+			sum %= 1'000'000'009;
+		}
+	}
+
+	cache[index] = sum;
+	return sum;
+}
+
+int main() {
+	std::cin >> n;
+
+	cache.resize(n, -1);
+
+	SegmentTree<int> tree(n, InputIterator<int>());
+
+	std::cout << solve(tree, 0);
+}

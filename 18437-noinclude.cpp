@@ -91,6 +91,7 @@ public:
 struct None {};
 
 struct Segment {
+	Segment(): start(0), end(0) {}
 	Segment(size_t start, size_t end): start(start), end(end) {}
 
 	size_t start;
@@ -136,7 +137,8 @@ class LazySegmentTree {
 public:
 	LazySegmentTree(const size_t size, const T& val = T()):
 	_size(size), _values(4 * size) {
-		init(Segment(0, _size), 0, DummyIterator<T>(val));
+		DummyIterator<T> iter(val);
+		init(Segment(0, _size), 0, iter);
 	}
 
 	template <typename Iter>
@@ -250,38 +252,76 @@ private:
 
 };
 
+class LazyFill {
+private:
+	enum type {
+		FILLED,
+		UNFILLED,
+		MIXED
+	};
+
+public:
+	LazyFill():
+		color(UNFILLED), filled(0), length(1) {}
+
+	LazyFill(type color, int filled, int length):
+		color(color), filled(filled), length(length) {}
+
+	static LazyFill on() {
+		return LazyFill(FILLED, 1, 1);
+	}
+	static LazyFill off() {
+		return LazyFill(UNFILLED, 0, 1);
+	}
+
+private:
+	type color;
+	int filled;
+	int length;
+
+public:
+	int count() {
+		return filled;
+	}
+
+	void fill() {
+		filled = length;
+		color = FILLED;
+	}
+	void unfill() {
+		filled = 0;
+		color = UNFILLED;
+	}
+
+	void resolve(LazyFill& left, LazyFill& right) {
+		color = MIXED;
+		switch(color) {
+			case MIXED:
+				return;
+			case FILLED:
+				left.fill();
+				right.fill();
+				return;
+			case UNFILLED:
+				left.unfill();
+				right.unfill();
+				return;
+		}
+	}
+
+	LazyFill operator+(const LazyFill& other) const {
+		return LazyFill(MIXED, filled + other.filled, length + other.length);
+	}
+};
+
 inline void FastIO() {
 	std::ios::sync_with_stdio(false);
 	std::cin.tie(nullptr);
 	std::cout.tie(nullptr);
 }
 
-std::vector<std::pair<int, int>> segtree_indices;
+std::vector<Segment> segtree_indices;
 int segtree_index = 0;
-
-struct Data {
-	Data():
-		_value(0), delta(0) {}
-	Data(int value):
-		_value(value), delta(0) {}
-
-	int _value;
-	int delta;
-	Data operator+(const Data& other) {
-		return Data(value() + other.value());
-	}
-
-	void resolve(Data& left, Data& right) {
-		left.delta += delta;
-		right.delta += delta;
-		_value += delta;
-		delta = 0;
-	}
-
-	int value() const {
-		return _value + delta;
-	}
-};
 
 void calculate_indices(ListGraph<int, None>& graph, int parent) {
 	int prev_index = segtree_index;
@@ -289,21 +329,22 @@ void calculate_indices(ListGraph<int, None>& graph, int parent) {
 	for (auto child: graph.children(parent))
 		calculate_indices(graph, child);
 
-	segtree_indices[parent] = std::make_pair(prev_index, segtree_index);
+	segtree_indices[parent] = Segment(prev_index + 1, segtree_index);
 }
 
 int main() {
 	FastIO();
-	int n, m;
-	std::cin >> n >> m;
+	int n;
+	std::cin >> n;
 
 	ListGraph<int, None> graph(n);
 
-	std::cin >> graph[0];
+	int garbage;
+	std::cin >> garbage;
 
 	for (int i = 1; i < n; i++) {
 		int parent;
-		std::cin >> graph[i] >> parent;
+		std::cin >> parent;
 		graph.connect(parent - 1, i);
 	}
 
@@ -311,27 +352,32 @@ int main() {
 
 	calculate_indices(graph, 0);
 
-	std::vector<int> segtree_values(n);
-	for (int i = 0; i < n; i++) {
-		segtree_values[segtree_indices[i].first] = graph[i];
-	}
+	LazySegmentTree<LazyFill> tree(n, LazyFill::on());
 
-	LazySegmentTree<Data> salaries(segtree_values);
+	bool dir_down = true;
+
+	int m;
+	std::cin >> m;
 
 	for (int i = 0; i < m; i++) {
-		char type;
-		int a, x;
-		std::cin >> type;
+		int type, index;
+		std::cin >> type >> index;
+
+		Segment children = segtree_indices[index - 1];
+
 		switch(type) {
-			case 'p':
-				std::cin >> a >> x;
-				if (segtree_indices[a - 1].second - segtree_indices[a - 1].first == 1) break;
-				salaries.update(segtree_indices[a - 1].first + 1, segtree_indices[a - 1].second,
-						[x](Data& val) {val.delta += x;});
+			case 1:
+				if (children.size() == 0) continue;
+				tree.update(children,
+						[](LazyFill& fill) {fill.fill();});
 				break;
-			case 'u':
-				std::cin >> a;
-				std::cout << salaries.at(segtree_indices[a - 1].first).value() << '\n';
+			case 2:
+				if (children.size() == 0) continue;
+				tree.update(children,
+						[](LazyFill& fill) {fill.unfill();});
+				break;
+			case 3:
+				std::cout << (children.size() == 0? 0: tree.sum(children).count()) << '\n';
 		}
 	}
 }

@@ -1,8 +1,50 @@
+#include <cstddef>
+#include <cstdio>
+#include <iostream>
 #include <locale>
 #include <vector>
 
-#include "Segment.h"
-#include "DummyIterator.h"
+struct Segment {
+	Segment(): start(0), end(0) {}
+	Segment(size_t start, size_t end): start(start), end(end) {}
+
+	size_t start;
+	size_t end;
+	size_t size() {
+		return end - start;
+	}
+	inline size_t center() {
+		return (start + end) / 2;
+	}
+	inline Segment left() {
+		return Segment(start, center());
+	}
+	inline Segment right() {
+		return Segment(center(), end);
+	}
+
+	bool includes(const Segment& other) {
+		return start <= other.start && other.end <= end;
+	}
+};
+
+template <typename T>
+class DummyIterator {
+public:
+	DummyIterator(const T& val): _val(val) {}
+
+	const T& operator*() const {
+		return _val;
+	}
+
+	DummyIterator& operator++() {
+		return *this;
+	}
+	void operator++(int) {}
+
+private:
+	const T& _val;
+};
 
 template<typename T>
 class LazySegmentTree {
@@ -68,7 +110,7 @@ private:
 	template <typename Iter>
 	void init(Segment segment, size_t index, Iter& iterator) {
 		if (segment.size() == 1) {
-			this->_values[index] = T(*iterator);
+			this->_values[index] = *iterator;
 			++iterator;
 			return;
 		}
@@ -123,3 +165,91 @@ private:
 	}
 
 };
+
+template <typename T>
+class InputIterator {
+public:
+	using iterator_category = std::input_iterator_tag;
+
+	InputIterator(const std::istream& is = std::cin): _input(is) {
+	}
+
+	T operator*() {
+		T temp;
+		std::cin >> temp;
+		return temp;
+	}
+
+	InputIterator& operator++() {
+		return *this;
+	}
+
+	InputIterator operator++(int) {
+		return *this;
+	}
+private:
+	const std::istream& _input;
+};
+
+inline void FastIO() {
+	std::ios::sync_with_stdio(false);
+	std::cin.tie(nullptr);
+	std::cout.tie(nullptr);
+}
+
+struct Data {
+	Data():
+		_value(0), length(1), delta(0) {}
+	Data(int value):
+		_value(value), length(1), delta(0) {}
+	Data(int value, int length):
+		_value(value), length(length), delta(0) {}
+
+	int _value;
+	int length;
+	int delta;
+
+	void apply(int k) {
+		delta ^= k;
+	}
+
+	int value() const {
+		return length % 2 == 0? _value: _value ^ delta;
+	}
+
+	void resolve(Data& left, Data& right) {
+		left.apply(delta);
+		right.apply(delta);
+		_value = value();
+		delta = 0;
+	}
+
+	Data operator+(const Data& other) const {
+		return Data(value() ^ other.value(), length + other.length);
+	}
+};
+
+int main() {
+	FastIO();
+	int n;
+	std::cin >> n;
+
+	LazySegmentTree<Data> tree(n, InputIterator<int>());
+
+	int m;
+	std::cin >> m;
+	for (int i = 0; i < m; i++) {
+		int a, b, c;
+		std::cin >> a >> b >> c;
+		if (a == 1) {
+			int k;
+			std::cin >> k;
+			tree.update(b, c + 1, [k](Data& data) {
+					data.apply(k);
+					});
+		}
+		else {
+			std::cout << tree.sum(b, c + 1).value() << '\n';
+		}
+	}
+}

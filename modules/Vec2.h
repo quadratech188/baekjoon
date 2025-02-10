@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <iostream>
 
 template<typename T, typename T2 = T>
@@ -41,6 +42,13 @@ struct Vec2 {
 		return this->x != other.x || this->y != other.y;
 	}
 
+	Vec2 rotate(const double angle) const {
+		return Vec2(
+				x * std::cos(angle) - y * std::sin(angle),
+				x * std::sin(angle) + y * std::cos(angle)
+				);
+	}
+
 	T2 dot(const Vec2& other) const {
 		return static_cast<T2>(this->x) * other.x + static_cast<T2>(this->y) * other.y;
 	}
@@ -51,6 +59,14 @@ struct Vec2 {
 
 	T2 size2() const {
 		return static_cast<T2>(this->x) * this->x + static_cast<T2>(this->y) * this->y;
+	}
+
+	T length() const {
+		return std::sqrt(size2());
+	}
+
+	double theta() const {
+		return std::atan2(y, x);
 	}
 
 	static Vec2 zero() {
@@ -69,3 +85,4 @@ std::istream& operator>>(std::istream& is, Vec2<T, T2>& vec2) {
 }
 
 typedef Vec2<int, long long int> Int2;
+typedef Vec2<double, double> Double2;

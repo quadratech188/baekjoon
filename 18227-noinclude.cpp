@@ -2,9 +2,7 @@
 #include <cstdio>
 #include <iostream>
 #include <iterator>
-#include <locale>
 #include <ranges>
-#include <stack>
 #include <utility>
 #include <vector>
 
@@ -88,9 +86,47 @@ public:
 	}
 };
 
+template <typename G>
+class TreeWrapper {
+public:
+	using index_t = G::index_t;
+	using vertex_t = G::vertex_t;
+	using edge_t = G::edge_t;
+
+private:
+	G& graph;
+	index_t root;
+	std::vector<index_t> parents;
+
+	void init(index_t parent, index_t before_parent) {
+		parents[parent] = before_parent;
+		for (auto it: graph.children(parent)) {
+			if (it == before_parent) continue;
+			init(it, parent);
+		}
+	}
+
+public:
+	TreeWrapper(G& graph, index_t root):
+		graph(graph), root(root), parents(graph.size()) {
+		init(root, root);
+	}
+
+	vertex_t& operator[](index_t index) {
+		return graph[index];
+	}
+
+	auto children(index_t parent) {
+		return graph.children(parent) | std::views::filter([this, parent](auto it) {
+				return it != parents[parent];
+				});
+	}
+};
+
 struct None {};
 
 struct Segment {
+	Segment(): start(0), end(0) {}
 	Segment(size_t start, size_t end): start(start), end(end) {}
 
 	size_t start;
@@ -131,25 +167,24 @@ private:
 	const T& _val;
 };
 
-template<typename T>
-class LazySegmentTree {
+template <typename T, typename Operator = std::plus<T>>
+class SegmentTree {
 public:
-	LazySegmentTree(const size_t size, const T& val = T()):
-	_size(size), _values(4 * size) {
+	SegmentTree(const size_t size, const T& val = T(), Operator op = Operator()):
+		_values(4 * size), _size(size), _operator(op) {
 		init(Segment(0, _size), 0, DummyIterator<T>(val));
 	}
 
 	template <typename Iter>
-	LazySegmentTree(const size_t size, Iter iterator):
-		_size(size), _values(4 * size) {
+	SegmentTree(const size_t size, Iter iterator, Operator op = Operator()):
+		_size(size), _values(4 * size), _operator(op) {
 		init(Segment(0, _size), 0, iterator);
 	}
 
 	template <std::ranges::range R>
-	LazySegmentTree(const R& range):
-		_size(std::ranges::size(range)), _values(4 * _size) {
-		auto it = std::ranges::begin(range);
-		init(Segment(0, _size), 0, it);
+	SegmentTree(R&& range, Operator op = Operator()):
+		_size(std::ranges::distance(range)), _values(4 * _size), _operator(op) {
+		init(Segment(0, _size), 0, std::ranges::begin(range)); 
 	}
 
 	T sum(Segment segment) {
@@ -160,62 +195,50 @@ public:
 		return sum(Segment(start, end));
 	}
 
+	T root() {
+		return sum(0, _size);
+	}
+
 	T at(size_t index) {
 		return sum(Segment(index, index + 1));
 	}
 
 	template <typename Callable>
-	void update(Segment segment, Callable func) {
-		return update(segment, 0, Segment(0, _size), func);
-	}
-
-	template <typename Callable>
-	void update(size_t start, size_t end, Callable func) {
-		return update(Segment(start, end), func);
-	}
-
-	template <typename Callable>
 	void update(size_t index, Callable func) {
-		return update(Segment(index, index + 1), func);
+		return update(index, 0, Segment(0, _size), func);
 	}
 
 	size_t size() {
 		return _size;
 	}
 
-	inline T root() {
-		return this->_values[0];
-	}
-
 private:
-	const size_t _size;
 	std::vector<T> _values;
+	const size_t _size;
+	const Operator _operator;
 
 	template <typename Iter>
-	void init(Segment segment, size_t index, Iter& iterator) {
+	void init(Segment segment, size_t index, Iter&& iterator) {
 		if (segment.size() == 1) {
-			this->_values[index] = *iterator;
+			_values[index] = T(*iterator);
 			++iterator;
 			return;
 		}
 
-		size_t left = index * 2 + 1;
-		size_t right = index * 2 + 2;
-
+		size_t left = 2 * index + 1;
+		size_t right = 2 * index + 2;
 		init(segment.left(), left, iterator);
 		init(segment.right(), right, iterator);
 
-		_values[index] = _values[left] + _values[right];
+		_values[index] = _operator(_values[left], _values[right]);
 	}
 
 	T sum(Segment query, Segment segment, size_t index) {
 		if (query.includes(segment))
 			return _values[index];
 
-		size_t left = index * 2 + 1;
-		size_t right = index * 2 + 2;
-
-		_values[index].resolve(_values[left], _values[right]);
+		size_t left = 2 * index + 1;
+		size_t right = 2 * index + 2;
 
 		if (segment.center() <= query.start)
 			return sum(query, segment.right(), right);
@@ -223,31 +246,27 @@ private:
 		if (query.end <= segment.center())
 			return sum(query, segment.left(), left);
 
-		return sum(query, segment.left(), left)
-		     + sum(query, segment.right(), right);
+		return _operator(sum(query, segment.left(), left)
+		          ,sum(query, segment.right(), right));
 	}
 
 	template <typename Callable>
-	void update(Segment index, size_t value_index, Segment segment, Callable func) {
-		if (index.includes(segment)) {
+	void update(size_t index, size_t value_index, Segment segment, Callable func) {
+		if (segment.size() == 1) {
 			func(_values[value_index]);
 			return;
 		}
 
-		size_t left = value_index * 2 + 1;
-		size_t right = value_index * 2 + 2;
-
-		this->_values[value_index].resolve(this->_values[left], this->_values[right]);
-
-		if (index.start < segment.center())
+		size_t left = 2 * value_index + 1;
+		size_t right = 2 * value_index + 2;
+		
+		if (index < segment.center())
 			update(index, left, segment.left(), func);
+		else
+		 	update(index, right, segment.right(), func);
 
-		if (segment.center() < index.end)
-			update(index, right, segment.right(), func);
-
-		_values[value_index] = _values[left] + _values[right];
+		_values[value_index] = _operator(_values[left], _values[right]);
 	}
-
 };
 
 inline void FastIO() {
@@ -256,82 +275,57 @@ inline void FastIO() {
 	std::cout.tie(nullptr);
 }
 
-std::vector<std::pair<int, int>> segtree_indices;
+std::vector<Segment> segtree_indices;
+std::vector<int> depths;
 int segtree_index = 0;
 
-struct Data {
-	Data():
-		_value(0), delta(0) {}
-	Data(int value):
-		_value(value), delta(0) {}
-
-	int _value;
-	int delta;
-	Data operator+(const Data& other) {
-		return Data(value() + other.value());
-	}
-
-	void resolve(Data& left, Data& right) {
-		left.delta += delta;
-		right.delta += delta;
-		_value += delta;
-		delta = 0;
-	}
-
-	int value() const {
-		return _value + delta;
-	}
-};
-
-void calculate_indices(ListGraph<int, None>& graph, int parent) {
+template <typename G>
+void calculate_indices(G&& graph, int parent, int before, int depth) {
 	int prev_index = segtree_index;
 	segtree_index++;
-	for (auto child: graph.children(parent))
-		calculate_indices(graph, child);
+	for (auto child: graph.children(parent)) {
+		if (child == before) continue;
+		calculate_indices(graph, child, parent, depth + 1);
+	}
 
-	segtree_indices[parent] = std::make_pair(prev_index, segtree_index);
+	segtree_indices[parent] = Segment(prev_index, segtree_index);
+	depths[parent] = depth;
 }
 
 int main() {
 	FastIO();
-	int n, m;
-	std::cin >> n >> m;
+	int n, c;
+	std::cin >> n >> c;
 
-	ListGraph<int, None> graph(n);
+	ListGraph<None, None> graph(n);
 
-	std::cin >> graph[0];
-
-	for (int i = 1; i < n; i++) {
-		int parent;
-		std::cin >> graph[i] >> parent;
-		graph.connect(parent - 1, i);
+	for (int i = 0; i < n - 1; i++) {
+		int a, b;
+		std::cin >> a >> b;
+		graph.connect(a - 1, b - 1);
+		graph.connect(b - 1, a - 1);
 	}
 
 	segtree_indices.resize(n);
+	depths.resize(n);
 
-	calculate_indices(graph, 0);
+	calculate_indices(graph, c - 1, c - 1, 1);
 
-	std::vector<int> segtree_values(n);
-	for (int i = 0; i < n; i++) {
-		segtree_values[segtree_indices[i].first] = graph[i];
-	}
+	SegmentTree<long long int> salaries(n);
 
-	LazySegmentTree<Data> salaries(segtree_values);
+	int q;
+	std::cin >> q;
 
-	for (int i = 0; i < m; i++) {
-		char type;
-		int a, x;
-		std::cin >> type;
+	for (int i = 0; i < q; i++) {
+		int type, a;
+		std::cin >> type >> a;
+
 		switch(type) {
-			case 'p':
-				std::cin >> a >> x;
-				if (segtree_indices[a - 1].second - segtree_indices[a - 1].first == 1) break;
-				salaries.update(segtree_indices[a - 1].first + 1, segtree_indices[a - 1].second,
-						[x](Data& val) {val.delta += x;});
+			case 1:
+				salaries.update(segtree_indices[a - 1].start, [](long long int& val) {val++;});
 				break;
-			case 'u':
-				std::cin >> a;
-				std::cout << salaries.at(segtree_indices[a - 1].first).value() << '\n';
+			case 2:
+				std::cout << salaries.sum(segtree_indices[a - 1]) * depths[a - 1] << '\n';
 		}
 	}
 }
