@@ -1,3 +1,4 @@
+#include <functional>
 #include <locale>
 #include <vector>
 
@@ -104,14 +105,16 @@ private:
 	template <typename Callable>
 	void update(Segment index, size_t value_index, Segment segment, Callable func) {
 		if (index.includes(segment)) {
-			func(_values[value_index]);
+			std::invoke(func, _values[value_index]);
 			return;
 		}
 
 		size_t left = value_index * 2 + 1;
 		size_t right = value_index * 2 + 2;
 
-		this->_values[value_index].resolve(this->_values[left], this->_values[right]);
+		// Does the function mutate values?
+		if constexpr (!std::invocable<Callable, const T&>)
+			this->_values[value_index].resolve(this->_values[left], this->_values[right]);
 
 		if (index.start < segment.center())
 			update(index, left, segment.left(), func);
@@ -119,7 +122,7 @@ private:
 		if (segment.center() < index.end)
 			update(index, right, segment.right(), func);
 
-		_values[value_index] = _values[left] + _values[right];
+		if constexpr (!std::invocable<Callable, const T&>)
+			_values[value_index] = _values[left] + _values[right];
 	}
-
 };
