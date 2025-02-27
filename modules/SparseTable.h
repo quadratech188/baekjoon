@@ -7,7 +7,8 @@ struct SparseTable {
 
 	SparseTable(): values(Matrix<size_t>()) {}
 
-	SparseTable(size_t n, int iterations, std::function<int(int)> func) {
+	template <typename Callable>
+	SparseTable(size_t n, int iterations, Callable func) {
 		int sum = 0;
 
 		size_t depth = 1;
@@ -20,13 +21,13 @@ struct SparseTable {
 		values = Matrix<size_t>(n, depth);
 
 		for (size_t i = 0; i < n; i++) {
-			values.at(i, 0) = func(i);
+			values(i, 0) = func(i);
 		}
 
 		for (size_t row = 1; row < depth; row++) {
 			for (size_t i = 0; i < n; i++) {
-				size_t intermediate = values.at(i, row - 1);
-				values.at(i, row) = values.at(intermediate, row - 1);
+				size_t intermediate = values(i, row - 1);
+				values(i, row) = values(intermediate, row - 1);
 			}
 		}
 	}
@@ -37,11 +38,22 @@ struct SparseTable {
 
 		for (size_t i = 0; iterations > 0; i++) {
 			if (iterations & 1) {
-				result = values.at(result, i);
+				result = values(result, i);
 			}
 			iterations >>= 1;
 		}
 
 		return result;
+	}
+
+	size_t follow_until_same(size_t a, size_t b) {
+		if (a == b) return a;
+		for (int i = values.size().y - 1; i >= 0; i--) {
+			if (values(a, i) != values(b, i)) {
+				a = values(a, i);
+				b = values(b, i);
+			}
+		}
+		return values(a, 0);
 	}
 };
