@@ -25,7 +25,7 @@ int lca(G& graph, SparseTable& lookup, int a, int b) {
 }
 
 int main() {
-	// FastIO();
+	FastIO();
 	int n;
 	std::cin >> n;
 
