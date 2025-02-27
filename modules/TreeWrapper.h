@@ -36,4 +36,8 @@ public:
 				return it != parents[parent];
 				});
 	}
+
+	index_t parent(index_t child) {
+		return parents[child];
+	}
 };
