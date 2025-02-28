@@ -1,3 +1,4 @@
+#include <queue>
 #include <ranges>
 #include <vector>
 
@@ -13,18 +14,23 @@ private:
 	index_t root;
 	std::vector<index_t> parents;
 
-	void init(index_t parent, index_t before_parent) {
-		parents[parent] = before_parent;
-		for (auto it: graph.children(parent)) {
-			if (it == before_parent) continue;
-			init(it, parent);
-		}
-	}
-
 public:
 	TreeWrapper(G& graph, index_t root):
 		graph(graph), root(root), parents(graph.size()) {
-		init(root, root);
+
+		std::queue<std::pair<int, int>> queue;
+		queue.emplace(root, root);
+
+		while (!queue.empty()) {
+			auto [before_parent, parent] = queue.front();
+			queue.pop();
+			parents[parent] = before_parent;
+
+			for (auto child: graph.children(parent)) {
+				if (child == before_parent) continue;
+				queue.emplace(parent, child);
+			}
+		}
 	}
 
 	vertex_t& operator[](index_t index) {
