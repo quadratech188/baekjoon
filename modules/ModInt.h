@@ -36,3 +36,4 @@ private:
 template <typename T>
 T ModInt<T>::_mod = 0;
 
+using mInt = ModInt<int>;

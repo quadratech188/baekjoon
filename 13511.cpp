@@ -5,18 +5,10 @@
 #include "modules/FastIO.h"
 
 #include <iostream>
+#include <queue>
 
 template <typename G>
-void calculate_depths_and_weights(G& graph, std::vector<long long int>& weights, int root, int depth = 0, long long int weight = 0) {
-	graph[root] = depth;
-	weights[root] = weight;
-
-	for (auto child: graph.children(root))
-		calculate_depths_and_weights(graph, weights, child, depth + 1, weight + child.edge());
-}
-
-template <typename G>
-int lca(G& graph, SparseTable& lookup, int a, int b) {
+inline int lca(G& graph, SparseTable& lookup, int a, int b) {
 	if (graph[a] > graph[b]) std::swap(a, b);
 
 	b = lookup.after(b, graph[b] - graph[a]);
@@ -46,7 +38,19 @@ int main() {
 			return tree.parent(child);
 			});
 
-	calculate_depths_and_weights(tree, weights, 0);
+	std::queue<int> queue;
+	queue.push(0);
+
+	while (!queue.empty()) {
+		int parent = queue.front();
+		queue.pop();
+
+		for (auto child: tree.children(parent)) {
+			graph[child] = graph[parent] + 1;
+			weights[child] = weights[parent] + child.edge();
+			queue.push(child);
+		}
+	}
 
 	int m;
 	std::cin >> m;
@@ -58,7 +62,7 @@ int main() {
 				int u, v;
 				std::cin >> u >> v;
 				std::cout << weights[u - 1] + weights[v - 1]
-					   - 2 * weights[lca(tree, lookup, u - 1, v - 1)] << '\n';
+					   - 2 * weights[lca(graph, lookup, u - 1, v - 1)] << '\n';
 				break;
 			}
 			case '2': {
@@ -68,7 +72,7 @@ int main() {
 				v -= 1;
 				k -= 1;
 
-				int ancestor = lca(tree, lookup, u, v);
+				int ancestor = lca(graph, lookup, u, v);
 				int first_half = graph[u] - graph[ancestor];
 				if (k <= first_half)
 					std::cout << lookup.after(u, k) + 1 << '\n';

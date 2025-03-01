@@ -4,6 +4,7 @@
 #include <functional>
 #include <iostream>
 #include <iterator>
+#include <limits>
 #include <queue>
 #include <ranges>
 #include <utility>
@@ -89,55 +90,9 @@ public:
 	}
 };
 
-template <typename G>
-class TreeWrapper {
-public:
-	using index_t = G::index_t;
-	using vertex_t = G::vertex_t;
-	using edge_t = G::edge_t;
-
-private:
-	G& graph;
-	index_t root;
-	std::vector<index_t> parents;
-
-public:
-	TreeWrapper(G& graph, index_t root):
-		graph(graph), root(root), parents(graph.size()) {
-
-		std::queue<std::pair<int, int>> queue;
-		queue.emplace(root, root);
-
-		while (!queue.empty()) {
-			auto [before_parent, parent] = queue.front();
-			queue.pop();
-			parents[parent] = before_parent;
-
-			for (auto child: graph.children(parent)) {
-				if (child == before_parent) continue;
-				queue.emplace(parent, child);
-			}
-		}
-	}
-
-	vertex_t& operator[](index_t index) {
-		return graph[index];
-	}
-
-	auto children(index_t parent) {
-		return graph.children(parent) | std::views::filter([this, parent](auto it) {
-				return it != parents[parent];
-				});
-	}
-
-	index_t parent(index_t child) {
-		return parents[child];
-	}
-};
-
 struct None {};
 
-template<typename T, typename T2 = T>
+template<typename T>
 struct Vec2 {
 	using type = T;
 	
@@ -154,13 +109,23 @@ struct Vec2 {
 		return Vec2(this->x - other.x, this->y - other.y);
 	}
 
+	Vec2& operator-=(Vec2 const& other) {
+		x -= other.x;
+		y -= other.y;
+		return *this;
+	}
+
 	template<typename D>
 	Vec2<D> operator/(const D other) const {
 		return Vec2<D>(this->x / other, this->y / other);
 	}
 
-	Vec2<T2> operator*(const T other) const {
-		return Vec2<T2>((T2)this->x * other, (T2)this->y * other);
+	Vec2 operator*(T const& other) const {
+		return {x * other, y * other};
+	}
+
+	friend Vec2 operator*(T const& l, Vec2<T> const& r) {
+		return {l * r.x, l * r.y};
 	}
 
 	bool operator<(const Vec2& other) const {
@@ -183,16 +148,16 @@ struct Vec2 {
 				);
 	}
 
-	T2 dot(const Vec2& other) const {
-		return static_cast<T2>(this->x) * other.x + static_cast<T2>(this->y) * other.y;
+	T dot(const Vec2& other) const {
+		return this->x * other.x + this->y * other.y;
 	}
 
-	T2 cross(const Vec2& other) const {
-		return static_cast<T2>(this->x) * other.y - static_cast<T2>(this->y) * other.x;
+	T cross(const Vec2& other) const {
+		this->x * other.y - this->y * other.x;
 	}
 
-	T2 size2() const {
-		return static_cast<T2>(this->x) * this->x + static_cast<T2>(this->y) * this->y;
+	T size2() const {
+		return this->x * this->x + this->y * this->y;
 	}
 
 	T length() const {
@@ -212,14 +177,14 @@ struct Vec2 {
 	}
 };
 
-template <typename T, typename T2>
-std::istream& operator>>(std::istream& is, Vec2<T, T2>& vec2) {
+template <typename T>
+std::istream& operator>>(std::istream& is, Vec2<T>& vec2) {
 	is >> vec2.x >> vec2.y;
 	return is;
 }
 
-typedef Vec2<int, long long int> Int2;
-typedef Vec2<double, double> Double2;
+typedef Vec2<int> Int2;
+typedef Vec2<double> Double2;
 
 template <typename V2>
 class Bounds2 {
@@ -368,144 +333,93 @@ std::istream& operator>>(std::istream& input, Matrix<T>& matrix) {
 	return input;
 }
 
-struct SparseTable {
-	Matrix<size_t> values;
-
-	SparseTable(): values(Matrix<size_t>()) {}
-
-	template <typename Callable>
-	SparseTable(size_t n, int iterations, Callable func) {
-		int sum = 0;
-
-		size_t depth = 1;
-		while (true) {
-			sum += (1 << (depth - 1));
-			if (sum >= iterations) break;
-			depth ++;
-		}
-
-		values = Matrix<size_t>(n, depth);
-
-		for (size_t i = 0; i < n; i++) {
-			values(i, 0) = func(i);
-		}
-
-		for (size_t row = 1; row < depth; row++) {
-			for (size_t i = 0; i < n; i++) {
-				size_t intermediate = values(i, row - 1);
-				values(i, row) = values(intermediate, row - 1);
-			}
-		}
-	}
-
-	size_t after(size_t index, int iterations) {
-		int i = 0;
-		size_t result = index;
-
-		for (size_t i = 0; iterations > 0; i++) {
-			if (iterations & 1) {
-				result = values(result, i);
-			}
-			iterations >>= 1;
-		}
-
-		return result;
-	}
-
-	size_t follow_until_same(size_t a, size_t b) {
-		if (a == b) return a;
-		for (int i = values.size().y - 1; i >= 0; i--) {
-			if (values(a, i) != values(b, i)) {
-				a = values(a, i);
-				b = values(b, i);
-			}
-		}
-		return values(a, 0);
-	}
-};
-
 inline void FastIO() {
 	std::ios::sync_with_stdio(false);
 	std::cin.tie(nullptr);
 	std::cout.tie(nullptr);
 }
 
-template <typename G>
-inline int lca(G& graph, SparseTable& lookup, int a, int b) {
-	if (graph[a] > graph[b]) std::swap(a, b);
-
-	b = lookup.after(b, graph[b] - graph[a]);
-
-	return lookup.follow_until_same(a, b);
-}
+ // https://m.blog.naver.com/kks227/220810623254
+ // wtf
 
 int main() {
 	FastIO();
-	int n;
-	std::cin >> n;
+	int n, m;
+	std::cin >> n >> m;
 
-	ListGraph<int, int> graph(n);
-	std::vector<long long int> weights(n);
+	ListGraph<None, None> graph(n + m + 2);
+	Matrix<int> capacity(graph.size(), graph.size(), 0);
+	Matrix<int> cost(graph.size(), graph.size(), 0);
+	Matrix<int> flow(graph.size(), graph.size(), 0);
 
-	for (int i = 0; i < n - 1; i++) {
-		int u, v, w;
-		std::cin >> u >> v >> w;
+	int source = n + m;
+	int sink = n + m + 1;
 
-		graph.connect(u - 1, v - 1, w);
-		graph.connect(v - 1, u - 1, w);
+	for (int i = m; i < n + m; i++) {
+		std::cin >> capacity(i, sink);
+		graph.connect(sink, i);
+		graph.connect(i, sink);
 	}
 
-	TreeWrapper<decltype(graph)> tree(graph, 0);
+	for (int i = 0; i < m; i++) {
+		std::cin >> capacity(source, i);
+		graph.connect(source, i);
+		graph.connect(i, source);
+	}
 
-	SparseTable lookup(n, n - 1, [&tree](int child) {
-			return tree.parent(child);
-			});
-
-	std::queue<int> queue;
-	queue.push(0);
-
-	while (!queue.empty()) {
-		int parent = queue.front();
-		queue.pop();
-
-		for (auto child: tree.children(parent)) {
-			graph[child] = graph[parent] + 1;
-			weights[child] = weights[parent] + child.edge();
-			queue.push(child);
+	for (int i = 0; i < m; i++) {
+		for (int j = m; j < m + n; j++) {
+			std::cin >> cost(i, j);
+			cost(j, i) = - cost(i, j);
+			capacity(i, j) = std::numeric_limits<int>::max();
+			graph.connect(i, j);
+			graph.connect(j, i);
 		}
 	}
 
-	int m;
-	std::cin >> m;
-	for (int i = 0; i < m; i++) {
-		char type;
-		std::cin >> type;
-		switch(type) {
-			case '1': {
-				int u, v;
-				std::cin >> u >> v;
-				std::cout << weights[u - 1] + weights[v - 1]
-					   - 2 * weights[lca(graph, lookup, u - 1, v - 1)] << '\n';
-				break;
-			}
-			case '2': {
-				int u, v, k;
-				std::cin >> u >> v >> k;
-				u -= 1;
-				v -= 1;
-				k -= 1;
+	int result = 0;
 
-				int ancestor = lca(graph, lookup, u, v);
-				int first_half = graph[u] - graph[ancestor];
-				if (k <= first_half)
-					std::cout << lookup.after(u, k) + 1 << '\n';
-				else {
-					int length = graph[u] + graph[v]
-					       - 2 * graph[ancestor];
+	while (true) {
+		std::vector<int> prev(graph.size(), -1);
+		std::vector<int> accumulative_cost(graph.size(), std::numeric_limits<int>::max());
+		std::vector<bool> in_queue(graph.size(), false);
 
-					std::cout << lookup.after(v, length - k) + 1 << '\n';
+		std::queue<int> queue;
+
+		accumulative_cost[source] = 0;
+		in_queue[source] = true;
+		queue.push(source);
+
+		while (!queue.empty()) {
+			int parent = queue.front();
+			queue.pop();
+			in_queue[parent] = false;
+			for (auto child: graph.children(parent)) {
+				if (capacity(parent, child) > flow(parent, child)
+						&& accumulative_cost[child] > accumulative_cost[parent] + cost(parent, child)) {
+					accumulative_cost[child] = accumulative_cost[parent] + cost(parent, child);
+					prev[child] = parent;
+
+					if (!in_queue[child]) {
+						queue.push(child);
+						in_queue[child] = true;
+					}
 				}
 			}
 		}
+
+		if (prev[sink] == -1) break;
+
+		int min_flow = std::numeric_limits<int>::max();
+		for (int i = sink; i != source; i = prev[i])
+			min_flow = std::min(min_flow, capacity(prev[i], i) - flow(prev[i], i));
+
+		for (int i = sink; i != source; i = prev[i]) {
+			result += min_flow * cost(prev[i], i);
+			flow(prev[i], i) += min_flow;
+			flow(i, prev[i]) -= min_flow;
+		}
 	}
+
+	std::cout << result;
 }
