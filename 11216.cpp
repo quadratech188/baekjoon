@@ -1,4 +1,5 @@
-#include "modules/MatrixGraph.h"
+#include "modules/ListGraph.h"
+#include "modules/Types.h"
 #include "modules/GraphAlgs.h"
 #include "modules/Types.h"
 #include "modules/Input.h"
@@ -11,15 +12,16 @@ int main() {
 	int n, m;
 	std::cin >> n >> m;
 
-	MatrixGraph<int, int> graph(n);
+	ListGraph<int, None> graph(n);
 
 	for (int i = 0; i < m; i++) {
 		int a, b;
 		std::cin >> a >> b;
-		graph.edge(a - 1, b - 1) = 1;
+		graph.connect(a - 1, b - 1);
+		graph.connect(b - 1, a - 1);
 	}
 
-	std::vector<int> dependencies = GraphAlgs::dependencies(graph);
+	std::vector<int> dependencies = GraphAlgs::inDegree(graph);
 	std::queue<int> queue;
 
 	for (int i = 0; i < n; i++) {
@@ -38,12 +40,12 @@ int main() {
 		int parent = queue.front();
 		queue.pop();
 
-		graph.forEachChild(parent, [&queue, &dependencies, &graph, parent](int child, int& value) {
-				value = std::max(value, graph[parent] + 1);
-				dependencies[child] --;
-				if (dependencies[child] == 0)
-					queue.push(child);
-				});
+		for (auto child: graph.children(parent)) {
+			graph[child] = std::max(graph[child], graph[parent] + 1);
+			dependencies[child] --;
+			if (dependencies[child] == 0)
+				queue.push(child);
+		}
 	}
 
 	int max = 0;

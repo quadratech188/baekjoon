@@ -10,88 +10,6 @@
 #include <utility>
 #include <vector>
 
-template <typename Vertex, typename Edge>
-class ListGraph {
-public:
-	using index_t = int;
-	using vertex_t = Vertex;
-	using edge_t = Edge;
-
-private:
-	std::vector<Vertex> data;
-	std::vector<std::vector<std::pair<index_t, edge_t>>> connections;
-	int _size;
-
-public:
-
-	ListGraph(int size, const Vertex& defaultV = Vertex()): data(size, defaultV), connections(size), _size(size) {}
-	ListGraph(std::vector<Vertex>&& values):
-		data(std::move(values)),
-		connections(data.size()),
-		_size(data.size()) {}
-
-	index_t add(Vertex data) {
-		data.push_back(data);
-		connections.emplace_back();
-		_size += 1;
-		return _size - 1;
-	}
-
-	void reserve(int size) {
-		data.reserve(size);
-		connections.reserve(size);
-	}
-
-	void connect(index_t parent, index_t child, edge_t edge = edge_t()) {
-		connections[parent].push_back(std::make_pair(child, edge));
-	}
-
-	size_t size() {
-		return _size;
-	}
-
-	vertex_t& operator[](index_t index) {
-		return data[index];
-	}
-
-	class child {
-	public:
-		child(ListGraph* graph, index_t parent, int list_index):
-			graph(graph), parent(parent), list_index(list_index) {}
-
-		child():
-			graph(nullptr), list_index(0) {}
-
-		index_t index() {
-			return graph->connections[parent][list_index].first;
-		}
-		edge_t& edge() {
-			return graph->connections[parent][list_index].second;
-		}
-		vertex_t& value() {
-			return graph->data[index()];
-		}
-
-		operator index_t() {
-			return index();
-		}
-
-	private:
-		ListGraph* graph;
-		index_t parent;
-		int list_index;
-	};
-
-	auto children(index_t parent) {
-		return std::ranges::iota_view(static_cast<size_t>(0), connections[parent].size())
-			| std::views::transform([this, parent](index_t index) {
-					return child(this, parent, index);
-					});
-	}
-};
-
-struct None {};
-
 template<typename T>
 struct Vec2 {
 	using type = T;
@@ -333,32 +251,113 @@ std::istream& operator>>(std::istream& input, Matrix<T>& matrix) {
 	return input;
 }
 
+template <typename Vertex, typename Edge>
+class ListGraph {
+public:
+	using index_t = int;
+	using vertex_t = Vertex;
+	using edge_t = Edge;
+
+private:
+	std::vector<Vertex> data;
+	std::vector<std::vector<std::pair<index_t, edge_t>>> connections;
+	int _size;
+
+public:
+
+	ListGraph(int size, const Vertex& defaultV = Vertex()): data(size, defaultV), connections(size), _size(size) {}
+	ListGraph(std::vector<Vertex>&& values):
+		data(std::move(values)),
+		connections(data.size()),
+		_size(data.size()) {}
+
+	index_t add(Vertex data) {
+		data.push_back(data);
+		connections.emplace_back();
+		_size += 1;
+		return _size - 1;
+	}
+
+	void reserve(int size) {
+		data.reserve(size);
+		connections.reserve(size);
+	}
+
+	void connect(index_t parent, index_t child, edge_t edge = edge_t()) {
+		connections[parent].push_back(std::make_pair(child, edge));
+	}
+
+	size_t size() {
+		return _size;
+	}
+
+	vertex_t& operator[](index_t index) {
+		return data[index];
+	}
+
+	class child {
+	public:
+		child(ListGraph* graph, index_t parent, int list_index):
+			graph(graph), parent(parent), list_index(list_index) {}
+
+		child():
+			graph(nullptr), list_index(0) {}
+
+		index_t index() {
+			return graph->connections[parent][list_index].first;
+		}
+		edge_t& edge() {
+			return graph->connections[parent][list_index].second;
+		}
+		vertex_t& value() {
+			return graph->data[index()];
+		}
+
+		operator index_t() {
+			return index();
+		}
+
+	private:
+		ListGraph* graph;
+		index_t parent;
+		int list_index;
+	};
+
+	auto children(index_t parent) {
+		return std::ranges::iota_view(static_cast<size_t>(0), connections[parent].size())
+			| std::views::transform([this, parent](index_t index) {
+					return child(this, parent, index);
+					});
+	}
+};
+
+struct None {};
+
 inline void FastIO() {
 	std::ios::sync_with_stdio(false);
 	std::cin.tie(nullptr);
 	std::cout.tie(nullptr);
 }
 
- // https://m.blog.naver.com/kks227/220810623254
- // wtf
-
 int main() {
 	FastIO();
 	int n, m;
 	std::cin >> n >> m;
 
-	ListGraph<None, None> graph(n + m + 2);
-	Matrix<int> capacity(graph.size(), graph.size(), 0);
-	Matrix<int> cost(graph.size(), graph.size(), 0);
-	Matrix<int> flow(graph.size(), graph.size(), 0);
+	Matrix<int> capacity(n + m + 2, n + m + 2, 0);
+	Matrix<int> cost(n + m + 2, n + m + 2);
+	Matrix<int> flow(n + m + 2, n + m + 2);
 
-	int source = n + m;
-	int sink = n + m + 1;
+	ListGraph<None, None> graph(n + m + 2);
+
+	int const source  = n + m;
+	int const sink  = n + m + 1;
+	int const size = n + m + 2;
 
 	for (int i = m; i < n + m; i++) {
 		std::cin >> capacity(i, sink);
-		graph.connect(sink, i);
 		graph.connect(i, sink);
+		graph.connect(sink, i);
 	}
 
 	for (int i = 0; i < m; i++) {
@@ -380,13 +379,10 @@ int main() {
 	int result = 0;
 
 	while (true) {
-		std::vector<int> prev(graph.size(), -1);
-		std::vector<int> accumulative_cost(graph.size(), std::numeric_limits<int>::max());
-		std::vector<bool> in_queue(graph.size(), false);
-
+		std::vector<int> prev(size, -1), dist(size, std::numeric_limits<int>::max());
+		std::vector<bool> in_queue(size, false);
 		std::queue<int> queue;
-
-		accumulative_cost[source] = 0;
+		dist[source] = 0;
 		in_queue[source] = true;
 		queue.push(source);
 
@@ -396,8 +392,8 @@ int main() {
 			in_queue[parent] = false;
 			for (auto child: graph.children(parent)) {
 				if (capacity(parent, child) > flow(parent, child)
-						&& accumulative_cost[child] > accumulative_cost[parent] + cost(parent, child)) {
-					accumulative_cost[child] = accumulative_cost[parent] + cost(parent, child);
+						&& dist[child] > dist[parent] + cost(parent, child)) {
+					dist[child] = dist[parent] + cost(parent, child);
 					prev[child] = parent;
 
 					if (!in_queue[child]) {
@@ -410,14 +406,15 @@ int main() {
 
 		if (prev[sink] == -1) break;
 
-		int min_flow = std::numeric_limits<int>::max();
+		int max_flow = std::numeric_limits<int>::max();
+
 		for (int i = sink; i != source; i = prev[i])
-			min_flow = std::min(min_flow, capacity(prev[i], i) - flow(prev[i], i));
+			max_flow = std::min(max_flow, capacity(prev[i], i) - flow(prev[i], i));
 
 		for (int i = sink; i != source; i = prev[i]) {
-			result += min_flow * cost(prev[i], i);
-			flow(prev[i], i) += min_flow;
-			flow(i, prev[i]) -= min_flow;
+			result += max_flow * cost(prev[i], i);
+			flow(prev[i], i) += max_flow;
+			flow(i, prev[i]) -= max_flow;
 		}
 	}
 

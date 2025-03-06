@@ -21,6 +21,13 @@ namespace Math {
 		return result;
 	}
 
+	template <typename T>
+	T factorial(T n) {
+		T result = 1;
+		for (T i = 1; i <= n; i++) result *= i;
+		return result;
+	}
+
 	constexpr double pi = 3.1415926535897932384626;
 	constexpr double tau = 2 * pi;
 }

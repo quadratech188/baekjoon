@@ -1,31 +1,31 @@
+#include "modules/Matrix.h"
 #include "modules/ListGraph.h"
 #include "modules/Types.h"
-#include "modules/Matrix.h"
 #include "modules/FastIO.h"
 #include <iostream>
 #include <limits>
 #include <queue>
-
- // https://m.blog.naver.com/kks227/220810623254
- // wtf
 
 int main() {
 	FastIO();
 	int n, m;
 	std::cin >> n >> m;
 
-	ListGraph<None, None> graph(n + m + 2);
-	Matrix<int> capacity(graph.size(), graph.size(), 0);
-	Matrix<int> cost(graph.size(), graph.size(), 0);
-	Matrix<int> flow(graph.size(), graph.size(), 0);
+	Matrix<int> capacity(n + m + 2, n + m + 2, 0);
+	Matrix<int> cost(n + m + 2, n + m + 2);
+	Matrix<int> flow(n + m + 2, n + m + 2);
 
-	int source = n + m;
-	int sink = n + m + 1;
+	ListGraph<None, None> graph(n + m + 2);
+
+	int const source  = n + m;
+	int const sink  = n + m + 1;
+	int const size = n + m + 2;
+
 
 	for (int i = m; i < n + m; i++) {
 		std::cin >> capacity(i, sink);
-		graph.connect(sink, i);
 		graph.connect(i, sink);
+		graph.connect(sink, i);
 	}
 
 	for (int i = 0; i < m; i++) {
@@ -47,13 +47,10 @@ int main() {
 	int result = 0;
 
 	while (true) {
-		std::vector<int> prev(graph.size(), -1);
-		std::vector<int> accumulative_cost(graph.size(), std::numeric_limits<int>::max());
-		std::vector<bool> in_queue(graph.size(), false);
-
+		std::vector<int> prev(size, -1), dist(size, std::numeric_limits<int>::max());
+		std::vector<bool> in_queue(size, false);
 		std::queue<int> queue;
-
-		accumulative_cost[source] = 0;
+		dist[source] = 0;
 		in_queue[source] = true;
 		queue.push(source);
 
@@ -63,8 +60,8 @@ int main() {
 			in_queue[parent] = false;
 			for (auto child: graph.children(parent)) {
 				if (capacity(parent, child) > flow(parent, child)
-						&& accumulative_cost[child] > accumulative_cost[parent] + cost(parent, child)) {
-					accumulative_cost[child] = accumulative_cost[parent] + cost(parent, child);
+						&& dist[child] > dist[parent] + cost(parent, child)) {
+					dist[child] = dist[parent] + cost(parent, child);
 					prev[child] = parent;
 
 					if (!in_queue[child]) {
@@ -77,14 +74,15 @@ int main() {
 
 		if (prev[sink] == -1) break;
 
-		int min_flow = std::numeric_limits<int>::max();
+		int max_flow = std::numeric_limits<int>::max();
+
 		for (int i = sink; i != source; i = prev[i])
-			min_flow = std::min(min_flow, capacity(prev[i], i) - flow(prev[i], i));
+			max_flow = std::min(max_flow, capacity(prev[i], i) - flow(prev[i], i));
 
 		for (int i = sink; i != source; i = prev[i]) {
-			result += min_flow * cost(prev[i], i);
-			flow(prev[i], i) += min_flow;
-			flow(i, prev[i]) -= min_flow;
+			result += max_flow * cost(prev[i], i);
+			flow(prev[i], i) += max_flow;
+			flow(i, prev[i]) -= max_flow;
 		}
 	}
 
