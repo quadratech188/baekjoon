@@ -16,6 +16,12 @@ struct Vec2 {
 		return Vec2(this->x + other.x, this->y + other.y);
 	}
 
+	Vec2& operator+=(Vec2 const& other) {
+		x += other.x;
+		y += other.y;
+		return *this;
+	}
+
 	Vec2 operator-(const Vec2& other) const {
 		return Vec2(this->x - other.x, this->y - other.y);
 	}
@@ -77,6 +83,10 @@ struct Vec2 {
 
 	double theta() const {
 		return std::atan2(y, x);
+	}
+
+	T taxi_distance(const Vec2& other) const {
+		return std::abs(x - other.x) + std::abs(y - other.y);
 	}
 
 	static Vec2 zero() {

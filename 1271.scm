@@ -1,0 +1,5 @@
+(let ((a (read))
+	  (b (read)))
+  (display (quotient b a))
+   (newline)
+   (display (remainder b a)))

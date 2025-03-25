@@ -1,24 +1,35 @@
+#include <concepts>
+#include <cstddef>
 #include <cstdio>
 #include <iostream>
+#include <iterator>
 #include <queue>
-#include <stack>
+#include <ranges>
 #include <utility>
+#include <variant>
 #include <vector>
 
 template <typename Vertex, typename Edge>
 class ListGraph {
+public:
+	using index_t = int;
+	using vertex_t = Vertex;
+	using edge_t = Edge;
+
+private:
 	std::vector<Vertex> data;
-	std::vector<std::vector<std::pair<int, Edge>>> connections;
+	std::vector<std::vector<std::pair<index_t, edge_t>>> connections;
 	int _size;
 
 public:
-	ListGraph(int size): data(size), connections(size), _size(size) {}
+
+	ListGraph(int size, const Vertex& defaultV = Vertex()): data(size, defaultV), connections(size), _size(size) {}
 	ListGraph(std::vector<Vertex>&& values):
 		data(std::move(values)),
 		connections(data.size()),
 		_size(data.size()) {}
 
-	int add(Vertex data) {
+	index_t add(Vertex data) {
 		data.push_back(data);
 		connections.emplace_back();
 		_size += 1;
@@ -30,7 +41,7 @@ public:
 		connections.reserve(size);
 	}
 
-	void connect(int parent, int child, Edge edge = Edge()) {
+	void connect(index_t parent, index_t child, edge_t edge = edge_t()) {
 		connections[parent].push_back(std::make_pair(child, edge));
 	}
 
@@ -38,72 +49,70 @@ public:
 		return _size;
 	}
 
-	class Children {
+	vertex_t& operator[](index_t index) {
+		return data[index];
+	}
+
+	class child {
 	public:
-		Children(ListGraph& graph, int parent): graph(graph), parent(parent) {}
+		child(ListGraph* graph, index_t parent, int list_index):
+			graph(graph), parent(parent), list_index(list_index) {}
 
-		class iterator {
-		public:
-			iterator(ListGraph& graph, const int parent, int index = 0): graph(graph), parent(parent), _index(index) {}
+		child():
+			graph(nullptr), list_index(0) {}
 
-			iterator& operator*() {
-				return *this;
-			}
-
-			int index() const {
-				return graph.connections[parent][_index].first;
-			}
-
-			Edge& edge() {
-				return graph.connections[parent][_index].second;
-			}
-
-			operator int() {
-				return index();
-			}
-
-			iterator& operator++() {
-				_index++;
-				return *this;
-			}
-
-			bool operator!=(const iterator& other) const {
-				return _index != other._index;
-			}
-
-		private:
-			ListGraph& graph;
-			const int parent;
-			int _index;
-		};
-
-		iterator begin() {
-			return iterator(graph, parent);
+		index_t index() {
+			return graph->connections[parent][list_index].first;
+		}
+		edge_t& edge() {
+			return graph->connections[parent][list_index].second;
+		}
+		vertex_t& value() {
+			return graph->data[index()];
 		}
 
-		iterator end() {
-			return iterator(graph, parent, graph.connections[parent].size());
+		operator index_t() {
+			return index();
 		}
 
 	private:
-		ListGraph& graph;
-		int parent;
+		ListGraph* graph;
+		index_t parent;
+		int list_index;
 	};
 
-	Children children(int parent) {
-		return Children(*this, parent);
-	}
-
-	Vertex& operator[](size_t index) {
-		return data[index];
+	auto children(index_t parent) {
+		return std::ranges::iota_view(static_cast<size_t>(0), connections[parent].size())
+			| std::views::transform([this, parent](index_t index) {
+					return child(this, parent, index);
+					});
 	}
 };
 
 struct None {};
 
+template <typename G>
+concept Graph = requires(G graph, typename G::index_t u, typename G::vertex_t v, typename G::edge_t e) {
+	typename G::index_t;
+	typename G::vertex_t;
+	typename G::edge_t;
+
+	{graph.size()} -> std::convertible_to<std::size_t>;
+	{graph[u]} -> std::convertible_to<typename G::vertex_t&>;
+	{graph.connect(u, u, e)};
+
+	{graph.children(u)} -> std::ranges::range;
+
+	requires requires (decltype(*std::begin(graph.children(u))) child) {
+		{child.index()} -> std::convertible_to<typename G::index_t>;
+		{child.edge()} -> std::convertible_to<typename G::edge_t&>;
+		{child.value()} -> std::convertible_to<typename G::vertex_t&>;
+	};
+};
+
 namespace GraphAlgs {
-	template <typename Graph>
-	std::vector<int> inDegree(Graph&& graph) {
+	template <Graph G>
+	std::vector<int> inDegree(G& graph) {
 		std::vector<int> result(graph.size());
 
 		for (int parent = 0; parent < graph.size(); parent++) {
@@ -140,7 +149,7 @@ void loop() {
 	int n, k;
 	std::cin >> n >> k;
 
-	ListGraph<int, None> graph(n);
+	ListGraph<int, std::monostate> graph(n);
 
 	std::vector<int> times(n);
 

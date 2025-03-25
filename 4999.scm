@@ -1,0 +1,5 @@
+(let* ((a (symbol->string (read)))
+	  (b (symbol->string (read))))
+  (if (< (string-length a) (string-length b))
+	(display "no")
+	(display "go")))

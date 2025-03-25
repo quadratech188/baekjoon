@@ -1,6 +1,8 @@
 #include <cstddef>
+#include <iostream>
 #include <iterator>
 #include <ranges>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -10,18 +12,15 @@ public:
 	using index_t = int;
 	using vertex_t = Vertex;
 	using edge_t = Edge;
-	template <typename T>
-	using storage_t = std::vector<T>;
-	using size_t = int;
 
 private:
 	std::vector<Vertex> data;
 	std::vector<std::vector<std::pair<index_t, edge_t>>> connections;
-	size_t _size;
+	int _size;
 
 public:
 
-	ListGraph(size_t size, const Vertex& defaultV = Vertex()): data(size, defaultV), connections(size), _size(size) {}
+	ListGraph(int size, const Vertex& defaultV = Vertex()): data(size, defaultV), connections(size), _size(size) {}
 	ListGraph(std::vector<Vertex>&& values):
 		data(std::move(values)),
 		connections(data.size()),
@@ -43,7 +42,7 @@ public:
 		connections[parent].push_back(std::make_pair(child, edge));
 	}
 
-	size_t size() const {
+	size_t size() {
 		return _size;
 	}
 
@@ -80,9 +79,71 @@ public:
 	};
 
 	auto children(index_t parent) {
-		return std::ranges::iota_view(static_cast<std::size_t>(0), connections[parent].size())
+		return std::ranges::iota_view(static_cast<size_t>(0), connections[parent].size())
 			| std::views::transform([this, parent](index_t index) {
 					return child(this, parent, index);
 					});
 	}
 };
+
+struct None {};
+
+template <typename G>
+int dfs(G graph,int parent, std::vector<bool>& visited) {
+	visited[parent] = true;
+	int result = 1;
+	for (auto child: graph.children(parent)) {
+		if (visited[child]) continue;
+		result += dfs(graph, child, visited);
+	}
+	return result;
+}
+
+int main() {
+	int n;
+	std::cin >> n;
+	if (n == 1) {
+		std::cout << 0;
+		return 0;
+	}
+
+	ListGraph<None, None> graph(n);
+
+	int count = 0;
+
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			char info;
+			std::cin >> info;
+			if (info == 'Y') {
+				graph.connect(i, j);
+				count++;
+			}
+		}
+	}
+
+	count /= 2;
+
+	std::vector<bool> visited(n);
+	std::vector<int> s;
+	for (int i = 0; i < n; i++) {
+		if (!visited[i]) {
+			visited[i] = true;
+			s.push_back(dfs(graph, i, visited));
+		}
+	}
+
+	int sum = 0;
+	for (int a: s) {
+		sum += a - 1;
+		if (a == 1) {
+			std::cout << -1;
+			return 0;
+		}
+	}
+
+	if (s.size() - 1 <= count - sum)
+		std::cout << s.size() - 1;
+	else
+	 	std::cout << -1;
+}

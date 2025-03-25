@@ -2,23 +2,28 @@
 #include <ranges>
 #include <vector>
 
-template <typename G>
+#include "Graph.h"
+
+template <Graph G>
 class TreeWrapper {
 public:
 	using index_t = G::index_t;
 	using vertex_t = G::vertex_t;
 	using edge_t = G::edge_t;
+	template <typename T>
+	using storage_t = typename G::template storage_t<T>;
+	using size_t = G::size_t;
 
 private:
 	G& graph;
 	index_t root;
-	std::vector<index_t> parents;
+	storage_t<index_t> parents;
 
 public:
 	TreeWrapper(G& graph, index_t root):
 		graph(graph), root(root), parents(graph.size()) {
 
-		std::queue<std::pair<int, int>> queue;
+		std::queue<std::pair<index_t, index_t>> queue;
 		queue.emplace(root, root);
 
 		while (!queue.empty()) {
@@ -45,5 +50,9 @@ public:
 
 	index_t parent(index_t child) {
 		return parents[child];
+	}
+
+	decltype(graph.size()) size() {
+		return graph.size();
 	}
 };

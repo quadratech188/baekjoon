@@ -1,9 +1,19 @@
 #include "Matrix.h"
 #include <functional>
+#include <ranges>
 #include <vector>
 
 template <typename Vertex, typename Edge>
 class MatrixGraph {
+public:
+	using index_t = int;
+	using vertex_t = Vertex;
+	using edge_t = Edge;
+	template <typename T>
+	using storage_t = std::vector<T>;
+	using size_t = int;
+
+private:
 	std::vector<Vertex> data;
 	Matrix<Edge> connections;
 	int _size;
@@ -16,16 +26,7 @@ public:
 		_size(values.size()) {}
 
 	Edge& edge(int parent, int child) {
-		return connections.at(parent, child);
-	}
-
-	template <typename Callable>
-	void forEachChild(int parent, Callable func) {
-		for (int child = 0; child < _size; child++) {
-			if (connections.at(parent, child)) {
-				func(child, data[child], connections.at(parent, child));
-			}
-		}
+		return connections(parent, child);
 	}
 
 	size_t size() {
@@ -34,5 +35,42 @@ public:
 
 	Vertex& operator[](size_t index) {
 		return data[index];
+	}
+
+	class child {
+	public:
+		child(MatrixGraph* graph, index_t parent, index_t self):
+			graph(graph), parent(parent), self(self) {}
+
+		child(): graph(nullptr), parent(), self() {}
+
+		index_t index() {
+			return self;
+		}
+		edge_t& edge() {
+			return graph->edge(parent, self);
+		}
+		vertex_t& value() {
+			return graph->data[self];
+		}
+
+		operator index_t() {
+			return self;
+		}
+
+	private:
+		MatrixGraph* graph;
+		index_t parent;
+		index_t self;
+	};
+
+	auto children(index_t parent) {
+		return std::ranges::iota_view(0, _size)
+			| std::views::filter([this, parent](index_t index) {
+					return this->edge(parent, index);
+					})
+			| std::views::transform([this, parent](index_t index) {
+					return child(this, parent, index);
+					});
 	}
 };

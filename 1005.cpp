@@ -4,13 +4,14 @@
 #include "modules/FastIO.h"
 #include <queue>
 #include <iostream>
+#include <variant>
 
 void loop() {
 	FastIO();
 	int n, k;
 	std::cin >> n >> k;
 
-	ListGraph<int, None> graph(n);
+	ListGraph<int, std::monostate> graph(n);
 
 	std::vector<int> times(n);
 

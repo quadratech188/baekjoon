@@ -1,20 +1,28 @@
 #pragma once
 
+#include <istream>
 #include <ostream>
-template <typename T>
+template <typename T, typename T2>
 class ModInt {
 public:
 	static void setMod(T mod) {
 		_mod = mod;
 	}
 
-	ModInt(T val) {
+	ModInt(T2 val) {
 		_val = val % _mod;
 		if (_val < 0) _val += _mod;
 	}
+	ModInt():
+		_val(0) {}
 
 	ModInt operator+(T other) {
-		return ModInt(_val + other);
+		return ModInt((T2)_val + other);
+	}
+
+	ModInt& operator+=(const ModInt& other) {
+		*this = ModInt((T2)_val + other._val);
+		return *this;
 	}
 
 	ModInt& operator++(int) {
@@ -23,11 +31,11 @@ public:
 	}
 
 	ModInt operator*(const ModInt& other) const {
-		return ModInt(_val * other._val);
+		return ModInt((T2)_val * other._val);
 	}
 
 	ModInt& operator*=(const ModInt& other) {
-		*this = ModInt(_val * other._val);
+		*this = ModInt((T2)_val * other._val);
 		return *this;
 	}
 
@@ -47,9 +55,16 @@ public:
 		return _val <= other._val;
 	}
 
-	friend std::ostream& operator<<(std::ostream& os, ModInt& data) {
+	friend std::ostream& operator<<(std::ostream& os, ModInt const& data) {
 		os << data._val;
 		return os;
+	}
+
+	friend std::istream& operator>>(std::istream& is, ModInt& data) {
+		T2 temp;
+		is >> temp;
+		data = ModInt(temp);
+		return is;
 	}
 
 private:
@@ -57,8 +72,8 @@ private:
 	static T _mod;
 };
 
-template <typename T>
-T ModInt<T>::_mod = 0;
+template <typename T, typename T2>
+T ModInt<T, T2>::_mod = 0;
 
-using mInt = ModInt<unsigned int>;
-using mLL = ModInt<unsigned long long int>;
+using mInt = ModInt<unsigned int, unsigned long long int>;
+using mLL = ModInt<unsigned long long int, unsigned long long int>;
