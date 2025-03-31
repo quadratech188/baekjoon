@@ -84,7 +84,7 @@ struct Vec2 {
 		return this->x * this->x + this->y * this->y;
 	}
 
-	T length() const noexcept {
+	double length() const noexcept {
 		return std::sqrt(size2());
 	}
 
@@ -245,8 +245,15 @@ public:
 		return result;
 	}
 
+	Matrix& operator+=(Matrix const& other) {
+		for (int i = 0; i < _values.size(); i++)
+			_values[i] += other._values[i];
+
+		return *this;
+	}
+
 	Matrix& operator+=(T const& other) {
-		for (auto element: _values)
+		for (auto& element: _values)
 			element += other;
 
 		return *this;
@@ -396,8 +403,13 @@ private:
 	T _val;
 };
 
-using m1e9_7 = ModInt<unsigned int, unsigned long long int, StaticModPolicy<unsigned int, 1'000'000'007>>;
-using mL1e9_7 = ModInt<unsigned long long int, unsigned long long int, StaticModPolicy<unsigned long long int, 1'000'000'007>>;
+template <unsigned int MOD>
+using m = ModInt<unsigned int, unsigned long long int, StaticModPolicy<unsigned int, MOD>>;
+template <unsigned long long int MOD>
+using mL = ModInt<unsigned long long int, unsigned long long int, StaticModPolicy<unsigned long long int, MOD>>;
+
+using m1e9_7 = m<1'000'000'007>;
+using mL1e9_7 = mL<1'000'000'007>;
 using mInt = ModInt<unsigned int, unsigned long long int, DynamicModPolicy<unsigned int>>;
 
 namespace Math {
@@ -450,15 +462,33 @@ inline void FastIO() {
 	std::cout.tie(nullptr);
 }
 
+using m1e6_3 = m<1'000'003>;
+
 int main() {
 	FastIO();
+	int n, s, e, t;
+	std::cin >> n >> s >> e >> t;
 
-	int n, k;
-	std::cin >> n >> k;
-	Matrix<mL1e9_7> matrix(n, n);
-	std::cin >> matrix;
+	Matrix<m1e6_3> matrix(5 * n, 5 * n);
 
-	Matrix<mL1e9_7> result = Math::power(matrix, k, Matrix<mL1e9_7>::identity(n));
+	for (int i = 0; i < n; i++) {
+		for (int j = 1; j < 5; j++) {
+			matrix(5 * i + j, 5 * i + j - 1) = 1;
+		}
+	}
 
-	std::cout << result.sum();
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			char temp;
+			std::cin >> temp;
+			int time = temp - '0';
+			if (time == 0) continue;
+
+			matrix(i * 5, j * 5 + time - 1) = 1;
+		}
+	}
+
+	auto result = Math::power(matrix, t, matrix.identity());
+
+	std::cout << result(5 * (s - 1), 5 * (e - 1));
 }

@@ -10,6 +10,50 @@
 #include <ostream>
 #include <vector>
 
+namespace Math {
+	template<typename T>
+	T power(T data, long long int exponent, T&& identity) {
+		T result = identity;
+
+		while (exponent > 0) {
+			if (exponent & 1)
+				result = data * result;
+			data = data * data;
+			exponent /= 2;
+		}
+		return result;
+	}
+
+	template <typename T>
+	T powerCeil(T power, T n) {
+		T result = 1;
+
+		while (result < n) result *= power;
+		return result;
+	}
+
+	template <typename T>
+	T factorial(T n) {
+		T result = 1;
+		for (T i = 1; i <= n; i++) result *= i;
+		return result;
+	}
+
+	template <typename T>
+	std::pair<T, T> quotient_remainder(T a, T b) {
+		T quotient = a / b;
+		T remainder = a % b;
+		if (remainder < 0) {
+			remainder += std::abs(b);
+			quotient --;
+		}
+		return std::make_pair(quotient, remainder);
+	}
+
+	constexpr double pi = 3.1415926535897932384626;
+	constexpr double tau = 2 * pi;
+}
+
 template<typename T>
 struct Vec2 {
 	using type = T;
@@ -245,8 +289,15 @@ public:
 		return result;
 	}
 
+	Matrix& operator+=(Matrix const& other) {
+		for (int i = 0; i < _values.size(); i++)
+			_values[i] += other._values[i];
+
+		return *this;
+	}
+
 	Matrix& operator+=(T const& other) {
-		for (auto element: _values)
+		for (auto& element: _values)
 			element += other;
 
 		return *this;
@@ -400,65 +451,39 @@ using m1e9_7 = ModInt<unsigned int, unsigned long long int, StaticModPolicy<unsi
 using mL1e9_7 = ModInt<unsigned long long int, unsigned long long int, StaticModPolicy<unsigned long long int, 1'000'000'007>>;
 using mInt = ModInt<unsigned int, unsigned long long int, DynamicModPolicy<unsigned int>>;
 
-namespace Math {
-	template<typename T>
-	T power(T data, long long int exponent, T&& identity) {
-		T result = identity;
-
-		while (exponent > 0) {
-			if (exponent & 1)
-				result = data * result;
-			data = data * data;
-			exponent /= 2;
-		}
-		return result;
-	}
-
-	template <typename T>
-	T powerCeil(T power, T n) {
-		T result = 1;
-
-		while (result < n) result *= power;
-		return result;
-	}
-
-	template <typename T>
-	T factorial(T n) {
-		T result = 1;
-		for (T i = 1; i <= n; i++) result *= i;
-		return result;
-	}
-
-	template <typename T>
-	std::pair<T, T> quotient_remainder(T a, T b) {
-		T quotient = a / b;
-		T remainder = a % b;
-		if (remainder < 0) {
-			remainder += std::abs(b);
-			quotient --;
-		}
-		return std::make_pair(quotient, remainder);
-	}
-
-	constexpr double pi = 3.1415926535897932384626;
-	constexpr double tau = 2 * pi;
-}
-
 inline void FastIO() {
 	std::ios::sync_with_stdio(false);
 	std::cin.tie(nullptr);
 	std::cout.tie(nullptr);
 }
 
+Matrix<mInt> solution(Matrix<mInt> const& data, int const exponent) {
+	if (exponent == 1) return data;
+
+	if (exponent % 2 == 1) {
+		auto power = Math::power(data, exponent, data.identity());
+		auto sum = solution(data, exponent - 1);
+		return sum + power;
+	}
+	else {
+		auto power = Math::power(data, exponent / 2, data.identity());
+		power += data.identity();
+
+		auto sum = solution(data, exponent / 2);
+
+		return sum * power;
+	}
+}
+
 int main() {
 	FastIO();
+	int n, k, m;
+	std::cin >> n >> k >> m;
 
-	int n, k;
-	std::cin >> n >> k;
-	Matrix<mL1e9_7> matrix(n, n);
-	std::cin >> matrix;
+	mInt::setMod(m);
 
-	Matrix<mL1e9_7> result = Math::power(matrix, k, Matrix<mL1e9_7>::identity(n));
+	Matrix<mInt> a(n, n);
+	std::cin >> a;
 
-	std::cout << result.sum();
+	std::cout << solution(a, k);
 }

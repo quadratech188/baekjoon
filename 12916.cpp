@@ -6,18 +6,13 @@
 
 int main() {
 	FastIO();
-	mInt::setMod(1'000'000'007);
 
 	int n, k;
 	std::cin >> n >> k;
-	Matrix<mInt> matrix(n, n);
+	Matrix<mL1e9_7> matrix(n, n);
 	std::cin >> matrix;
 
-	Matrix<mInt> result = Math::power(matrix, k);
+	Matrix<mL1e9_7> result = Math::power(matrix, k, Matrix<mL1e9_7>::identity(n));
 
-	mInt sum = 0;
-	for (Int2 index: result.bounds())
-		sum += result[index];
-
-	std::cout << sum;
+	std::cout << result.sum();
 }

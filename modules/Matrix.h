@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <iostream>
+#include <numeric>
 #include <vector>
 
 #include "Vec2.h"
@@ -16,6 +17,18 @@ public:
 		_values(columns * rows, defaultValue), _size(columns, rows) {}
 
 	Matrix(): _size(Int2::zero()), _values() {}
+
+	static Matrix identity(int n) {
+		Matrix result(n, n);
+		for (int i = 0; i < n; i++)
+			result(i, i) = 1;
+
+		return result;
+	}
+
+	Matrix identity() const {
+		return identity(this->_size.x);
+	}
 
 	T& operator()(int column, int row) {
 		return this->_values[row * _size.x + column];
@@ -39,13 +52,37 @@ public:
 		return _values < other._values;
 	}
 
-	Matrix operator*(const Matrix& other) {
+	Matrix operator+(Matrix const& other) const {
+		Matrix result(_size.x, _size.y);
+		for (int i = 0; i < _values.size(); i++)
+			result._values[i] = _values[i] + other._values[i];
+
+		return result;
+	}
+
+	Matrix& operator+=(Matrix const& other) {
+		for (int i = 0; i < _values.size(); i++)
+			_values[i] += other._values[i];
+
+		return *this;
+	}
+
+	Matrix& operator+=(T const& other) {
+		for (auto& element: _values)
+			element += other;
+
+		return *this;
+	}
+
+	Matrix operator*(const Matrix& other) const {
 		Matrix result(other._size.x, _size.y);
 
 		for (Int2 index: result.bounds()) {
+			T sum = T();
 			for (int depth = 0; depth < _size.x; depth++) {
-				result[index] += (*this)(depth, index.y) * (*this)(index.x, depth);
+				sum += (*this)(depth, index.y) * other(index.x, depth);
 			}
+			result[index] = sum;
 		}
 
 		return result;
@@ -61,6 +98,10 @@ public:
 
 	int rawIndex(Int2 index) const {
 		return index.y * _size.x + index.x;
+	}
+
+	T sum() const {
+		return std::accumulate(_values.begin(), _values.end(), T());
 	}
 
 private:
@@ -81,7 +122,7 @@ std::ostream& operator<<(std::ostream& output, Matrix<T> const & matrix) {
 	for (int j = 0; j < matrix.size().y; j++) {
 		output << matrix(0, j);
 		for (int i = 1; i < matrix.size().x; i++)
-			output << '\t' << matrix(i, j);
+			output << ' ' << matrix(i, j);
 		output << '\n';
 	}
 	return output;

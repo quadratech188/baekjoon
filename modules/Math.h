@@ -5,15 +5,16 @@
 
 namespace Math {
 	template<typename T>
-	T power(T data, long long int exponent) {
-		if (exponent == 1) return data;
+	T power(T data, long long int exponent, T&& identity) {
+		T result = identity;
 
-		T half = power(data, exponent / 2);
-
-		if (exponent % 2 == 0)
-			return half * half;
-		else
-			return half * half * data;
+		while (exponent > 0) {
+			if (exponent & 1)
+				result = data * result;
+			data = data * data;
+			exponent /= 2;
+		}
+		return result;
 	}
 
 	template <typename T>

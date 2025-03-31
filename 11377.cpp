@@ -8,24 +8,33 @@
 
 int main() {
 	FastIO();
-	int n, m;
-	std::cin >> n >> m;
+	int n, m, k;
+	std::cin >> n >> m >> k;
 
-	Matrix<int> capacity(n + m + 2, n + m + 2, 0);
-	Matrix<int> cost(n + m + 2, n + m + 2, 0);
-	Matrix<int> flow(n + m + 2, n + m + 2, 0);
 
-	ListGraph<None, None> graph(n + m + 2);
+	int const source = n + m;
+	int const sink = n + m + 1;
+	int const k_node = n + m + 2;
+	int const size = n + m + 3;
 
-	int const source  = n + m;
-	int const sink  = n + m + 1;
-	int const size = n + m + 2;
+	Matrix<int> capacity(size, size);
+	Matrix<int> cost(size, size);
+	Matrix<int> flow(size, size);
 
+	ListGraph<None, None> graph(n + m + 3);
+
+	graph.connect(source, k_node);
+	graph.connect(k_node, source);
+	capacity(source, k_node) = k;
 
 	for (int i = 0; i < n; i++) {
 		graph.connect(source, i);
 		graph.connect(i, source);
 		capacity(source, i) = 1;
+
+		graph.connect(k_node, i);
+		graph.connect(i, k_node);
+		capacity(k_node, i) = 1;
 	}
 
 	for (int i = n; i < n + m; i++) {
@@ -38,43 +47,33 @@ int main() {
 		int size;
 		std::cin >> size;
 		for (int j = 0; j < size; j++) {
-			int job, pay;
-			std::cin >> job >> pay;
+			int job;
+			std::cin >> job;
 			job --;
 			job += n;
-			cost(worker, job) = pay;
-			cost(job, worker) = - pay;
+			cost(worker, job) = 1;
+			cost(job, worker) = -1;
 			capacity(worker, job) = 1;
 			graph.connect(worker, job);
 			graph.connect(job, worker);
 		}
 	}
-
-	int result = 0;
 	int count = 0;
+	std::vector<int> prev(size);
+	std::queue<int> queue;
 
 	while (true) {
-		std::vector<int> prev(size, -1), dist(size, std::numeric_limits<int>::max());
-		std::vector<bool> in_queue(size, false);
-		std::queue<int> queue;
-		dist[source] = 0;
-		in_queue[source] = true;
+		std::fill(prev.begin(), prev.end(), -1);
 		queue.push(source);
 
 		while (!queue.empty()) {
 			int parent = queue.front();
 			queue.pop();
-			in_queue[parent] = false;
 			for (auto child: graph.children(parent)) {
-				if (capacity(parent, child) > flow(parent, child)
-						&& dist[child] > dist[parent] + cost(parent, child)) {
-					dist[child] = dist[parent] + cost(parent, child);
+				if (prev[child] == -1 && capacity(parent, child) > flow(parent, child)) {
 					prev[child] = parent;
-
-					if (!in_queue[child]) {
-						queue.push(child);
-						in_queue[child] = true;
-					}
+					queue.push(child);
+					if (child == sink) break;
 				}
 			}
 		}
@@ -87,12 +86,10 @@ int main() {
 			max_flow = std::min(max_flow, capacity(prev[i], i) - flow(prev[i], i));
 
 		for (int i = sink; i != source; i = prev[i]) {
-			result += max_flow * cost(prev[i], i);
 			flow(prev[i], i) += max_flow;
 			flow(i, prev[i]) -= max_flow;
 		}
 		count++;
 	}
-
-	std::cout << count << '\n' << result;
+	std::cout << count << '\n';
 }
