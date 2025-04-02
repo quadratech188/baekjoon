@@ -1,7 +1,4 @@
-#include <cstddef>
-#include <iterator>
-#include <ranges>
-#include <utility>
+#include <functional>
 #include <vector>
 
 template <typename Vertex, typename Edge>
@@ -20,7 +17,6 @@ private:
 	size_t _size;
 
 public:
-
 	ListGraph(size_t size, const Vertex& defaultV = Vertex()): data(size, defaultV), connections(size), _size(size) {}
 	ListGraph(std::vector<Vertex>&& values):
 		data(std::move(values)),
@@ -53,6 +49,9 @@ public:
 
 	class child {
 	public:
+		using difference_type = std::ptrdiff_t;
+		using value_type = child;
+
 		child(ListGraph* graph, index_t parent, int list_index):
 			graph(graph), parent(parent), list_index(list_index) {}
 
@@ -68,9 +67,29 @@ public:
 		vertex_t& value() {
 			return graph->data[index()];
 		}
-
 		operator index_t() {
 			return index();
+		}
+
+		child operator*() {
+			return *this;
+		}
+
+		child& operator++() {
+			++list_index;
+			return *this;
+		}
+		
+		void operator++(int) {
+			++list_index;
+		}
+
+		bool operator!=(child const& other) const {
+			return list_index != other.list_index;
+		}
+
+		bool operator==(child const& other) const {
+			return list_index == other.list_index;
 		}
 
 	private:
@@ -79,10 +98,36 @@ public:
 		int list_index;
 	};
 
-	auto children(index_t parent) {
-		return std::ranges::iota_view(static_cast<std::size_t>(0), connections[parent].size())
-			| std::views::transform([this, parent](index_t index) {
-					return child(this, parent, index);
-					});
+	class child_range {
+	public:
+		child_range(ListGraph* graph, index_t parent):
+			graph(graph), parent(parent) {}
+		child begin() const {
+			return child(graph, parent, 0);
+		}
+		child end() const {
+			return child(graph, parent, graph->connections[parent].size());
+		}
+	private:
+		ListGraph* graph;
+		index_t parent;
+	};
+
+	child_range children(index_t parent) {
+		return child_range(this, parent);
+	}
+
+	void connect_both(index_t parent, index_t child, edge_t edge1 = edge_t(), edge_t edge2 = edge_t())
+	requires std::same_as<int, decltype(edge_t().rev)> {
+		edge1.rev = connections[child].size();
+		edge2.rev = connections[parent].size();
+
+		connect(parent, child, edge1);
+		connect(child, parent, edge2);
+	}
+
+	child reverse(child original)
+	requires std::same_as<int, decltype(edge_t().rev)> {
+		return child(this, original.index(), original.edge().rev);
 	}
 };
