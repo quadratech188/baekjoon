@@ -5,7 +5,13 @@
 #include "Segment.h"
 #include "DummyIterator.h"
 
-template<typename T>
+template <typename T>
+concept Lazy = requires(T t, T l, T r) {
+	{l + r} -> std::same_as<T>;
+	{t.resolve(l, r)};
+};
+
+template<typename T> requires Lazy<T>
 class LazySegmentTree {
 public:
 	LazySegmentTree(const size_t size, const T& val = T()):

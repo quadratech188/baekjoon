@@ -96,7 +96,7 @@ public:
 		return Range2(Int2::zero(), _size);
 	}
 
-	int rawIndex(Int2 index) const {
+	int rawIndex(Int2 const index) const {
 		return index.y * _size.x + index.x;
 	}
 

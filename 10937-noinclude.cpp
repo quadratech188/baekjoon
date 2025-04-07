@@ -517,12 +517,12 @@ inline void FastIO() {
 }
 
 constexpr int lookup[6][6] = {
-	10, 8, 7, 5, 0, 1,
-	8, 6, 4, 3, 0, 1,
-	7, 4, 3, 2, 0, 1,
-	5, 3, 2, 2, 0, 1,
+	100, 70, 40, 0, 0, 0,
+	70, 50, 30, 0, 0, 0,
+	40, 30, 20, 0, 0, 0,
 	0, 0, 0, 0, 0, 0,
-	1, 1, 1, 1, 0, 0
+	0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0
 };
 
 struct Edge {
@@ -533,16 +533,16 @@ struct Edge {
 
 int main() {
 	FastIO();
-	int n, m;
-	std::cin >> n >> m;
+	int n;
+	std::cin >> n;
 
-	Matrix<char> matrix(m, n);
+	Matrix<char> matrix(n, n);
 	std::cin >> matrix;
 	GridGraph<decltype(matrix)> graph(matrix);
 
-	int const source = n * m;
-	int const sink = n * m + 1;
-	int const size = n * m + 2;
+	int const source = n * n;
+	int const sink = n * n + 1;
+	int const size = n * n + 2;
 	ListGraph<std::monostate, Edge> flowgraph(size);
 
 	for (Int2 parent: matrix.bounds()) {

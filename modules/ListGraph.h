@@ -36,7 +36,7 @@ public:
 	}
 
 	void connect(index_t parent, index_t child, edge_t edge = edge_t()) {
-		connections[parent].push_back(std::make_pair(child, edge));
+		connections[parent].emplace_back(child, edge);
 	}
 
 	size_t size() const {
@@ -58,20 +58,24 @@ public:
 		child():
 			graph(nullptr), list_index(0) {}
 
-		index_t index() {
+		index_t index() const {
 			return graph->connections[parent][list_index].first;
 		}
 		edge_t& edge() {
 			return graph->connections[parent][list_index].second;
 		}
+		edge_t const& edge() const {
+			return graph->connections[parent][list_index].second;
+		}
+
 		vertex_t& value() {
 			return graph->data[index()];
 		}
-		operator index_t() {
+		operator index_t() const {
 			return index();
 		}
 
-		child operator*() {
+		child operator*() const {
 			return *this;
 		}
 
