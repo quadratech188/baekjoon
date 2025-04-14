@@ -1,134 +1,305 @@
-#include <stdio.h>
+#include <algorithm>
+#include <cassert>
+#include <cstddef>
+#include <cstdio>
+#include <iostream>
+#include <iterator>
+#include <ranges>
 #include <vector>
-typedef int INDEX;
 
-template<typename IDX>
 struct Segment {
-	IDX start;
-	IDX end;
-	IDX size() {
+	Segment(): start(0), end(0) {}
+	Segment(size_t start, size_t end): start(start), end(end) {}
+
+	size_t start;
+	size_t end;
+	size_t size() {
 		return end - start;
 	}
-	IDX center() {
+	inline size_t center() {
 		return (start + end) / 2;
 	}
+	inline Segment left() {
+		return Segment(start, center());
+	}
+	inline Segment right() {
+		return Segment(center(), end);
+	}
+
+	bool includes(const Segment& other) {
+		return start <= other.start && other.end <= end;
+	}
 };
-template<typename IDX, typename VAL>
-class SegmentNode {
-	Segment<IDX> segment;
-	VAL value;
-	VAL (*combine_func)(VAL, VAL);
-	VAL (*value_func)(INDEX);
-	SegmentNode<IDX, VAL>* left;
-	SegmentNode<IDX, VAL>* right;
+
+template <typename T>
+class DummyIterator {
 public:
-	SegmentNode<IDX, VAL>(Segment<IDX> segment, VAL (*combine_func)(VAL, VAL), VAL(*value_func)(INDEX)) {
-		this->segment = segment;
-		this->combine_func = combine_func;
-		this->value_func = value_func;
-		
-		if (this->segment.size() == 1) {
-			this->value = value_func(this->segment.start);
+	DummyIterator(const T& val): _val(val) {}
+
+	const T& operator*() const {
+		return _val;
+	}
+
+	DummyIterator& operator++() {
+		return *this;
+	}
+	void operator++(int) {}
+
+private:
+	const T& _val;
+};
+
+template <typename T, typename Operator = std::plus<T>>
+class SegmentTree {
+public:
+	SegmentTree(const size_t size, const T& val = T(), Operator op = Operator()):
+		_values(4 * size), _size(size), _operator(op) {
+		init(Segment(0, _size), 0, DummyIterator<T>(val));
+	}
+
+	template <typename Iter>
+	SegmentTree(const size_t size, Iter iterator, Operator op = Operator()):
+		_size(size), _values(4 * size), _operator(op) {
+		init(Segment(0, _size), 0, iterator);
+	}
+
+	template <std::ranges::range R>
+	SegmentTree(R&& range, Operator op = Operator()):
+		_size(std::ranges::distance(range)), _values(4 * _size), _operator(op) {
+		init(Segment(0, _size), 0, std::ranges::begin(range)); 
+	}
+
+	inline T sum(Segment segment) {
+		assert(Segment(0, _size).includes(segment));
+		assert(segment.start < segment.end);
+		return sum(segment, Segment(0, _size), 0);
+	}
+
+	inline T sum(size_t start, size_t end) {
+		return sum(Segment(start, end));
+	}
+
+	inline T root() {
+		return sum(0, _size);
+	}
+
+	inline T at(size_t index) {
+		return sum(Segment(index, index + 1));
+	}
+
+	template <typename Callable>
+	void update(size_t index, Callable func) {
+		return update(index, 0, Segment(0, _size), func);
+	}
+
+	inline size_t size() {
+		return _size;
+	}
+
+private:
+	const size_t _size;
+	std::vector<T> _values;
+	const Operator _operator;
+
+	template <typename Iter>
+	void init(Segment segment, size_t index, Iter&& iterator) {
+		if (segment.size() == 1) {
+			_values[index] = T(*iterator);
+			++iterator;
 			return;
 		}
 
-		this->left = new SegmentNode<IDX, VAL>({segment.start, segment.center()}, combine_func, value_func);
-		this->right = new SegmentNode<IDX, VAL>({segment.center(), segment.end}, combine_func, value_func);
+		size_t left = 2 * index + 1;
+		size_t right = 2 * index + 2;
+		init(segment.left(), left, iterator);
+		init(segment.right(), right, iterator);
 
-		this->value = combine_func(this->left->value, this->right->value);
+		_values[index] = _operator(_values[left], _values[right]);
 	}
 
-	VAL query(Segment<IDX> segment) {
-		if (segment.start <= this->segment.start && this->segment.end <= segment.end) {
-			return this->value;
-		}
-		
-		if (this->segment.center() <= segment.start) {
-			return this->right->query(segment);
-		}
-		if (segment.end <= this->segment.center()) {
-			return this->left->query(segment);
-		}
+	T sum(Segment query, Segment segment, size_t index) {
 
-		return this->combine_func(this->left->query(segment), this->right->query(segment));
+		if (query.includes(segment))
+			return _values[index];
+
+		size_t left = 2 * index + 1;
+		size_t right = 2 * index + 2;
+
+		if (segment.center() <= query.start)
+			return sum(query, segment.right(), right);
+
+		if (query.end <= segment.center())
+			return sum(query, segment.left(), left);
+
+		return _operator(sum(query, segment.left(), left)
+		          ,sum(query, segment.right(), right));
 	}
-	void update(INDEX index) {
-		if (this->segment.size() == 1) {
-			this->value = this->value_func(index);
+
+	template <typename Callable>
+	void update(size_t index, size_t value_index, Segment segment, Callable func) {
+		if (segment.size() == 1) {
+			func(_values[value_index]);
 			return;
 		}
-		
-		if (index < this->segment.center()) {
-			this->left->update(index);
-		}
-		else{
-			this->right->update(index);
-		}
 
-		this->value = combine_func(this->left->value, this->right->value);
+		size_t left = 2 * value_index + 1;
+		size_t right = 2 * value_index + 2;
+		
+		if (index < segment.center())
+			update(index, left, segment.left(), func);
+		else
+		 	update(index, right, segment.right(), func);
+
+		_values[value_index] = _operator(_values[left], _values[right]);
 	}
 };
 
-std::vector<int> values;
+template <typename T>
+class InputRange: public std::ranges::view_interface<InputRange<T>> {
+public:
+	InputRange(size_t size, std::istream& is = std::cin):
+		is(&is), _size(size) {}
 
-int combine_func(int val1, int val2) {
-	return val1 * val2;
+	InputRange():
+		_size(0), is(nullptr) {}
+
+private:
+	std::istream* is;
+	size_t _size;
+
+public:
+	class iterator {
+	public:
+		using difference_type = std::ptrdiff_t;
+		using value_type = T;
+
+		iterator(std::istream* is, size_t index):
+			is(is), index(index) {
+			++(*this);
+		}
+
+		iterator():
+			is(nullptr), index(0) {}
+
+	private:
+		std::istream* is;
+		size_t index;
+
+	public:
+		T operator*() const {
+			T value;
+			(*is) >> value;
+			return value;
+		}
+
+		iterator& operator++() {
+			return *this;
+		}
+
+		iterator operator++(int) {
+			iterator temp = *this;
+			++(*this);
+			return temp;
+		}
+
+		bool operator!=(iterator const& other) const {
+			return index != other.index;
+		}
+
+		bool operator==(iterator const& other) const {
+			return index == other.index;
+		}
+	};
+
+	iterator begin() const {
+		return iterator(is, 0);
+	}
+
+	iterator end() const {
+		return iterator(is, _size);
+	}
+
+	size_t size() const noexcept {
+		return _size;
+	}
+};
+
+template <typename T>
+class Min {
+public:
+	T operator()(const T& l, const T& r) const {
+		return std::min(l, r);
+	}
+};
+
+template <typename T>
+class Max {
+public:
+	T operator()(const T& l, const T& r) const {
+		return std::max(l, r);
+	}
+};
+
+template <typename T>
+class Mul {
+public:
+	T operator()(const T& l, const T& r) const {
+		return l * r;
+	}
+};
+
+inline void FastIO() {
+	std::ios::sync_with_stdio(false);
+	std::cin.tie(nullptr);
+	std::cout.tie(nullptr);
 }
 
-int value_func(int index) {
-	if (values[index] > 0) {
-		return 1;
+bool loop() {
+	int n, k;
+	std::cin >> n >> k;
+
+	if (std::cin.eof()) return false;
+
+	SegmentTree<int, Mul<int>> tree{InputRange<int>(n) | std::views::transform([](int val) {
+			if (val < 0) return -1;
+			if (val == 0) return 0;
+			return 1;
+			})};
+
+	for (int _ = 0; _ < k; _++) {
+		char type;
+		std::cin >> type;
+		switch(type) {
+			case 'C': {
+				int i, V;
+				std::cin >> i >> V;
+
+				if (V < 0)
+					tree.update(i - 1, [](int& val) {val = -1;});
+				else if (V == 0)
+					tree.update(i - 1, [](int& val) {val = 0;});
+				else
+				 	tree.update(i - 1, [](int& val) {val = 1;});
+				break;
+			}
+			case 'P': {
+				int i, j;
+				std::cin >> i >> j;
+
+				int result = tree.sum(i - 1, j);
+
+				if (result < 0) std::cout << '-';
+				else if (result == 0) std::cout << '0';
+				else std::cout << '+';
+			}
+		}
 	}
-	else if (values[index] == 0) {
-		return 0;
-	}
-	else {
-		return -1;
-	}
+
+	std::cout << '\n';
+	return true;
 }
 
 int main() {
-	while (true) {
-		int n, k;
-
-		int isEOF = scanf("%d %d", &n, &k);
-
-		if (isEOF == -1) {
-			break;
-		}
-
-		values = std::vector<int>(n);
-
-		for (int i = 0; i < n; i++) {
-			scanf("%d", &values[i]);
-		}
-		
-		auto root = SegmentNode<int, int>({0, n}, combine_func, value_func);
-
-		for (int i = 0; i < k; i++) {
-			char c;
-			int a, b;
-			scanf(" %c %d %d", &c, &a, &b);
-
-			if (c == 'P') {
-				int result = root.query({a - 1, b});
-					
-				if (result == 1) {
-					printf("+");
-				}				
-				else if (result == 0) {
-					printf("0");
-				}
-				else {
-					printf("-");
-				}
-			}
-			else {
-				values[a - 1] = b;
-				root.update(a - 1);
-			}
-		}
-		printf("\n");
-	}
-	return 0;
+	FastIO();
+	while (loop()) {}
 }

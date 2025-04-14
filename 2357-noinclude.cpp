@@ -68,21 +68,23 @@ public:
 		init(Segment(0, _size), 0, std::ranges::begin(range)); 
 	}
 
-	T sum(Segment segment) {
+	inline T sum(Segment segment) {
 		assert(Segment(0, _size).includes(segment));
+		assert(segment.size() >= 1);
 		return sum(segment, Segment(0, _size), 0);
 	}
 
-	T sum(size_t start, size_t end) {
+	inline T sum(size_t start, size_t end) {
 		assert(0 <= start && end <= _size);
+		assert(start < end);
 		return sum(Segment(start, end));
 	}
 
-	T root() {
+	inline T root() {
 		return sum(0, _size);
 	}
 
-	T at(size_t index) {
+	inline T at(size_t index) {
 		return sum(Segment(index, index + 1));
 	}
 
@@ -91,7 +93,7 @@ public:
 		return update(index, 0, Segment(0, _size), func);
 	}
 
-	size_t size() {
+	inline size_t size() {
 		return _size;
 	}
 

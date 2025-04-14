@@ -15,3 +15,11 @@ public:
 		return std::max(l, r);
 	}
 };
+
+template <typename T>
+class Mul {
+public:
+	T operator()(const T& l, const T& r) const {
+		return l * r;
+	}
+};
