@@ -51,7 +51,9 @@ public:
 		return _size;
 	}
 
+#ifndef HACKABLE
 private:
+#endif
 	const size_t _size;
 	std::vector<T> _values;
 	const Operator _operator;
