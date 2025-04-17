@@ -10,6 +10,7 @@ class Bounds2 {
 public:
 	Bounds2(V2 start, V2 end): left(start), right(end) {}
 	Bounds2(V2 end): left(V2::zero()), right(end) {}
+	Bounds2(): left(V2::zero()), right(V2::zero()) {}
 
 	struct iterator {
 		using value_type = V2;
@@ -71,14 +72,15 @@ public:
 		return right.y;
 	}
 
+	template <typename T>
+	friend std::istream& operator>>(std::istream& is, Bounds2<T>& bounds2) {
+		is >> bounds2.left >> bounds2.right;
+		return is;
+	}
+
 private:
 	V2 left, right;
 };
 
-template <typename T>
-std::istream& operator>>(std::istream& is, Bounds2<T>& bounds2) {
-	is >> bounds2.lt() >> bounds2.rd();
-	return is;
-}
 
 typedef Bounds2<Int2> Range2;

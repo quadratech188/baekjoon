@@ -111,12 +111,12 @@ private:
 	template <typename Callable>
 	void update(Segment index, size_t value_index, Segment segment, Callable func) {
 		if (index.includes(segment)) {
-			auto result = std::invoke(func, _values[value_index]);
-
-			if constexpr(std::convertible_to<decltype(result), bool>) {
-				if (!result || segment.size() == 1) return;
-			}
-			else {
+			if constexpr (std::same_as<std::invoke_result_t<decltype(func), decltype(_values[value_index])>,
+					bool>) {
+				if (!std::invoke(func, _values[value_index]) || segment.size() == 1)
+					return;
+			} else {
+				std::invoke(func, _values[value_index]);
 				return;
 			}
 		}
