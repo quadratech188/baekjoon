@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <istream>
 #include <ostream>
 
@@ -10,7 +11,7 @@ struct StaticModPolicy {
 	}
 };
 
-template <typename T>
+template <typename T, int tag>
 struct DynamicModPolicy {
 	static T& mod() {
 		static T value = 0;
@@ -48,6 +49,11 @@ public:
 		return *this;
 	}
 
+	template <typename O>
+	ModInt operator*(const O& other) const noexcept {
+		return ModInt(static_cast<T2>(_val) * other);
+	}
+
 	ModInt operator*(const ModInt& other) const noexcept {
 		return ModInt(static_cast<T2>(_val) * other._val);
 	}
@@ -73,6 +79,10 @@ public:
 		return _val <= other._val;
 	}
 
+	operator T() const noexcept {
+		return _val;
+	}
+
 	friend std::ostream& operator<<(std::ostream& os, ModInt const& data) {
 		os << data._val;
 		return os;
@@ -93,11 +103,17 @@ private:
 	T _val;
 };
 
-template <unsigned int MOD>
-using m = ModInt<unsigned int, unsigned long long int, StaticModPolicy<unsigned int, MOD>>;
-template <unsigned long long int MOD>
-using mL = ModInt<unsigned long long int, unsigned long long int, StaticModPolicy<unsigned long long int, MOD>>;
+template <uint32_t MOD>
+using sm32 = ModInt<uint32_t, uint64_t, StaticModPolicy<uint32_t, MOD>>;
 
-using m1e9_7 = m<1'000'000'007>;
-using mL1e9_7 = mL<1'000'000'007>;
-using mInt = ModInt<unsigned int, unsigned long long int, DynamicModPolicy<unsigned int>>;
+template <uint64_t MOD>
+using sm64 = ModInt<uint64_t, uint64_t, StaticModPolicy<uint64_t, MOD>>;
+
+using sm32_1e9_7 = sm32<1'000'000'007>;
+using sm64_1e9_7 = sm64<1'000'000'007>;
+
+template <int tag = 0>
+using dm32 = ModInt<uint32_t, uint64_t, DynamicModPolicy<uint32_t, tag>>;
+
+template <int tag = 0>
+using dm64 = ModInt<uint64_t, uint64_t, DynamicModPolicy<uint64_t, tag>>;
