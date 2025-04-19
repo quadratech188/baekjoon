@@ -23,63 +23,61 @@ template <typename T, typename T2, typename Policy>
 class ModInt {
 public:
 
-	ModInt(T2 val) noexcept {
+	constexpr ModInt(T2 val) noexcept {
 		_val = val % Policy::mod();
 		if (_val < 0) _val += Policy::mod();
 	}
-	ModInt() noexcept:
+	constexpr ModInt() noexcept:
 		_val(0) {}
 
-	ModInt operator+(T const& other) const noexcept {
+	constexpr ModInt operator+(T const& other) const noexcept {
 		return ModInt(_val + other);
 	}
 
-	ModInt operator+(ModInt const& other) const noexcept {
+	constexpr ModInt operator+(ModInt const& other) const noexcept {
 		return ModInt(_val + other._val);
 	}
 
-	ModInt& operator+=(const ModInt& other) noexcept {
+	constexpr ModInt& operator+=(const ModInt& other) noexcept {
 		_val += other._val;
 		if (_val >= Policy::mod()) _val -= Policy::mod();
 		return *this;
 	}
 
-	ModInt& operator++(int) noexcept {
+	constexpr ModInt& operator++(int) noexcept {
 		_val = (_val + 1) % Policy::mod();
 		return *this;
 	}
 
 	template <typename O>
-	ModInt operator*(const O& other) const noexcept {
+	constexpr ModInt operator*(const O& other) const noexcept {
 		return ModInt(static_cast<T2>(_val) * other);
 	}
 
-	ModInt operator*(const ModInt& other) const noexcept {
+	constexpr ModInt operator*(const ModInt& other) const noexcept {
 		return ModInt(static_cast<T2>(_val) * other._val);
 	}
 
-	ModInt& operator*=(const ModInt& other) noexcept {
+	constexpr ModInt& operator*=(const ModInt& other) noexcept {
 		*this = ModInt(static_cast<T2>(_val) * other._val);
 		return *this;
 	}
 
-	void operator=(const ModInt& other) {
-		_val = other._val;
-	}
+	constexpr ModInt& operator=(const ModInt& other) = default;
 
-	bool operator==(const ModInt& other) const noexcept {
+	constexpr bool operator==(const ModInt& other) const noexcept {
 		return _val == other._val;
 	}
 
-	bool operator!=(const ModInt& other) const noexcept {
+	constexpr bool operator!=(const ModInt& other) const noexcept {
 		return _val != other._val;
 	}
 
-	bool operator<=(const ModInt& other) const noexcept {
+	constexpr bool operator<=(const ModInt& other) const noexcept {
 		return _val <= other._val;
 	}
 
-	operator T() const noexcept {
+	constexpr operator T() const noexcept {
 		return _val;
 	}
 

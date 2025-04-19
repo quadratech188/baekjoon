@@ -60,11 +60,11 @@ public:
 		return update(Segment(index, index + 1), func);
 	}
 
-	size_t size() {
+	constexpr size_t size() const {
 		return _size;
 	}
 
-	inline T root() {
+	constexpr T const& root() {
 		return this->_values[0];
 	}
 

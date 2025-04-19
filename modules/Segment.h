@@ -1,25 +1,25 @@
 #include <cstddef>
 
 struct Segment {
-	Segment(): start(0), end(0) {}
-	Segment(size_t start, size_t end): start(start), end(end) {}
+	constexpr Segment(): start(0), end(0) {}
+	constexpr Segment(size_t start, size_t end): start(start), end(end) {}
 
-	size_t start;
-	size_t end;
-	size_t size() {
+	size_t const start;
+	size_t const end;
+	constexpr size_t size() const {
 		return end - start;
 	}
-	inline size_t center() {
+	constexpr size_t center() const {
 		return (start + end) / 2;
 	}
-	inline Segment left() {
+	constexpr Segment left() const {
 		return Segment(start, center());
 	}
-	inline Segment right() {
+	constexpr Segment right() const {
 		return Segment(center(), end);
 	}
 
-	bool includes(const Segment& other) {
+	constexpr bool includes(const Segment& other) const {
 		return start <= other.start && other.end <= end;
 	}
 };
