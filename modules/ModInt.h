@@ -89,7 +89,7 @@ public:
 	}
 
 	friend std::istream& operator>>(std::istream& is, ModInt& data) {
-		T2 temp;
+		T temp;
 		is >> temp;
 		data = ModInt(temp);
 		return is;
