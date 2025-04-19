@@ -87,25 +87,25 @@ public:
 };
 
 struct Segment {
-	Segment(): start(0), end(0) {}
-	Segment(size_t start, size_t end): start(start), end(end) {}
+	constexpr Segment(): start(0), end(0) {}
+	constexpr Segment(size_t start, size_t end): start(start), end(end) {}
 
-	size_t start;
-	size_t end;
-	size_t size() {
+	size_t const start;
+	size_t const end;
+	constexpr size_t size() const {
 		return end - start;
 	}
-	inline size_t center() {
+	constexpr size_t center() const {
 		return (start + end) / 2;
 	}
-	inline Segment left() {
+	constexpr Segment left() const {
 		return Segment(start, center());
 	}
-	inline Segment right() {
+	constexpr Segment right() const {
 		return Segment(center(), end);
 	}
 
-	bool includes(const Segment& other) {
+	constexpr bool includes(const Segment& other) const {
 		return start <= other.start && other.end <= end;
 	}
 };
@@ -183,11 +183,11 @@ public:
 		return update(Segment(index, index + 1), func);
 	}
 
-	size_t size() {
+	constexpr size_t size() const {
 		return _size;
 	}
 
-	inline T root() {
+	constexpr T const& root() {
 		return this->_values[0];
 	}
 
@@ -281,63 +281,61 @@ template <typename T, typename T2, typename Policy>
 class ModInt {
 public:
 
-	ModInt(T2 val) noexcept {
+	constexpr ModInt(T2 val) noexcept {
 		_val = val % Policy::mod();
 		if (_val < 0) _val += Policy::mod();
 	}
-	ModInt() noexcept:
+	constexpr ModInt() noexcept:
 		_val(0) {}
 
-	ModInt operator+(T const& other) const noexcept {
+	constexpr ModInt operator+(T const& other) const noexcept {
 		return ModInt(_val + other);
 	}
 
-	ModInt operator+(ModInt const& other) const noexcept {
+	constexpr ModInt operator+(ModInt const& other) const noexcept {
 		return ModInt(_val + other._val);
 	}
 
-	ModInt& operator+=(const ModInt& other) noexcept {
+	constexpr ModInt& operator+=(const ModInt& other) noexcept {
 		_val += other._val;
 		if (_val >= Policy::mod()) _val -= Policy::mod();
 		return *this;
 	}
 
-	ModInt& operator++(int) noexcept {
+	constexpr ModInt& operator++(int) noexcept {
 		_val = (_val + 1) % Policy::mod();
 		return *this;
 	}
 
 	template <typename O>
-	ModInt operator*(const O& other) const noexcept {
+	constexpr ModInt operator*(const O& other) const noexcept {
 		return ModInt(static_cast<T2>(_val) * other);
 	}
 
-	ModInt operator*(const ModInt& other) const noexcept {
+	constexpr ModInt operator*(const ModInt& other) const noexcept {
 		return ModInt(static_cast<T2>(_val) * other._val);
 	}
 
-	ModInt& operator*=(const ModInt& other) noexcept {
+	constexpr ModInt& operator*=(const ModInt& other) noexcept {
 		*this = ModInt(static_cast<T2>(_val) * other._val);
 		return *this;
 	}
 
-	void operator=(const ModInt& other) {
-		_val = other._val;
-	}
+	constexpr ModInt& operator=(const ModInt& other) = default;
 
-	bool operator==(const ModInt& other) const noexcept {
+	constexpr bool operator==(const ModInt& other) const noexcept {
 		return _val == other._val;
 	}
 
-	bool operator!=(const ModInt& other) const noexcept {
+	constexpr bool operator!=(const ModInt& other) const noexcept {
 		return _val != other._val;
 	}
 
-	bool operator<=(const ModInt& other) const noexcept {
+	constexpr bool operator<=(const ModInt& other) const noexcept {
 		return _val <= other._val;
 	}
 
-	operator T() const noexcept {
+	constexpr operator T() const noexcept {
 		return _val;
 	}
 
@@ -347,7 +345,7 @@ public:
 	}
 
 	friend std::istream& operator>>(std::istream& is, ModInt& data) {
-		T2 temp;
+		T temp;
 		is >> temp;
 		data = ModInt(temp);
 		return is;
@@ -376,6 +374,10 @@ using dm32 = ModInt<uint32_t, uint64_t, DynamicModPolicy<uint32_t, tag>>;
 template <int tag = 0>
 using dm64 = ModInt<uint64_t, uint64_t, DynamicModPolicy<uint64_t, tag>>;
 
+struct Update {
+	sm32_1e9_7 a, b;
+};
+
 struct Data {
 	sm32_1e9_7 a;
 	sm32_1e9_7 b;
@@ -385,7 +387,7 @@ struct Data {
 	Data(sm32_1e9_7 value = 0, size_t length = 1):
 		a(1), b(0), _value(value), length(length) {}
 	
-	inline sm32_1e9_7 value() const {
+	constexpr sm32_1e9_7 value() const {
 		return this->a * this->_value + this->b * this->length;
 	}
 
@@ -395,7 +397,14 @@ struct Data {
 				length + other.length
 				);
 	}
-	void resolve(Data& child1, Data& child2) {
+
+	inline void update(Update update) {
+		a *= update.a;
+		b *= update.a;
+		b += update.b;
+	}
+
+	inline void resolve(Data& child1, Data& child2) {
 
 		child1.a *= a;
 		
@@ -427,30 +436,24 @@ int main() {
 		int type;
 		size_t x, y;
 		std::cin >> type >> x >> y;
-		int v;
-		switch(type) {
-			case 1:
-				std::cin >> v;
-				root.update(x - 1, y, [v](Data& val) {
-						val.b += v;
-						});
-				break;
-			case 2:
-				std::cin >> v;
-				root.update(x - 1, y, [v](Data& val) {
-						val.a *= v;
-						val.b *= v;
-						});
-				break;
-			case 3:
-				std::cin >> v;
-				root.update(x - 1, y, [v](Data& val) {
-						val.a = 0;
-						val.b = v;
-						});
-				break;
-			case 4:
-				std::cout << root.sum(x - 1, y).value() << '\n';
+		if (type != 4) {
+			Update update;
+			int v;
+			std::cin >> v;
+			switch(type) {
+				case 1:
+					update = {1, v}; break;
+				case 2:
+					update = {v, 0}; break;
+				case 3:
+					update = {0, v}; break;
+			}
+			root.update(x - 1, y, [update](Data& val) {
+					val.update(update);
+					});
+		}
+		else {
+			std::cout << root.sum(x - 1, y).value() << '\n';
 		}
 	}
 }
