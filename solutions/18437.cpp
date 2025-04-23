@@ -1,11 +1,11 @@
 #include <iostream>
 #include <stack>
 
-#include "modules/ListGraph.h"
-#include "modules/Types.h"
-#include "modules/LazySegmentTree.h"
-#include "modules/LazyFill.h"
-#include "modules/FastIO.h"
+#include "../modules/ListGraph.h"
+#include "../modules/Types.h"
+#include "../modules/LazySegmentTree.h"
+#include "../modules/LazyFill.h"
+#include "../modules/FastIO.h"
 
 std::vector<Segment> segtree_indices;
 int segtree_index = 0;
@@ -20,7 +20,7 @@ void calculate_indices(ListGraph<int, None>& graph, int parent) {
 }
 
 int main() {
-	// FastIO();
+	FastIO();
 	int n;
 	std::cin >> n;
 
@@ -40,8 +40,6 @@ int main() {
 	calculate_indices(graph, 0);
 
 	LazySegmentTree<LazyFill> tree(n, LazyFill::on());
-
-	bool dir_down = true;
 
 	int m;
 	std::cin >> m;

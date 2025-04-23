@@ -1,11 +1,9 @@
 #include <cstddef>
 #include <cstdio>
+#include <functional>
 #include <iostream>
-#include <iterator>
 #include <locale>
-#include <ranges>
 #include <stack>
-#include <utility>
 #include <vector>
 
 template <typename Vertex, typename Edge>
@@ -14,15 +12,17 @@ public:
 	using index_t = int;
 	using vertex_t = Vertex;
 	using edge_t = Edge;
+	template <typename T>
+	using storage_t = std::vector<T>;
+	using size_t = int;
 
 private:
 	std::vector<Vertex> data;
 	std::vector<std::vector<std::pair<index_t, edge_t>>> connections;
-	int _size;
+	size_t _size;
 
 public:
-
-	ListGraph(int size, const Vertex& defaultV = Vertex()): data(size, defaultV), connections(size), _size(size) {}
+	ListGraph(size_t size, const Vertex& defaultV = Vertex()): data(size, defaultV), connections(size), _size(size) {}
 	ListGraph(std::vector<Vertex>&& values):
 		data(std::move(values)),
 		connections(data.size()),
@@ -41,10 +41,10 @@ public:
 	}
 
 	void connect(index_t parent, index_t child, edge_t edge = edge_t()) {
-		connections[parent].push_back(std::make_pair(child, edge));
+		connections[parent].emplace_back(child, edge);
 	}
 
-	size_t size() {
+	size_t size() const {
 		return _size;
 	}
 
@@ -54,24 +54,51 @@ public:
 
 	class child {
 	public:
+		using difference_type = std::ptrdiff_t;
+		using value_type = child;
+
 		child(ListGraph* graph, index_t parent, int list_index):
 			graph(graph), parent(parent), list_index(list_index) {}
 
 		child():
 			graph(nullptr), list_index(0) {}
 
-		index_t index() {
+		index_t index() const {
 			return graph->connections[parent][list_index].first;
 		}
 		edge_t& edge() {
 			return graph->connections[parent][list_index].second;
 		}
+		edge_t const& edge() const {
+			return graph->connections[parent][list_index].second;
+		}
+
 		vertex_t& value() {
 			return graph->data[index()];
 		}
-
-		operator index_t() {
+		operator index_t() const {
 			return index();
+		}
+
+		child operator*() const {
+			return *this;
+		}
+
+		child& operator++() {
+			++list_index;
+			return *this;
+		}
+		
+		void operator++(int) {
+			++list_index;
+		}
+
+		bool operator!=(child const& other) const {
+			return list_index != other.list_index;
+		}
+
+		bool operator==(child const& other) const {
+			return list_index == other.list_index;
 		}
 
 	private:
@@ -80,36 +107,62 @@ public:
 		int list_index;
 	};
 
-	auto children(index_t parent) {
-		return std::ranges::iota_view(static_cast<size_t>(0), connections[parent].size())
-			| std::views::transform([this, parent](index_t index) {
-					return child(this, parent, index);
-					});
+	class child_range {
+	public:
+		child_range(ListGraph* graph, index_t parent):
+			graph(graph), parent(parent) {}
+		child begin() const {
+			return child(graph, parent, 0);
+		}
+		child end() const {
+			return child(graph, parent, graph->connections[parent].size());
+		}
+	private:
+		ListGraph* graph;
+		index_t parent;
+	};
+
+	child_range children(index_t parent) {
+		return child_range(this, parent);
+	}
+
+	void connect_both(index_t parent, index_t child, edge_t edge1 = edge_t(), edge_t edge2 = edge_t())
+	requires std::same_as<int, decltype(edge_t().rev)> {
+		edge1.rev = connections[child].size();
+		edge2.rev = connections[parent].size();
+
+		connect(parent, child, edge1);
+		connect(child, parent, edge2);
+	}
+
+	child reverse(child original)
+	requires std::same_as<int, decltype(edge_t().rev)> {
+		return child(this, original.index(), original.edge().rev);
 	}
 };
 
 struct None {};
 
 struct Segment {
-	Segment(): start(0), end(0) {}
-	Segment(size_t start, size_t end): start(start), end(end) {}
+	constexpr Segment(): start(0), end(0) {}
+	constexpr Segment(size_t start, size_t end): start(start), end(end) {}
 
 	size_t start;
 	size_t end;
-	size_t size() {
+	constexpr size_t size() const {
 		return end - start;
 	}
-	inline size_t center() {
+	constexpr size_t center() const {
 		return (start + end) / 2;
 	}
-	inline Segment left() {
+	constexpr Segment left() const {
 		return Segment(start, center());
 	}
-	inline Segment right() {
+	constexpr Segment right() const {
 		return Segment(center(), end);
 	}
 
-	bool includes(const Segment& other) {
+	constexpr bool includes(const Segment& other) const {
 		return start <= other.start && other.end <= end;
 	}
 };
@@ -132,7 +185,13 @@ private:
 	const T& _val;
 };
 
-template<typename T>
+template <typename T>
+concept Lazy = requires(T t, T l, T r) {
+	{l + r} -> std::same_as<T>;
+	{t.resolve(l, r)};
+};
+
+template<typename T> requires Lazy<T>
 class LazySegmentTree {
 public:
 	LazySegmentTree(const size_t size, const T& val = T()):
@@ -181,11 +240,11 @@ public:
 		return update(Segment(index, index + 1), func);
 	}
 
-	size_t size() {
+	constexpr size_t size() const {
 		return _size;
 	}
 
-	inline T root() {
+	constexpr T const& root() {
 		return this->_values[0];
 	}
 
@@ -196,7 +255,7 @@ private:
 	template <typename Iter>
 	void init(Segment segment, size_t index, Iter& iterator) {
 		if (segment.size() == 1) {
-			this->_values[index] = *iterator;
+			this->_values[index] = T(*iterator);
 			++iterator;
 			return;
 		}
@@ -232,14 +291,22 @@ private:
 	template <typename Callable>
 	void update(Segment index, size_t value_index, Segment segment, Callable func) {
 		if (index.includes(segment)) {
-			func(_values[value_index]);
-			return;
+			if constexpr (std::same_as<std::invoke_result_t<decltype(func), decltype(_values[value_index])>,
+					bool>) {
+				if (!std::invoke(func, _values[value_index]) || segment.size() == 1)
+					return;
+			} else {
+				std::invoke(func, _values[value_index]);
+				return;
+			}
 		}
 
 		size_t left = value_index * 2 + 1;
 		size_t right = value_index * 2 + 2;
 
-		this->_values[value_index].resolve(this->_values[left], this->_values[right]);
+		// Does the function mutate values?
+		if constexpr (!std::invocable<Callable, const T&>)
+			this->_values[value_index].resolve(this->_values[left], this->_values[right]);
 
 		if (index.start < segment.center())
 			update(index, left, segment.left(), func);
@@ -247,9 +314,9 @@ private:
 		if (segment.center() < index.end)
 			update(index, right, segment.right(), func);
 
-		_values[value_index] = _values[left] + _values[right];
+		if constexpr (!std::invocable<Callable, const T&>)
+			_values[value_index] = _values[left] + _values[right];
 	}
-
 };
 
 class LazyFill {
@@ -260,12 +327,12 @@ private:
 		MIXED
 	};
 
+	LazyFill(type color, int filled, int length):
+		color(color), filled(filled), length(length) {}
+
 public:
 	LazyFill():
 		color(UNFILLED), filled(0), length(1) {}
-
-	LazyFill(type color, int filled, int length):
-		color(color), filled(filled), length(length) {}
 
 	static LazyFill on() {
 		return LazyFill(FILLED, 1, 1);
@@ -294,19 +361,19 @@ public:
 	}
 
 	void resolve(LazyFill& left, LazyFill& right) {
-		color = MIXED;
 		switch(color) {
 			case MIXED:
 				return;
 			case FILLED:
 				left.fill();
 				right.fill();
-				return;
+				break;
 			case UNFILLED:
 				left.unfill();
 				right.unfill();
-				return;
+				break;
 		}
+		color = MIXED;
 	}
 
 	LazyFill operator+(const LazyFill& other) const {
@@ -353,8 +420,6 @@ int main() {
 	calculate_indices(graph, 0);
 
 	LazySegmentTree<LazyFill> tree(n, LazyFill::on());
-
-	bool dir_down = true;
 
 	int m;
 	std::cin >> m;

@@ -1,8 +1,50 @@
 #include <cassert>
+#include <cstddef>
+#include <cstdio>
+#include <iostream>
 #include <vector>
 
-#include "Segment.h"
-#include "DummyIterator.h"
+struct Segment {
+	constexpr Segment(): start(0), end(0) {}
+	constexpr Segment(size_t start, size_t end): start(start), end(end) {}
+
+	size_t start;
+	size_t end;
+	constexpr size_t size() const {
+		return end - start;
+	}
+	constexpr size_t center() const {
+		return (start + end) / 2;
+	}
+	constexpr Segment left() const {
+		return Segment(start, center());
+	}
+	constexpr Segment right() const {
+		return Segment(center(), end);
+	}
+
+	constexpr bool includes(const Segment& other) const {
+		return start <= other.start && other.end <= end;
+	}
+};
+
+template <typename T>
+class DummyIterator {
+public:
+	DummyIterator(const T& val): _val(val) {}
+
+	const T& operator*() const {
+		return _val;
+	}
+
+	DummyIterator& operator++() {
+		return *this;
+	}
+	void operator++(int) {}
+
+private:
+	const T& _val;
+};
 
 template <typename T, typename Operator = std::plus<T>>
 class SegmentTree {
@@ -108,3 +150,74 @@ private:
 		_values[value_index] = _operator(_values[left], _values[right]);
 	}
 };
+
+inline void FastIO() {
+	std::ios::sync_with_stdio(false);
+	std::cin.tie(nullptr);
+	std::cout.tie(nullptr);
+}
+
+struct Data {
+	int delta;
+	int minimum;
+
+	Data(char type) {
+		switch(type) {
+			case '(':
+				delta = 1;
+				minimum = 0;
+				break;
+			case ')':
+				delta = -1;
+				minimum = -1;
+		}
+	}
+
+	void toggle() {
+		if (delta == 1) {
+			delta = -1;
+			minimum = -1;
+		}
+		else {
+			delta = 1;
+			minimum = 0;
+		}
+	}
+
+	Data(int delta = 0, int minimum = 0):
+		delta(delta), minimum(minimum) {}
+
+	Data operator+(Data const& other) const {
+		return Data(
+				delta + other.delta,
+				std::min(minimum, delta + other.minimum)
+				);
+	}
+};
+
+int main() {
+	FastIO();
+	std::string str;
+	std::cin >> str;
+
+	SegmentTree<Data> tree(str);
+
+	int m;
+	std::cin >> m;
+
+	int count = 0;
+
+	for (int i = 0; i < m; i++) {
+		int index;
+		std::cin >> index;
+
+		tree.update(index - 1, [](Data& val) {val.toggle();});
+
+		Data result = tree.root();
+
+		if (result.delta == 0 && result.minimum >= 0)
+			count++;
+	}
+
+	std::cout << count;
+}

@@ -6,12 +6,12 @@ private:
 		MIXED
 	};
 
+	LazyFill(type color, int filled, int length):
+		color(color), filled(filled), length(length) {}
+
 public:
 	LazyFill():
 		color(UNFILLED), filled(0), length(1) {}
-
-	LazyFill(type color, int filled, int length):
-		color(color), filled(filled), length(length) {}
 
 	static LazyFill on() {
 		return LazyFill(FILLED, 1, 1);
@@ -40,19 +40,19 @@ public:
 	}
 
 	void resolve(LazyFill& left, LazyFill& right) {
-		color = MIXED;
 		switch(color) {
 			case MIXED:
 				return;
 			case FILLED:
 				left.fill();
 				right.fill();
-				return;
+				break;
 			case UNFILLED:
 				left.unfill();
 				right.unfill();
-				return;
+				break;
 		}
+		color = MIXED;
 	}
 
 	LazyFill operator+(const LazyFill& other) const {

@@ -4,8 +4,8 @@ struct Segment {
 	constexpr Segment(): start(0), end(0) {}
 	constexpr Segment(size_t start, size_t end): start(start), end(end) {}
 
-	size_t const start;
-	size_t const end;
+	size_t start;
+	size_t end;
 	constexpr size_t size() const {
 		return end - start;
 	}
