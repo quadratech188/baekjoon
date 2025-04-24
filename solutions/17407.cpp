@@ -56,7 +56,7 @@ int main() {
 		int index;
 		std::cin >> index;
 
-		tree.update(index - 1, [](Data& val) {val.toggle();});
+		tree.update(index - 1, &Data::toggle);
 
 		Data result = tree.root();
 
