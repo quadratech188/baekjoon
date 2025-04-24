@@ -1,10 +1,35 @@
-#include "modules/Compress.h"
-#include "modules/FastIO.h"
-#include "modules/LazySegmentTree.h"
 #include <algorithm>
-#include <cassert>
 #include <iostream>
-#include <ranges>
+#include <vector>
+#include "../modules/LazySegmentTree.h"
+#include "../modules/Compress.h"
+#include "../modules/FastIO.h"
+struct Data {
+	int layers;
+	int delta;
+	bool equals;
+
+	Data(int layers = 0, int delta = 0, int equals = true):
+		layers(layers), delta(delta), equals(equals) {}
+
+	Data operator+(Data const& other) const {
+		return Data(
+				value(),
+				0,
+				equals && other.equals && value() == other.value()
+				);
+	}
+
+	int value() const {
+		return layers + delta;
+	}
+
+	void resolve(Data& l, Data& r) {
+		l.delta += delta;
+		r.delta += delta;
+		delta = 0;
+	}
+};
 
 enum Type {
 	BEGIN,
@@ -23,51 +48,6 @@ struct Boundary {
 	}
 };
 
-struct LazyColor {
-	int length;
-	int count;
-	int layers;
-
-	LazyColor(int length = 0):
-		length(length), count(0), layers(0) {}
-
-	LazyColor(int length, int count, int layers):
-		length(length), count(count), layers(layers) {}
-
-	int value() {
-		if (layers == 0) return count;
-		return length;
-	}
-
-	LazyColor operator+(LazyColor& other)  {
-		int delta = std::min(layers, other.layers);
-		layers -= delta;
-		other.layers -= delta;
-
-		return LazyColor(
-				length + other.length,
-				value() + other.value(),
-				delta
-				);
-	}
-
-	bool update(int delta) {
-		if (layers + delta >= 0) {
-			// All good
-			layers += delta;
-			// Stop here
-			return false;
-		}
-		// resolve() will update the children with layers, we don't do anything here
-		return true;
-	}
-
-	void resolve(LazyColor& left, LazyColor& right) {
-		left.update(layers);
-		right.update(layers);
-	}
-};
-
 int main() {
 	FastIO();
 	int n;
@@ -79,8 +59,6 @@ int main() {
 	std::vector<int> rows;
 	rows.reserve(2 * n);
 
-	long long int total = 0;
-
 	for (int i = 0; i < n; i++) {
 		int x1, x2, y1, y2;
 		std::cin >> x1 >> y1 >> x2 >> y2;
@@ -90,8 +68,6 @@ int main() {
 
 		data.emplace_back(x1, y1, y2, BEGIN);
 		data.emplace_back(x2, y1, y2, END);
-
-		total += static_cast<long long int>(x2 - x1) * (y2 - y1);
 	}
 
 
@@ -100,34 +76,26 @@ int main() {
 	Compress<int> compressed_rows(rows);
 
 
-	LazySegmentTree<LazyColor> tree(
-			std::views::iota((size_t)0, compressed_rows.size() - 1)
-			| std::views::transform([&compressed_rows](size_t index) {
-				return compressed_rows.decompress(index + 1)
-				- compressed_rows.decompress(index);
-				})
-			);
+	LazySegmentTree<Data> tree(2 * n);
 
 	std::sort(data.begin(), data.end());
 
-	int prev_column = 0;
-	long long int sum = 0;
-
 	for (Boundary& boundary: data) {
-		sum += static_cast<long long int>(boundary.column - prev_column) * tree.root().value();
-
-		int delta = boundary.type == BEGIN? 1: -1;
-		tree.update(
+		Segment segment(
 				compressed_rows.compress(boundary.row_begin),
-				compressed_rows.compress(boundary.row_end),
-				[delta](LazyColor& val) {
-				return val.update(delta);
-				});
-		
-		prev_column = boundary.column;
+				compressed_rows.compress(boundary.row_end)
+				);
+
+		if (!tree.sum(segment).equals) {
+			std::cout << '1';
+			return 0;
+		}
+
+		if (boundary.type == BEGIN)
+			tree.update(segment, [](Data& val) {val.delta++;});
+		else
+			tree.update(segment, [](Data& val) {val.delta--;});
 	}
-	if (sum == total)
-		std::cout << '0';
-	else
-	 	std::cout << '1';
+
+	std::cout << '0';
 }
