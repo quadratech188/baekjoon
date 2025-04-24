@@ -236,7 +236,7 @@ struct Data {
 	int delta;
 	bool equals;
 
-	Data(int layers = 0, int delta = 0, int equals = true):
+	Data(int layers = 0, int delta = 0, bool equals = true):
 		layers(layers), delta(delta), equals(equals) {}
 
 	Data operator+(Data const& other) const {
@@ -251,24 +251,19 @@ struct Data {
 		return layers + delta;
 	}
 
-	void resolve(Data& l, Data& r) {
+	inline void resolve(Data& l, Data& r) {
 		l.delta += delta;
 		r.delta += delta;
 		delta = 0;
 	}
 };
 
-enum Type {
-	BEGIN,
-	END
-};
-
 struct Boundary {
-	Boundary(int column, int row_begin, int row_end, Type type):
+	Boundary(int column, int row_begin, int row_end, int type):
 		column(column), row_begin(row_begin), row_end(row_end), type(type) {}
 	int column;
 	int row_begin, row_end;
-	Type type;
+	int type;
 
 	bool operator<(const Boundary& other) {
 		return column < other.column;
@@ -292,8 +287,8 @@ int main() {
 		rows.push_back(y1);
 		rows.push_back(y2);
 
-		data.emplace_back(x1, y1, y2, BEGIN);
-		data.emplace_back(x2, y1, y2, END);
+		data.emplace_back(x1, y1, y2, 1);
+		data.emplace_back(x2, y1, y2, -1);
 	}
 
 	std::sort(rows.begin(), rows.end());
@@ -315,10 +310,7 @@ int main() {
 			return 0;
 		}
 
-		if (boundary.type == BEGIN)
-			tree.update(segment, [](Data& val) {val.delta++;});
-		else
-			tree.update(segment, [](Data& val) {val.delta--;});
+		tree.update(segment, [&boundary](Data& val) {val.delta += boundary.type;});
 	}
 
 	std::cout << '0';
