@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
+#include <functional>
 #include <iostream>
 #include <vector>
 
@@ -135,7 +136,7 @@ private:
 	template <typename Callable>
 	void update(size_t index, size_t value_index, Segment segment, Callable func) {
 		if (segment.size() == 1) {
-			func(_values[value_index]);
+			std::invoke(func, _values[value_index]);
 			return;
 		}
 
