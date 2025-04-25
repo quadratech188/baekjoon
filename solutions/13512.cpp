@@ -1,10 +1,11 @@
 #include "../modules/ListGraph.h"
 #include "../modules/Graph.h"
 #include "../modules/TreeWrapper.h"
-#include "../modules/LazySegmentTree.h"
-#include "../modules/LazySum.h"
+#include "../modules/SegmentTree.h"
+#include "../modules/Operators.h"
 #include "../modules/FastIO.h"
 #include <iostream>
+#include <limits>
 #include <utility>
 #include <variant>
 
@@ -57,19 +58,39 @@ void decompose(G& tree, int parent = 0, int depth = 0, int chain_head = 0, int c
 	}
 }
 
+struct Data {
+	int first, first_idx;
+
+	Data operator+(Data const& other) const {
+		Data result;
+		if (first < other.first) {
+			result.first = first;
+			result.first_idx = first_idx;
+		}
+		else {
+			result.first = other.first;
+			result.first_idx = other.first_idx;
+		}
+		return result;
+	}
+
+	Data():
+		first(std::numeric_limits<int>::max()) {}
+};
+
 int main() {
 	FastIO();
-	int n, m;
-	std::cin >> n >> m;
+	int n;
+	std::cin >> n;
 
-	ListGraph<std::monostate, int> graph(n);
+	ListGraph<std::monostate, std::monostate> graph(n);
 
 	for (int i = 1; i < n; i++) {
-		int a, b;
-		std::cin >> a >> b;
+		int u, v;
+		std::cin >> u >> v;
 
-		graph.connect(a - 1, b - 1, 1);
-		graph.connect(b - 1, a - 1, 1);
+		graph.connect(u - 1, v - 1);
+		graph.connect(v - 1, u - 1);
 	}
 
 	TreeWrapper tree(graph, 0);
@@ -84,64 +105,51 @@ int main() {
 	chain_depths.resize(n);
 	decompose(tree);
 
-	LazySegmentTree<LazySum<long long int>> segtree(n);
+	SegmentTree<Data> segtree(n);
 
-	for (int i = 0; i < m; i++) {
+	for (int i = 0; i < n; i++)
+		segtree.update(chain_indices[i], [i](Data& val) {
+				val.first_idx = i;
+				});
+
+	int m;
+	std::cin >> m;
+	for (int _ = 0; _ < m; _++) {
 		char type;
 		std::cin >> type;
 		switch(type) {
-			case 'P': {
-				int u, v;
-				std::cin >> u >> v;
-				u--;
-				v--;
+			case '1': {
+				int i;
+				std::cin >> i;
+				i--;
 
-				while (chain_heads[u] != chain_heads[v]) {
-					if (chain_depths[u] < chain_depths[v]) std::swap(u, v);
-					segtree.update(
-							chain_indices[chain_heads[u]],
-							chain_indices[u] + 1,
-							[](LazySum<long long int>& val) {val += 1;});
-					u = chain_parents[u];
-				}
-
-				if (chain_indices[u] > chain_indices[v])
-					std::swap(u, v);
-
-				if (u != v)
-					segtree.update(
-							chain_indices[u] + 1,
-							chain_indices[v] + 1,
-							[](LazySum<long long int>& val) {val += 1;});
+				segtree.update(chain_indices[i], [i](Data& val) {
+						if (val.first == std::numeric_limits<int>::max()) {
+							val.first = chain_indices[i];
+						}
+						else {
+							val.first = std::numeric_limits<int>::max();
+						}
+						});
 				break;
-			}
-			case 'Q': {
-				int u, v;
-				std::cin >> u >> v;
-				u--;
+		  	}
+			case '2': {
+				int v;
+				std::cin >> v;
 				v--;
 
-				LazySum<long long int> result;
+				Data sum = segtree.at(0);
 
-				while (chain_heads[u] != chain_heads[v]) {
-					if (chain_depths[u] < chain_depths[v]) std::swap(u, v);
-					result = result + segtree.sum(
-								chain_indices[chain_heads[u]],
-								chain_indices[u] + 1
-								);
-					u = chain_parents[u];
+				while (v != 0) {
+					sum = sum + segtree.sum(chain_indices[chain_heads[v]], chain_indices[v] + 1);
+
+					v = chain_parents[v];
 				}
 
-				if (chain_indices[u] > chain_indices[v])
-					std::swap(u, v);
-
-				if (u != v)
-					result = result + segtree.sum(
-							chain_indices[u] + 1,
-							chain_indices[v] + 1
-							);
-
-				std::cout << result.value() << '\n';
+				if (sum.first == std::numeric_limits<int>::max())
+					std::cout << "-1\n";
+				else
+					std::cout << sum.first_idx + 1 << '\n';
 			}
 		}
 	}

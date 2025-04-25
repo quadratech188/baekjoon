@@ -17,6 +17,17 @@ inline void FastIO() {
 }
 
 template <typename T>
+inline auto InputRange(size_t n, std::istream& is = std::cin) {
+	return std::views::iota(static_cast<size_t>(0), n)
+		| std::views::transform([&is](size_t) {
+				T temp;
+				std::cin >> temp;
+				return temp;
+				});
+}
+
+/*
+template <typename T>
 class InputRange: public std::ranges::view_interface<InputRange<T>> {
 public:
 	InputRange(size_t size, std::istream& is = std::cin):
@@ -85,13 +96,14 @@ public:
 		return _size;
 	}
 };
+*/
 
 struct Segment {
 	constexpr Segment(): start(0), end(0) {}
 	constexpr Segment(size_t start, size_t end): start(start), end(end) {}
 
-	size_t const start;
-	size_t const end;
+	size_t start;
+	size_t end;
 	constexpr size_t size() const {
 		return end - start;
 	}
@@ -212,12 +224,12 @@ private:
 		_values[index] = _values[left] + _values[right];
 	}
 
-	T sum(Segment query, Segment segment, size_t index) {
+	T sum(Segment const query, Segment const segment, size_t const index) {
 		if (query.includes(segment))
 			return _values[index];
 
-		size_t left = index * 2 + 1;
-		size_t right = index * 2 + 2;
+		size_t const left = index * 2 + 1;
+		size_t const right = index * 2 + 2;
 
 		_values[index].resolve(_values[left], _values[right]);
 
@@ -232,7 +244,7 @@ private:
 	}
 
 	template <typename Callable>
-	void update(Segment index, size_t value_index, Segment segment, Callable func) {
+	void update(Segment const index, size_t const value_index, Segment const segment, Callable func) {
 		if (index.includes(segment)) {
 			if constexpr (std::same_as<std::invoke_result_t<decltype(func), decltype(_values[value_index])>,
 					bool>) {
@@ -244,8 +256,8 @@ private:
 			}
 		}
 
-		size_t left = value_index * 2 + 1;
-		size_t right = value_index * 2 + 2;
+		size_t const left = value_index * 2 + 1;
+		size_t const right = value_index * 2 + 2;
 
 		// Does the function mutate values?
 		if constexpr (!std::invocable<Callable, const T&>)
