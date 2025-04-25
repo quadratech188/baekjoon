@@ -2,7 +2,7 @@ template <typename T>
 class LazySum {
 public:
 	LazySum():
-		_value(), length(0), delta() {}
+		_value(), length(1), delta() {}
 	LazySum(T value):
 		_value(value), length(1), delta() {}
 	LazySum(T value, int length):
