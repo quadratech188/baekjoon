@@ -48,6 +48,10 @@ public:
 				});
 	}
 
+	int degree(index_t parent) {
+		return graph.degree(parent) - (parent == root? 0 : 1);
+	}
+
 	index_t parent(index_t child) {
 		return parents[child];
 	}

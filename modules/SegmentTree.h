@@ -1,4 +1,5 @@
 #include <cassert>
+#include <functional>
 #include <vector>
 
 #include "Segment.h"
@@ -8,7 +9,7 @@ template <typename T, typename Operator = std::plus<T>>
 class SegmentTree {
 public:
 	SegmentTree(const size_t size, const T& val = T(), Operator op = Operator()):
-		_values(4 * size), _size(size), _operator(op) {
+		_size(size), _values(4 * size), _operator(op) {
 		init(Segment(0, _size), 0, DummyIterator<T>(val));
 	}
 
@@ -93,7 +94,7 @@ private:
 	template <typename Callable>
 	void update(size_t index, size_t value_index, Segment segment, Callable func) {
 		if (segment.size() == 1) {
-			func(_values[value_index]);
+			std::invoke(func, _values[value_index]);
 			return;
 		}
 

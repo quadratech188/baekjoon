@@ -1,3 +1,5 @@
+#pragma once
+
 #include <concepts>
 #include <ranges>
 template <typename G>

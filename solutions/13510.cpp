@@ -1,66 +1,162 @@
-#include "modules/SegmentTree.h"
+#include "../modules/ListGraph.h"
+#include "../modules/Graph.h"
+#include "../modules/TreeWrapper.h"
+#include "../modules/SegmentTree.h"
+#include "../modules/Operators.h"
+#include "../modules/FastIO.h"
 #include <iostream>
-#include <vector>
-#include <limits>
+#include <utility>
+#include <variant>
 
-struct Child {
-	int index;
-	int cost;
-};
+std::vector<int> subtree_sizes;
+std::vector<int> heavy_edges;
+std::vector<int> tree_values;
 
-static const int N = 100000;
-
-std::vector<Child> neighbors[N];
-int totalCosts[N];
-int heavyEdges[N];
-
-void calculateCosts(int root, int size) {
-
+template <Graph G>
+int calculate_subtree_sizes(G& tree, int parent = 0) {
+	int sum = 1;
 	int max = 0;
-	int maxIndex;
+	for (auto child: tree.children(parent)) {
+		int size = calculate_subtree_sizes(tree, child);
 
-	totalCosts[root] = 1; // Mark as used
+		if (size > max) {
+			max = size;
+			heavy_edges[parent] = child;
+		}
 
-	for (auto& child: neighbors[root]) {
-		calculateCosts(child.index, size);
+		sum += size;
+
+		tree_values[child] = child.edge();
 	}
+
+	subtree_sizes[parent] = sum;
+	return sum;
 }
 
-void setHeavyEdges(int root, int size) {
-	if (neighbors[root].empty()) return;
+std::vector<int> chain_heads;
+std::vector<int> chain_parents;
+std::vector<int> chain_indices;
+std::vector<int> chain_depths;
 
-	int maxIndex;
-	int max;
+template <Graph G>
+void decompose(G& tree, int parent = 0, int depth = 0, int chain_head = 0, int chain_parent = 0) {
+	static int index = 0;
+	chain_heads[parent] = chain_head;
+	chain_parents[parent] = chain_parent;
 
-	for (auto& child: neighbors[root]) {
-		if (totalCosts[child.index] + child.cost > max) {
-			max = totalCosts[child.index] + child.cost;
-			maxIndex = child.index;
+	chain_indices[parent] = index;
+	index++;
+
+	chain_depths[parent] = depth;
+
+	for (auto child: tree.children(parent)) {
+		if (child == heavy_edges[parent]) {
+			decompose(tree, child, depth, chain_head, chain_parent);
+		}
+		else {
 		}
 	}
-
-	heavyEdges[root] = maxIndex;
+	for (auto child: tree.children(parent)) {
+		if (child == heavy_edges[parent]) {
+		}
+		else {
+			decompose(tree, child, depth + 1, child, parent);
+		}
+	}
 }
 
 int main() {
+	FastIO();
 	int n;
 	std::cin >> n;
+
+	ListGraph<std::monostate, int> graph(n);
+
+	std::vector<std::pair<int, int>> edges;
+	edges.reserve(n);
 
 	for (int i = 0; i < n - 1; i++) {
 		int u, v, w;
 		std::cin >> u >> v >> w;
 
-		neighbors[v].push_back({
-				.index = u,
-				.cost = w
-				});
-		neighbors[u].push_back({
-				.index = v,
-				.cost = w
+		graph.connect(u - 1, v - 1, w);
+		graph.connect(v - 1, u - 1, w);
+
+		edges.emplace_back(u - 1, v - 1);
+	}
+
+	TreeWrapper tree(graph, 0);
+
+	subtree_sizes.resize(n);
+	heavy_edges.resize(n);
+	tree_values.resize(n);
+	calculate_subtree_sizes(tree);
+
+	chain_heads.resize(n);
+	chain_parents.resize(n);
+	chain_indices.resize(n);
+	chain_depths.resize(n);
+	decompose(tree);
+
+	SegmentTree<int, Max<int>> segtree(n);
+
+	for (int i = 0; i < n; i++) {
+		segtree.update(chain_indices[i], [i](int& val) {
+				val = tree_values[i];
 				});
 	}
 
-	calculateCosts(0, n);
+	int m;
+	std::cin >> m;
+	for (int _ = 0; _ < m; _++) {
+		char type;
+		std::cin >> type;
+		switch(type) {
+			case '1': {
+				int i, c;
+				std::cin >> i >> c;
+				auto [first, second] = edges[i - 1];
 
-	for (int i = 0; i < n; i++) setHeavyEdges(i, n);
+				if (tree.parent(first) == second) {
+					segtree.update(chain_indices[first], [c](int& val) {
+							val = c;
+							});
+				}
+				else {
+					segtree.update(chain_indices[second], [c](int& val) {
+							val = c;
+							});
+				}
+				break;
+		  	}
+			case '2': {
+				int u, v;
+				std::cin >> u >> v;
+				u--;
+				v--;
+
+				int result = 0;
+
+				while (chain_heads[u] != chain_heads[v]) {
+					if (chain_depths[u] < chain_depths[v]) std::swap(u, v);
+					result = std::max(result, segtree.sum(
+								chain_indices[chain_heads[u]],
+								chain_indices[u] + 1
+								));
+					u = chain_parents[u];
+				}
+
+				if (chain_indices[u] > chain_indices[v])
+					std::swap(u, v);
+
+				if (u != v)
+					result = std::max(result, segtree.sum(
+							chain_indices[u] + 1,
+							chain_indices[v] + 1
+							));
+
+				std::cout << result << '\n';
+		  	}
+		}
+	}
 }

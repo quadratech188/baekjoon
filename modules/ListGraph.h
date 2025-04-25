@@ -102,23 +102,15 @@ public:
 		int list_index;
 	};
 
-	class child_range {
-	public:
-		child_range(ListGraph* graph, index_t parent):
-			graph(graph), parent(parent) {}
-		child begin() const {
-			return child(graph, parent, 0);
-		}
-		child end() const {
-			return child(graph, parent, graph->connections[parent].size());
-		}
-	private:
-		ListGraph* graph;
-		index_t parent;
-	};
+	auto children(index_t parent) {
+		return std::ranges::subrange(
+				child(this, parent, 0),
+				child(this, parent, connections[parent].size())
+				);
+	}
 
-	child_range children(index_t parent) {
-		return child_range(this, parent);
+	int degree(index_t parent) {
+		return connections[parent].size();
 	}
 
 	void connect_both(index_t parent, index_t child, edge_t edge1 = edge_t(), edge_t edge2 = edge_t())
