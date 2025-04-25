@@ -49,17 +49,12 @@ void decompose(G& tree, int parent = 0, int depth = 0, int chain_head = 0, int c
 
 	chain_depths[parent] = depth;
 
+	if (heavy_edges[parent] == -1) return;
+
+	decompose(tree, heavy_edges[parent], depth, chain_head, chain_parent);
+
 	for (auto child: tree.children(parent)) {
-		if (child == heavy_edges[parent]) {
-			decompose(tree, child, depth, chain_head, chain_parent);
-		}
-		else {
-		}
-	}
-	for (auto child: tree.children(parent)) {
-		if (child == heavy_edges[parent]) {
-		}
-		else {
+		if (child != heavy_edges[parent]) {
 			decompose(tree, child, depth + 1, child, parent);
 		}
 	}
@@ -88,7 +83,7 @@ int main() {
 	TreeWrapper tree(graph, 0);
 
 	subtree_sizes.resize(n);
-	heavy_edges.resize(n);
+	heavy_edges.resize(n, -1);
 	tree_values.resize(n);
 	calculate_subtree_sizes(tree);
 
