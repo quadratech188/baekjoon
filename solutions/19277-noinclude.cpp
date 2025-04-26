@@ -120,6 +120,7 @@ struct Data {
 		if (this->reset) {
 			child1.toZero();
 			child2.toZero();
+			return;
 		}
 
 		child1.update({0, this->add});

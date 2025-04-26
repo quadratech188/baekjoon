@@ -1,36 +1,32 @@
-#include "modules/LazySegmentTree.h"
-#include "modules/Input.h"
+#include "../modules/LazySegmentTree.h"
+#include "../modules/InputRange.h"
 #include <iostream>
+#include <limits>
 
 struct Data {
-	int value;
+	int upper_limit;
+	long long int sum;
 	int max;
-	int sum;
-	int cap;
 	int length;
 
-	void update(int action) {
-		cap = action;
-		if (action >= max) return;
+	Data(int val):
+		upper_limit(std::numeric_limits<int>::max()),
+		sum(val),
+		max(val),
+		length(1) {}
 
-		max = action;
-		sum = length * max;
+	Data operator+(Data const& other) const {
+
 	}
 
-	void resolve(Data& left, Data& right) {
+	void resolve(Data& l, Data& r) {
 
 	}
 };
-
-std::istream& operator>>(std::istream& is, Data& data) {
-	is >> data.value;
-}
 
 int main() {
 	int n;
 	std::cin >> n;
 
-	std::vector<Data> values = Input::inlineToVec<Data>(n);
-
-	LazySegmentTree<Data, int> tree(values);
+	LazySegmentTree<Data> tree{InputRange<int>(n)};
 }
