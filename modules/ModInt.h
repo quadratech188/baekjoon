@@ -30,7 +30,8 @@ public:
 	constexpr ModInt() noexcept:
 		_val(0) {}
 
-	constexpr ModInt operator+(T const& other) const noexcept {
+	template <typename U>
+	constexpr ModInt operator+(U&& other) const noexcept {
 		return ModInt(_val + other);
 	}
 
@@ -49,8 +50,8 @@ public:
 		return *this;
 	}
 
-	template <typename O>
-	constexpr ModInt operator*(const O& other) const noexcept {
+	template <typename U>
+	constexpr ModInt operator*(U&& other) const noexcept {
 		return ModInt(static_cast<T2>(_val) * other);
 	}
 
