@@ -11,7 +11,7 @@ struct StaticModPolicy {
 	}
 };
 
-template <typename T, int tag>
+template <typename T, typename tag = void>
 struct DynamicModPolicy {
 	static T& mod() {
 		static T value = 0;
@@ -110,8 +110,8 @@ using sm64 = ModInt<uint64_t, uint64_t, StaticModPolicy<uint64_t, MOD>>;
 using sm32_1e9_7 = sm32<1'000'000'007>;
 using sm64_1e9_7 = sm64<1'000'000'007>;
 
-template <int tag = 0>
+template <typename tag = void>
 using dm32 = ModInt<uint32_t, uint64_t, DynamicModPolicy<uint32_t, tag>>;
 
-template <int tag = 0>
+template <typename tag = void>
 using dm64 = ModInt<uint64_t, uint64_t, DynamicModPolicy<uint64_t, tag>>;
