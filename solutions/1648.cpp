@@ -1,26 +1,48 @@
-#include "modules/Matrix.h"
-#include "modules/ModInt.h"
+#include "../modules/ModInt.h"
 #include <iostream>
 #include <optional>
 
-using m_9901 = m<9901>;
+using sm32_9901 = sm32<9901>;
 
-Matrix<std::optional<m_9901>> cache;
+std::optional<sm32_9901> cache[1 << 14][14][14];
 
-m_9901 solve(int n, int m, int current_row, unsigned int available_last_rows, int ptr) {
-	if (current_row == n) {
-		if (available_last_rows == 0) return 1;
+int n, m;
+
+sm32_9901 solution(int state, int length, int cursor) {
+	if (cursor == n)
+		return solution(state, length - 1, 0);
+	if (length == 0) {
+		if (state == 0) return 1;
 		return 0;
 	}
 
-	m_9901 result = 0;
+	if (cache[state][length][cursor].has_value())
+		return *cache[state][length][cursor];
+
+	if (cursor == n - 1) {
+		if (state & (1 << cursor))
+			return solution(state ^ (1 << cursor), length - 1, 0);
+		else
+			return solution(state | (1 << cursor), length - 1, 0);
+	}
+	
+	sm32_9901 result = 0;
+
+	if (!(state & (1 << cursor)) && !(state & (1 << (cursor + 1))))
+		result += solution(state, length, cursor + 2);
+
+	if (!(state & (1 << cursor)))
+		result += solution(state | (1 << cursor), length, cursor + 1);
+	else
+		result += solution(state ^ (1 << cursor), length, cursor + 1);
+
+	cache[state][length][cursor] = result;
+
+	return result;
 }
 
 int main() {
-	int n, m;
 	std::cin >> n >> m;
 
-	cache = Matrix<std::optional<m_9901>>(1 << n, m);
-
-	std::cout << solve(n, m, 0, 0, 0);
+	std::cout << solution(0, m, 0);
 }

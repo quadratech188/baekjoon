@@ -1,5 +1,47 @@
+#include <algorithm>
+#include <array>
 #include <functional>
+#include <iostream>
+#include <iterator>
+#include <ranges>
+#include <variant>
 #include <vector>
+
+template <int size>
+class PrimeLookup {
+public:
+	constexpr PrimeLookup() {
+		primes.fill(true);
+
+		primes[0] = false;
+		primes[1] = false;
+
+		for (int i = 2; i * i <= size; i++) {
+			if (primes[i]) {
+				for (int j = i * i; j <= size; j += i)
+					primes[j] = false;
+			}
+		}
+	};
+
+	bool operator()(int n) const {
+		return primes[n];
+	}
+
+private:
+	std::array<bool, size+1> primes;
+
+};
+
+template <typename T>
+inline auto InputRange(size_t n, std::istream& is = std::cin) {
+	return std::views::iota(static_cast<size_t>(0), n)
+		| std::views::transform([&is](size_t) {
+				T temp;
+				std::cin >> temp;
+				return temp;
+				});
+}
 
 template <typename Vertex, typename Edge>
 class ListGraph {
@@ -135,3 +177,106 @@ public:
 		return child(this, original.index(), original.edge().rev);
 	}
 };
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& values) {
+	if (values.size() == 0) return os;
+
+	for (size_t i = 0; i < values.size() - 1; i++) {
+		std::cout << values[i] << ' ';
+	}
+	std::cout << values[values.size() - 1];
+
+	return os;
+}
+
+constexpr PrimeLookup<2000> lookup;
+
+std::vector<int> parents;
+std::vector<int> children;
+std::vector<int> considered;
+ListGraph<std::monostate, std::monostate> graph;
+int iterations;
+
+bool match(int parent) {
+	if (parent == 0) return false;
+	for (int child: graph.children(parent)) {
+		if (considered[child] == iterations) continue;
+		considered[child] = iterations;
+
+		if (parents[child] == -1 || match(parents[child])) {
+			parents[child] = parent;
+			children[parent] = child;
+			return true;
+		}
+	}
+	return false;
+}
+
+int main() {
+	int n;
+	std::cin >> n;
+
+	std::vector<int> a, b;
+
+	int first;
+	std::cin >> first;
+
+	a.push_back(first);
+
+	for (int value: InputRange<int>(n - 1)) {
+		if ((value - first) % 2 == 0)
+			a.push_back(value);
+		else
+		 	b.push_back(value);
+	}
+
+	if (a.size() != b.size()) {
+		std::cout << "-1";
+		return 0;
+	}
+
+	parents.resize(b.size(), -1);
+	children.resize(a.size());
+	considered.resize(b.size());
+	graph.resize(a.size());
+
+	for (size_t parent = 0; parent < a.size(); parent++) {
+		for (size_t child = 0; child < b.size(); child++) {
+			if (lookup(a[parent] + b[child])) {
+				graph.connect(parent, child);
+			}
+		}
+	}
+
+	std::vector<int> results;
+
+	for (size_t child: graph.children(0)) {
+
+		parents.assign(b.size(), -1);
+		children.assign(a.size(), -1);
+		considered.assign(b.size(), -1);
+		size_t successes = 1;
+		iterations = 0;
+
+		children[0] = child;
+		parents[child] = 0;
+		considered[child] = iterations;
+
+		for (size_t i = 1; i < a.size(); i++) {
+			if (match(i))
+				successes++;
+			iterations++;
+		}
+
+		if (successes == b.size())
+			results.push_back(b[child]);
+	}
+
+	std::sort(results.begin(), results.end());
+
+	if (!results.empty())
+		std::cout << results;
+	else
+		std::cout << "-1";
+}
