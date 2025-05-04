@@ -32,7 +32,7 @@ public:
 		return _size - 1;
 	}
 
-	void reserve(int size) {
+	void reserve(size_t size) {
 		data.reserve(size);
 		connections.reserve(size);
 	}

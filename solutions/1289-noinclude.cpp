@@ -41,7 +41,7 @@ public:
 		return _size - 1;
 	}
 
-	void reserve(int size) {
+	void reserve(size_t size) {
 		data.reserve(size);
 		connections.reserve(size);
 	}
@@ -284,6 +284,11 @@ public:
 	constexpr ModInt operator*(ModInt const& other) const noexcept {
 		return ModInt(static_cast<T2>(value) * other.value % Policy::mod(), raw{});
 	}
+
+	friend std::ostream& operator<<(std::ostream& os, ModInt const& val) {
+		os << val.value;
+		return os;
+	}
 };
 
 template <uint32_t MOD>
@@ -339,5 +344,5 @@ int main() {
 
 	solve(tree, 0);
 
-	std::cout << (uint32_t)traffic;
+	std::cout << traffic;
 }
