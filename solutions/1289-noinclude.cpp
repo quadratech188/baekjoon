@@ -4,6 +4,7 @@
 #include <functional>
 #include <iostream>
 #include <istream>
+#include <limits>
 #include <ostream>
 #include <queue>
 #include <ranges>
@@ -12,12 +13,12 @@
 template <typename Vertex, typename Edge>
 class ListGraph {
 public:
-	using index_t = int;
+	using index_t = std::size_t;
 	using vertex_t = Vertex;
 	using edge_t = Edge;
 	template <typename T>
 	using storage_t = std::vector<T>;
-	using size_t = int;
+	using size_t = std::size_t;
 
 private:
 	std::vector<Vertex> data;
@@ -25,7 +26,9 @@ private:
 	size_t _size;
 
 public:
-	ListGraph(size_t size, const Vertex& defaultV = Vertex()): data(size, defaultV), connections(size), _size(size) {}
+	ListGraph(size_t size = 0, const Vertex& defaultV = Vertex()):
+		data(size, defaultV), connections(size), _size(size) {}
+
 	ListGraph(std::vector<Vertex>&& values):
 		data(std::move(values)),
 		connections(data.size()),
@@ -41,6 +44,12 @@ public:
 	void reserve(int size) {
 		data.reserve(size);
 		connections.reserve(size);
+	}
+
+	void resize(size_t size) {
+		data.resize(size);
+		connections.resize(size);
+		_size = size;
 	}
 
 	void connect(index_t parent, index_t child, edge_t edge = edge_t()) {
@@ -219,12 +228,13 @@ public:
 
 template <typename T, T MOD>
 struct StaticModPolicy {
+	static_assert(MOD < std::numeric_limits<T>::max() / 2);
 	static constexpr T mod() {
 		return MOD;
 	}
 };
 
-template <typename T, int tag>
+template <typename T, typename tag = void>
 struct DynamicModPolicy {
 	static T& mod() {
 		static T value = 0;
@@ -235,83 +245,45 @@ struct DynamicModPolicy {
 template <typename T, typename T2, typename Policy>
 class ModInt {
 public:
-
-	constexpr ModInt(T2 val) noexcept {
-		_val = val % Policy::mod();
-		if (_val < 0) _val += Policy::mod();
+	constexpr ModInt(T val) noexcept {
+		if (val < 0) val += Policy::mod();
+		val %= Policy::mod();
+		value = val;
 	}
-	constexpr ModInt() noexcept:
-		_val(0) {}
 
-	constexpr ModInt operator+(T const& other) const noexcept {
-		return ModInt(_val + other);
+	constexpr ModInt() noexcept:
+		value(0) {}
+
+private:
+	T value;
+
+	struct raw {};
+	constexpr ModInt(T val, raw) noexcept:
+		value(val) {}
+public:
+	constexpr static ModInt verified(T val) noexcept {
+		return ModInt(val, raw{});
+	}
+
+	constexpr explicit operator T() const noexcept {
+		return value;
 	}
 
 	constexpr ModInt operator+(ModInt const& other) const noexcept {
-		return ModInt(_val + other._val);
+		if (value + other.value >= Policy::mod())
+			return ModInt(value + other.value - Policy::mod(), raw{});
+		else
+		 	return ModInt(value + other.value, raw{});
 	}
 
-	constexpr ModInt& operator+=(const ModInt& other) noexcept {
-		_val += other._val;
-		if (_val >= Policy::mod()) _val -= Policy::mod();
+	constexpr ModInt& operator+=(ModInt const& other) noexcept {
+		*this = *this + other;
 		return *this;
 	}
 
-	constexpr ModInt& operator++(int) noexcept {
-		_val = (_val + 1) % Policy::mod();
-		return *this;
+	constexpr ModInt operator*(ModInt const& other) const noexcept {
+		return ModInt(static_cast<T2>(value) * other.value % Policy::mod(), raw{});
 	}
-
-	template <typename O>
-	constexpr ModInt operator*(const O& other) const noexcept {
-		return ModInt(static_cast<T2>(_val) * other);
-	}
-
-	constexpr ModInt operator*(const ModInt& other) const noexcept {
-		return ModInt(static_cast<T2>(_val) * other._val);
-	}
-
-	constexpr ModInt& operator*=(const ModInt& other) noexcept {
-		*this = ModInt(static_cast<T2>(_val) * other._val);
-		return *this;
-	}
-
-	constexpr ModInt& operator=(const ModInt& other) = default;
-
-	constexpr bool operator==(const ModInt& other) const noexcept {
-		return _val == other._val;
-	}
-
-	constexpr bool operator!=(const ModInt& other) const noexcept {
-		return _val != other._val;
-	}
-
-	constexpr bool operator<=(const ModInt& other) const noexcept {
-		return _val <= other._val;
-	}
-
-	constexpr operator T() const noexcept {
-		return _val;
-	}
-
-	friend std::ostream& operator<<(std::ostream& os, ModInt const& data) {
-		os << data._val;
-		return os;
-	}
-
-	friend std::istream& operator>>(std::istream& is, ModInt& data) {
-		T temp;
-		is >> temp;
-		data = ModInt(temp);
-		return is;
-	}
-
-	static void setMod(T mod) {
-		Policy::mod() = mod;
-	}
-
-private:
-	T _val;
 };
 
 template <uint32_t MOD>
@@ -323,10 +295,10 @@ using sm64 = ModInt<uint64_t, uint64_t, StaticModPolicy<uint64_t, MOD>>;
 using sm32_1e9_7 = sm32<1'000'000'007>;
 using sm64_1e9_7 = sm64<1'000'000'007>;
 
-template <int tag = 0>
+template <typename tag = void>
 using dm32 = ModInt<uint32_t, uint64_t, DynamicModPolicy<uint32_t, tag>>;
 
-template <int tag = 0>
+template <typename tag = void>
 using dm64 = ModInt<uint64_t, uint64_t, DynamicModPolicy<uint64_t, tag>>;
 
 inline void FastIO() {
@@ -367,5 +339,5 @@ int main() {
 
 	solve(tree, 0);
 
-	std::cout << traffic;
+	std::cout << (uint32_t)traffic;
 }

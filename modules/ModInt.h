@@ -24,88 +24,50 @@ struct DynamicModPolicy {
 template <typename T, typename T2, typename Policy>
 class ModInt {
 public:
-
-	constexpr ModInt(T2 val) noexcept {
-		_val = val % Policy::mod();
-		if (_val < 0) _val += Policy::mod();
+	constexpr ModInt(T val) noexcept {
+		if (val < 0) val += Policy::mod();
+		val %= Policy::mod();
+		value = val;
 	}
-	constexpr ModInt() noexcept:
-		_val(0) {}
 
-	template <typename U>
-	constexpr ModInt operator+(U&& other) const noexcept {
-		return ModInt(_val + other);
+	constexpr ModInt() noexcept:
+		value(0) {}
+
+private:
+	T value;
+
+	struct raw {};
+	constexpr ModInt(T val, raw) noexcept:
+		value(val) {}
+public:
+	constexpr static ModInt verified(T val) noexcept {
+		return ModInt(val, raw{});
+	}
+
+	constexpr explicit operator T() const noexcept {
+		return value;
 	}
 
 	constexpr ModInt operator+(ModInt const& other) const noexcept {
-		return ModInt(_val + other._val);
+		if (value + other.value >= Policy::mod())
+			return ModInt(value + other.value - Policy::mod(), raw{});
+		else
+		 	return ModInt(value + other.value, raw{});
 	}
 
-	constexpr ModInt& operator+=(const ModInt& other) noexcept {
-		_val += other._val;
-		if (_val >= Policy::mod()) _val -= Policy::mod();
+	constexpr ModInt& operator+=(ModInt const& other) noexcept {
+		*this = *this + other;
 		return *this;
 	}
 
-	constexpr ModInt& operator++(int) noexcept {
-		_val = (_val + 1) % Policy::mod();
-		return *this;
+	constexpr ModInt operator*(ModInt const& other) const noexcept {
+		return ModInt(static_cast<T2>(value) * other.value % Policy::mod(), raw{});
 	}
 
-	constexpr ModInt operator-(ModInt const& other) const noexcept {
-		return ModInt(Policy::mod() + _val - other._val);
-	}
-
-	template <typename U>
-	constexpr ModInt operator*(U&& other) const noexcept {
-		return ModInt(static_cast<T2>(_val) * other);
-	}
-
-	constexpr ModInt operator*(const ModInt& other) const noexcept {
-		return ModInt(static_cast<T2>(_val) * other._val);
-	}
-
-	constexpr ModInt& operator*=(const ModInt& other) noexcept {
-		*this = ModInt(static_cast<T2>(_val) * other._val);
-		return *this;
-	}
-
-	constexpr ModInt& operator=(const ModInt& other) = default;
-
-	constexpr bool operator==(const ModInt& other) const noexcept {
-		return _val == other._val;
-	}
-
-	constexpr bool operator!=(const ModInt& other) const noexcept {
-		return _val != other._val;
-	}
-
-	constexpr bool operator<=(const ModInt& other) const noexcept {
-		return _val <= other._val;
-	}
-
-	constexpr operator T() const noexcept {
-		return _val;
-	}
-
-	friend std::ostream& operator<<(std::ostream& os, ModInt const& data) {
-		os << data._val;
+	friend std::ostream& operator<<(std::ostream& os, ModInt const& val) {
+		os << val.value;
 		return os;
 	}
-
-	friend std::istream& operator>>(std::istream& is, ModInt& data) {
-		T temp;
-		is >> temp;
-		data = ModInt(temp);
-		return is;
-	}
-
-	static void setMod(T mod) {
-		Policy::mod() = mod;
-	}
-
-private:
-	T _val;
 };
 
 template <uint32_t MOD>
