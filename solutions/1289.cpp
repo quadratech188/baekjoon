@@ -1,8 +1,9 @@
-#include "../modules/ListGraph.h"
+#include "../modules/ListGraph2.h"
 #include "../modules/TreeWrapper.h"
 #include "../modules/ModInt.h"
 #include "../modules/FastIO.h"
 #include <iostream>
+#include <set>
 
 sm32_1e9_7 traffic = 0;
 
@@ -23,7 +24,7 @@ int main() {
 	int n;
 	std::cin >> n;
 
-	ListGraph<sm32_1e9_7, sm32_1e9_7> graph(n);
+	ListGraph<sm32_1e9_7, sm32_1e9_7, std::set> graph(n);
 
 	for (int i = 0; i < n - 1; i++) {
 		int a, b, w;

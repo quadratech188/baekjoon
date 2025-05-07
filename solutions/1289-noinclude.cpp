@@ -1,139 +1,111 @@
 #include <concepts>
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
-#include <functional>
 #include <iostream>
 #include <istream>
 #include <limits>
 #include <ostream>
 #include <queue>
 #include <ranges>
+#include <set>
 #include <vector>
 
-template <typename Vertex, typename Edge>
+template <typename V, typename E, template <typename...> class Container = std::vector>
 class ListGraph {
 public:
 	using index_t = std::size_t;
-	using vertex_t = Vertex;
-	using edge_t = Edge;
+	using vertex_t = V;
+	using edge_t = E;
 	template <typename T>
 	using storage_t = std::vector<T>;
 	using size_t = std::size_t;
 
+	class child {
+	public:
+
+		child (index_t index, edge_t edge):
+			_index(index), _edge(edge) {}
+
+		child() = default;
+
+		index_t index() {
+			return _index;
+		}
+		edge_t& edge() {
+			return _edge;
+		}
+		edge_t const& edge() const {
+			return _edge;
+		}
+
+		operator index_t() const {
+			return _index;
+		}
+
+		bool operator<(child const& other) const {
+			return _index < other._index;
+		}
+	private:
+		index_t _index;
+		edge_t _edge;
+	};
+
 private:
-	std::vector<Vertex> data;
-	std::vector<std::vector<std::pair<index_t, edge_t>>> connections;
+	using connection_list_t = Container<child>;
+	std::vector<vertex_t> _data;
+	std::vector<connection_list_t> _connections;
 	size_t _size;
 
 public:
-	ListGraph(size_t size = 0, const Vertex& defaultV = Vertex()):
-		data(size, defaultV), connections(size), _size(size) {}
-
-	ListGraph(std::vector<Vertex>&& values):
-		data(std::move(values)),
-		connections(data.size()),
-		_size(data.size()) {}
-
-	index_t add(Vertex data) {
-		data.push_back(data);
-		connections.emplace_back();
-		_size += 1;
-		return _size - 1;
-	}
-
-	void reserve(size_t size) {
-		data.reserve(size);
-		connections.reserve(size);
-	}
-
-	void resize(size_t size) {
-		data.resize(size);
-		connections.resize(size);
-		_size = size;
-	}
-
-	void connect(index_t parent, index_t child, edge_t edge = edge_t()) {
-		connections[parent].emplace_back(child, edge);
-	}
+	ListGraph(size_t size = 0, vertex_t const& default_v = vertex_t()):
+		_data(size, default_v), _connections(size), _size(size) {}
 
 	size_t size() const {
 		return _size;
 	}
 
+	index_t add(vertex_t data) {
+		_data.push_back(data);
+		_connections.emplace_back();
+		_size ++;
+		return _size - 1;
+	}
+
+	void reserve(size_t size) {
+		_data.reserve(size);
+		_connections.reserve(size);
+	}
+
+	void resize(size_t size) {
+		_data.resize(size);
+		_connections.resize(size);
+		_size = size;
+	}
+
+	void connect(index_t parent, index_t child, edge_t edge = edge_t()) {
+		if constexpr(requires {_connections[parent].emplace_back(child, edge);})
+			_connections[parent].emplace_back(child, edge);
+		else
+		 	_connections[parent].emplace(child, edge);
+	}
+
 	vertex_t& operator[](index_t index) {
-		return data[index];
+		return _data[index];
 	}
 
-	class child {
-	public:
-		using difference_type = std::ptrdiff_t;
-		using value_type = child;
-
-		child(ListGraph* graph, index_t parent, int list_index):
-			graph(graph), parent(parent), list_index(list_index) {}
-
-		child():
-			graph(nullptr), list_index(0) {}
-
-		index_t index() const {
-			return graph->connections[parent][list_index].first;
-		}
-		edge_t& edge() {
-			return graph->connections[parent][list_index].second;
-		}
-		edge_t const& edge() const {
-			return graph->connections[parent][list_index].second;
-		}
-
-		vertex_t& value() {
-			return graph->data[index()];
-		}
-		operator index_t() const {
-			return index();
-		}
-
-		child operator*() const {
-			return *this;
-		}
-
-		child& operator++() {
-			++list_index;
-			return *this;
-		}
-		
-		void operator++(int) {
-			++list_index;
-		}
-
-		bool operator!=(child const& other) const {
-			return list_index != other.list_index;
-		}
-
-		bool operator==(child const& other) const {
-			return list_index == other.list_index;
-		}
-
-	private:
-		ListGraph* graph;
-		index_t parent;
-		int list_index;
-	};
-
-	auto children(index_t parent) {
-		return std::ranges::subrange(
-				child(this, parent, 0),
-				child(this, parent, connections[parent].size())
-				);
+	auto& children(index_t parent) {
+		return _connections[parent];
 	}
 
-	int degree(index_t parent) {
-		return connections[parent].size();
+	size_t degree(index_t parent) const {
+		return _connections[parent].size();
 	}
 
 	void connect_both(index_t parent, index_t child, edge_t edge1 = edge_t(), edge_t edge2 = edge_t())
 	requires std::same_as<int, decltype(edge_t().rev)> {
-		edge1.rev = connections[child].size();
-		edge2.rev = connections[parent].size();
+		edge1.rev = _connections[child].size();
+		edge2.rev = _connections[parent].size();
 
 		connect(parent, child, edge1);
 		connect(child, parent, edge2);
@@ -141,7 +113,7 @@ public:
 
 	child reverse(child original)
 	requires std::same_as<int, decltype(edge_t().rev)> {
-		return child(this, original.index(), original.edge().rev);
+		return _connections[original.index()][original.edge().rev];
 	}
 };
 
@@ -164,7 +136,6 @@ concept Graph = requires(G graph, typename G::index_t u, typename G::vertex_t v,
 	requires requires (std::ranges::range_value_t<decltype(graph.children(u))> child) {
 		{child.index()} -> std::same_as<typename G::index_t>;
 		{child.edge()} -> std::same_as<typename G::edge_t&>;
-		{child.value()} -> std::same_as<typename G::vertex_t&>;
 		{child} -> std::convertible_to<typename G::index_t>;
 	};
 };
@@ -331,7 +302,7 @@ int main() {
 	int n;
 	std::cin >> n;
 
-	ListGraph<sm32_1e9_7, sm32_1e9_7> graph(n);
+	ListGraph<sm32_1e9_7, sm32_1e9_7, std::set> graph(n);
 
 	for (int i = 0; i < n - 1; i++) {
 		int a, b, w;

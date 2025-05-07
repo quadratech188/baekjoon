@@ -21,7 +21,6 @@ concept Graph = requires(G graph, typename G::index_t u, typename G::vertex_t v,
 	requires requires (std::ranges::range_value_t<decltype(graph.children(u))> child) {
 		{child.index()} -> std::same_as<typename G::index_t>;
 		{child.edge()} -> std::same_as<typename G::edge_t&>;
-		{child.value()} -> std::same_as<typename G::vertex_t&>;
 		{child} -> std::convertible_to<typename G::index_t>;
 	};
 };
