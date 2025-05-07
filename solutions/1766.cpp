@@ -1,15 +1,15 @@
-#include "modules/ListGraph.h"
-#include "modules/Types.h"
-#include "modules/FastIO.h"
+#include "../modules/ListGraph2.h"
+#include "../modules/FastIO.h"
 #include <queue>
 #include <iostream>
+#include <variant>
 
 int main() {
 	FastIO();
 	int n, m;
 	std::cin >> n >> m;
 
-	ListGraph<None, None> graph(n);
+	ListGraph<std::monostate, std::monostate> graph(n);
 
 	for (int i = 0; i < m; i++) {
 		int a, b;
@@ -19,10 +19,9 @@ int main() {
 
 	std::vector<int> dependencies(n);
 
-	for (int i = 0; i < n; i++) {
-		graph.forEachChild(i, [&dependencies](int child, None& vertex, None& edge) {
-				dependencies[child] ++;
-				});
+	for (int parent = 0; parent < n; parent++) {
+		for (auto const& child: graph.children(parent))
+			dependencies[child]++;
 	}
 
 	std::priority_queue<int> queue;
@@ -39,10 +38,10 @@ int main() {
 
 		std::cout << parent + 1 << ' ';
 
-		graph.forEachChild(parent, [&dependencies, &queue](int child, None& vertex, None& edge) {
-				dependencies[child] --;
-				if (dependencies[child] == 0)
-					queue.push(- child);
-				});
+		for (auto const& child: graph.children(parent)) {
+			dependencies[child]--;
+			if (dependencies[child] == 0)
+				queue.push(-child);
+		}
 	}
 }
