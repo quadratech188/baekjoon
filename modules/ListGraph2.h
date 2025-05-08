@@ -19,7 +19,7 @@ public:
 
 		child() = default;
 
-		index_t index() {
+		index_t index() const {
 			return _index;
 		}
 		edge_t& edge() {
@@ -101,7 +101,7 @@ public:
 		connect(child, parent, edge2);
 	}
 
-	child reverse(child original)
+	child& reverse(child const& original)
 	requires std::same_as<int, decltype(edge_t().rev)> {
 		return _connections[original.index()][original.edge().rev];
 	}

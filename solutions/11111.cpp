@@ -1,6 +1,6 @@
-#include "modules/GridGraph.h"
-#include "modules/ListGraph.h"
-#include "modules/FastIO.h"
+#include "../modules/GridGraph.h"
+#include "../modules/ListGraph2.h"
+#include "../modules/FastIO.h"
 #include <iostream>
 #include <limits>
 #include <queue>
@@ -55,7 +55,7 @@ int main() {
 	int count = 0;
 
 	std::vector<int> prev(size), dist(size);
-	std::vector<decltype(flowgraph)::child> edges(size);
+	std::vector<decltype(flowgraph)::child*> edges(size);
 	std::vector<bool> in_queue(size, false);
 	std::queue<int> queue;
 
@@ -71,11 +71,11 @@ int main() {
 			int parent = queue.front();
 			queue.pop();
 			in_queue[parent] = false;
-			for (const auto& child: flowgraph.children(parent)) {
+			for (auto& child: flowgraph.children(parent)) {
 				if (child.edge().capacity > 0
 						&& dist[child] > dist[parent] + child.edge().cost) {
 					dist[child] = dist[parent] + child.edge().cost;
-					edges[child] = child;
+					edges[child] = &child;
 					prev[child] = parent;
 
 					if (!in_queue[child]) {
@@ -91,12 +91,12 @@ int main() {
 		int max_flow = std::numeric_limits<int>::max();
 
 		for (int i = sink; i != source; i = prev[i])
-			max_flow = std::min(max_flow, edges[i].edge().capacity);
+			max_flow = std::min(max_flow, edges[i]->edge().capacity);
 
 		for (int i = sink; i != source; i = prev[i]) {
-			result += max_flow * edges[i].edge().cost;
-			edges[i].edge().capacity -= max_flow;
-			flowgraph.reverse(edges[i]).edge().capacity += max_flow;
+			result += max_flow * edges[i]->edge().cost;
+			edges[i]->edge().capacity -= max_flow;
+			flowgraph.reverse(*edges[i]).edge().capacity += max_flow;
 		}
 		count++;
 	}
