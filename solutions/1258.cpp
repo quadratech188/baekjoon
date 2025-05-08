@@ -1,9 +1,8 @@
-#include "modules/FastIO.h"
-#include "modules/ListGraph.h"
-#include "modules/Types.h"
-#include "modules/Matrix.h"
+#include "../modules/FastIO.h"
+#include "../modules/ListGraph2.h"
 #include <limits>
 #include <queue>
+#include <variant>
 
 struct Edge {
 	Edge(): capacity(0), cost(0) {}
@@ -12,6 +11,7 @@ struct Edge {
 
 	int capacity;
 	int cost;
+	int rev;
 };
 
 int main() {
@@ -23,25 +23,21 @@ int main() {
 	const int source = 2 * n;
 	const int sink = 2 * n + 1;
 
-	ListGraph<None, Edge> graph(size);
-	Matrix<int> flow(size, size, 0);
+	ListGraph<std::monostate, Edge> graph(size);
 
 	for (int i = 0; i < n; i++) {
-		graph.connect(source, i, Edge(1, 0));
-		graph.connect(i, source);
+		graph.connect_both(source, i, Edge(1, 0), Edge(0, 0));
 	}
 
 	for (int i = n; i < 2 * n; i++) {
-		graph.connect(i, sink, Edge(1, 0));
-		graph.connect(sink, i);
+		graph.connect_both(i, sink, Edge(1, 0), Edge(0, 0));
 	}
 
 	for (int i = 0; i < n; i++) {
 		for (int j = n; j < 2 * n; j++) {
 			int cost;
 			std::cin >> cost;
-			graph.connect(i, j, Edge(1, cost));
-			graph.connect(j, i, Edge(0, -cost));
+			graph.connect_both(i, j, Edge(1, cost), Edge(0, -cost));
 		}
 	}
 
@@ -49,7 +45,7 @@ int main() {
 	
 	while (true) {
 		std::vector<int> prev(size, -1), dist(size, std::numeric_limits<int>::max());
-		std::vector<Edge*> edges(size);
+		std::vector<decltype(graph)::child*> edges(size);
 		std::vector<bool> in_queue(size, false);
 		std::queue<int> queue;
 		dist[source] = 0;
@@ -60,12 +56,12 @@ int main() {
 			int parent = queue.front();
 			queue.pop();
 			in_queue[parent] = false;
-			for (auto child: graph.children(parent)) {
-				if (child.edge().capacity > flow(parent, child)
+			for (auto& child: graph.children(parent)) {
+				if (child.edge().capacity > 0
 						&& dist[child] > dist[parent] + child.edge().cost) {
 					dist[child] = dist[parent] + child.edge().cost;
 					prev[child] = parent;
-					edges[child] = &child.edge();
+					edges[child] = &child;
 
 					if (!in_queue[child]) {
 						queue.push(child);
@@ -80,12 +76,12 @@ int main() {
 		int max_flow = std::numeric_limits<int>::max();
 
 		for (int i = sink; i != source; i = prev[i])
-			max_flow = std::min(max_flow, edges[i]->capacity - flow(prev[i], i));
+			max_flow = std::min(max_flow, edges[i]->edge().capacity);
 
 		for (int i = sink; i != source; i = prev[i]) {
-			result += max_flow * edges[i]->cost;
-			flow(prev[i], i) += max_flow;
-			flow(i, prev[i]) -= max_flow;
+			result += max_flow * edges[i]->edge().cost;
+			edges[i]->edge().capacity -= max_flow;
+			graph.reverse(*edges[i]).edge().capacity += max_flow;
 		}
 	}
 
