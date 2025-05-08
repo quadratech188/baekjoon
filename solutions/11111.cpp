@@ -4,6 +4,7 @@
 #include <iostream>
 #include <limits>
 #include <queue>
+#include <set>
 
 constexpr int lookup[6][6] = {
 	10, 8, 7, 5, 0, 1,
@@ -17,7 +18,6 @@ constexpr int lookup[6][6] = {
 struct Edge {
 	int cost;
 	int capacity;
-	int rev;
 };
 
 int main() {
@@ -32,22 +32,23 @@ int main() {
 	int const source = n * m;
 	int const sink = n * m + 1;
 	int const size = n * m + 2;
-	ListGraph<std::monostate, Edge> flowgraph(size);
+	ListGraph<std::monostate, Edge>
+		::reversible<true> flowgraph(size);
 
 	for (Int2 parent: matrix.bounds()) {
 		int index = matrix.rawIndex(parent);
 
-		flowgraph.connect_both(index, sink, {0, 1, 0}, {0, 0, 0});
+		flowgraph.connect_both(index, sink, {0, 1}, {0, 0});
 
 		if ((parent.x + parent.y) % 2 != 0) continue;
 
-		flowgraph.connect_both(source, index, {0, 1, 0}, {0, 0, 0});
+		flowgraph.connect_both(source, index, {0, 1}, {0, 0});
 
 		for (auto child: graph.children(parent)) {
 			int child_index = matrix.rawIndex(child);
 
 			int cost = lookup[matrix[parent] - 'A'][child.value() - 'A'];
-			flowgraph.connect_both(index, child_index, {-cost, 1, 0}, {cost, 0, 0});
+			flowgraph.connect_both(index, child_index, {-cost, 1}, {cost, 0});
 		}
 	}
 

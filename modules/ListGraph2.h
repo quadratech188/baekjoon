@@ -1,9 +1,34 @@
 #include <cstddef>
+#include <type_traits>
+#include <variant>
 #include <vector>
 
-template <typename V, typename E, template <typename...> class Container = std::vector>
+template <bool Reversibility = false, template <typename...> class Container = std::vector>
+struct ListGraphConfig {
+	static constexpr bool reversible_v = Reversibility;
+	template <typename T>
+	using container_t = Container<T>;
+
+	template <bool value>
+	using reversible = ListGraphConfig<value, Container>;
+
+	template <template <typename...> class value>
+	using container = ListGraphConfig<Reversibility, value>;
+};
+
+template <typename V, typename E, bool Reversible = false, template <typename...> class Container = std::vector>
 class ListGraph {
 public:
+	// Builder
+	template <bool value>
+	using reversible = ListGraph<V, E, value, Container>;
+	template <template <typename...> class value>
+	using container = ListGraph<V, E, Reversible, value>;
+
+	static constexpr bool reversible_v = Reversible;
+	template <typename... Args>
+	using container_t = Container<Args...>;
+
 	using index_t = std::size_t;
 	using vertex_t = V;
 	using edge_t = E;
@@ -12,8 +37,8 @@ public:
 	using size_t = std::size_t;
 
 	class child {
+		friend class ListGraph;
 	public:
-
 		child (index_t index, edge_t edge):
 			_index(index), _edge(edge) {}
 
@@ -36,9 +61,14 @@ public:
 		bool operator<(child const& other) const {
 			return _index < other._index;
 		}
+
+		auto& rev() requires reversible_v {
+			return _rev;
+		}
 	private:
 		index_t _index;
 		edge_t _edge;
+		std::conditional_t<reversible_v, index_t, std::monostate> _rev;
 	};
 
 private:
@@ -73,11 +103,11 @@ public:
 		_size = size;
 	}
 
-	void connect(index_t parent, index_t child, edge_t edge = edge_t()) {
+	child& connect(index_t parent, index_t child, edge_t edge = edge_t()) {
 		if constexpr(requires {_connections[parent].emplace_back(child, edge);})
-			_connections[parent].emplace_back(child, edge);
+			return _connections[parent].emplace_back(child, edge);
 		else
-		 	_connections[parent].emplace(child, edge);
+		 	return _connections[parent].emplace(child, edge);
 	}
 
 	vertex_t& operator[](index_t index) {
@@ -93,16 +123,16 @@ public:
 	}
 
 	void connect_both(index_t parent, index_t child, edge_t edge1 = edge_t(), edge_t edge2 = edge_t())
-	requires std::same_as<int, decltype(edge_t().rev)> {
-		edge1.rev = _connections[child].size();
-		edge2.rev = _connections[parent].size();
+	requires reversible_v {
+		class child& child1 = connect(parent, child, edge1);
+		class child& child2 = connect(child, parent, edge2);
 
-		connect(parent, child, edge1);
-		connect(child, parent, edge2);
+		child1._rev = _connections[child].size() - 1;
+		child2._rev = _connections[parent].size() - 1;
 	}
 
 	child& reverse(child const& original)
-	requires std::same_as<int, decltype(edge_t().rev)> {
-		return _connections[original.index()][original.edge().rev];
+	requires reversible_v {
+		return _connections[original.index()][original._rev];
 	}
 };

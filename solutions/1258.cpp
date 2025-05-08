@@ -11,7 +11,6 @@ struct Edge {
 
 	int capacity;
 	int cost;
-	int rev;
 };
 
 int main() {
@@ -23,7 +22,7 @@ int main() {
 	const int source = 2 * n;
 	const int sink = 2 * n + 1;
 
-	ListGraph<std::monostate, Edge> graph(size);
+	ListGraph<std::monostate, Edge>::reversible<true> graph(size);
 
 	for (int i = 0; i < n; i++) {
 		graph.connect_both(source, i, Edge(1, 0), Edge(0, 0));
