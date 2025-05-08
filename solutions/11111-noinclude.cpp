@@ -8,6 +8,7 @@
 #include <numeric>
 #include <queue>
 #include <ranges>
+#include <set>
 #include <type_traits>
 #include <variant>
 #include <vector>
@@ -378,19 +379,6 @@ public:
 	}
 };
 
-template <bool Reversibility = false, template <typename...> class Container = std::vector>
-struct ListGraphConfig {
-	static constexpr bool reversible_v = Reversibility;
-	template <typename T>
-	using container_t = Container<T>;
-
-	template <bool value>
-	using reversible = ListGraphConfig<value, Container>;
-
-	template <template <typename...> class value>
-	using container = ListGraphConfig<Reversibility, value>;
-};
-
 template <typename V, typename E, bool Reversible = false, template <typename...> class Container = std::vector>
 class ListGraph {
 public:
@@ -413,32 +401,33 @@ public:
 
 	class child {
 		friend class ListGraph;
+
 	public:
-		child (index_t index, edge_t edge):
+		child(index_t index, edge_t edge, index_t rev) noexcept
+			requires reversible_v:
+			_index(index), _edge(edge), _rev(rev) {}
+
+		child (index_t index, edge_t edge) noexcept:
 			_index(index), _edge(edge) {}
 
 		child() = default;
 
-		index_t index() const {
+		inline index_t index() const noexcept {
 			return _index;
 		}
-		edge_t& edge() {
+		inline edge_t& edge() noexcept {
 			return _edge;
 		}
-		edge_t const& edge() const {
+		inline edge_t const& edge() const noexcept {
 			return _edge;
 		}
 
-		operator index_t() const {
+		inline operator index_t() const noexcept {
 			return _index;
 		}
 
-		bool operator<(child const& other) const {
+		inline bool operator<(child const& other) const noexcept {
 			return _index < other._index;
-		}
-
-		auto& rev() requires reversible_v {
-			return _rev;
 		}
 	private:
 		index_t _index;
@@ -478,8 +467,8 @@ public:
 		_size = size;
 	}
 
-	child& connect(index_t parent, index_t child, edge_t edge = edge_t()) {
-		if constexpr(requires {_connections[parent].emplace_back(child, edge);})
+	void connect(index_t parent, index_t child, edge_t edge = edge_t()) {
+		if constexpr (requires {_connections[parent].emplace_back(child, edge);})
 			return _connections[parent].emplace_back(child, edge);
 		else
 		 	return _connections[parent].emplace(child, edge);
@@ -499,16 +488,13 @@ public:
 
 	void connect_both(index_t parent, index_t child, edge_t edge1 = edge_t(), edge_t edge2 = edge_t())
 	requires reversible_v {
-		class child& child1 = connect(parent, child, edge1);
-		class child& child2 = connect(child, parent, edge2);
-
-		child1._rev = _connections[child].size() - 1;
-		child2._rev = _connections[parent].size() - 1;
+		_connections[parent].emplace_back(child, edge1, _connections[child].size());
+		_connections[child].emplace_back(parent, edge2, _connections[parent].size() - 1);
 	}
 
 	child& reverse(child const& original)
 	requires reversible_v {
-		return _connections[original.index()][original._rev];
+		return _connections[original._index][original._rev];
 	}
 };
 
@@ -544,7 +530,8 @@ int main() {
 	int const source = n * m;
 	int const sink = n * m + 1;
 	int const size = n * m + 2;
-	ListGraph<std::monostate, Edge>::reversible<true> flowgraph(size);
+	ListGraph<std::monostate, Edge>
+		::reversible<true> flowgraph(size);
 
 	for (Int2 parent: matrix.bounds()) {
 		int index = matrix.rawIndex(parent);
