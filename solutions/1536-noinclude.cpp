@@ -5,7 +5,6 @@
 #include <limits>
 #include <queue>
 #include <ranges>
-#include <string>
 #include <type_traits>
 #include <variant>
 #include <vector>
@@ -158,118 +157,94 @@ inline void FastIO() {
 	std::cout.tie(nullptr);
 }
 
-struct Edge {
-	int cap = 0;
-	int flow = 0;
-
-	int residual() const {
-		return cap - flow;
-	}
-};
-
-template <Graph G>
-bool check(size_t r, size_t n, G& graph) {
-	size_t const size = 6 * n + 2;
-	size_t const source = 6 * n;
-	size_t const sink = 6 * n + 1;
-
-	// Reset all flows to 0
-	for (size_t parent = 0; parent < graph.size(); ++parent) {
-		for (auto& child : graph.children(parent)) {
-			child.edge().flow = 0;
-		}
-	}
-
-	// Update only capacities that depend on r
-	for (auto& child : graph.children(source)) {
-		child.edge().cap = r;
-	}
-	for (size_t i = 0; i < n; ++i) {
-		for (auto& child : graph.children(3 * n + i)) {
-			child.edge().cap = r;
-		}
-	}
-
-	std::vector<size_t> prev(size);
-	std::vector<typename G::child*> edges(size);
-	std::queue<size_t> queue;
-
-	size_t total_flow = 0;
-	while (true) {
-		std::fill(prev.begin(), prev.end(), std::numeric_limits<size_t>::max());
-
-		queue.push(source);
-		while (!queue.empty()) {
-			size_t cur = queue.front(); queue.pop();
-			for (auto& child : graph.children(cur)) {
-				if (child.edge().residual() > 0 && prev[child] == std::numeric_limits<size_t>::max()) {
-					prev[child] = cur;
-					edges[child] = &child;
-					queue.push(child);
-				}
-			}
-		}
-
-		if (prev[sink] == std::numeric_limits<size_t>::max()) break;
-
-		int flow = std::numeric_limits<int>::max();
-		for (size_t i = sink; i != source; i = prev[i]) {
-			flow = std::min(flow, edges[i]->edge().residual());
-		}
-		for (size_t i = sink; i != source; i = prev[i]) {
-			edges[i]->edge().flow += flow;
-			graph.reverse(*edges[i]).edge().flow -= flow;
-		}
-		total_flow += flow;
-	}
-
-	return total_flow == r * n;
-}
-
 int main() {
 	FastIO();
-	size_t n;
-	int k;
+	size_t n, k;
 	std::cin >> n >> k;
 
-	size_t const size = 6 * n + 2;
-	size_t const source = 6 * n;
-	size_t const sink = 6 * n + 1;
-	int const INF = std::numeric_limits<int>::max();
+	size_t const size = 4 * n + 2;
+	size_t const source = 4 * n;
+	size_t const sink = 4 * n + 1;
 
-	ListGraph<std::monostate, Edge>::reversible<true> graph(size);
+	ListGraph<std::monostate, int>
+		::reversible<true> flowgraph(size);
 
-	for (size_t i = 0; i < n; i++) {
-		graph.connect_both(source, i, {0, 0}, {0, 0});
-		graph.connect_both(i, n + i, {INF, 0}, {0, 0});
-		graph.connect_both(i, 2 * n + i, {k, 0}, {0, 0});
-		graph.connect_both(3 * n + i, sink, {0, 0}, {0, 0});
-		graph.connect_both(4 * n + i, 3 * n + i, {INF, 0}, {0, 0});
-		graph.connect_both(5 * n + i, 3 * n + i, {k, 0}, {0, 0});
+	for (size_t boy = 0; boy < n; boy++) {
+		flowgraph.connect_both(source, boy, 0, 0);
+		flowgraph.connect_both(boy, n + boy, k, 0);
+	}
+
+	for (size_t girl = 0; girl < n; girl++) {
+		flowgraph.connect_both(2 * n + girl, sink, 0, 0);
+		flowgraph.connect_both(3 * n + girl, 2 * n + girl, k, 0);
 	}
 
 	for (size_t boy = 0; boy < n; boy++) {
 		for (size_t girl = 0; girl < n; girl++) {
 			char type;
 			std::cin >> type;
-			if (type == '1') {
-				graph.connect_both(n + boy, 4 * n + girl, {1, 0}, {0, 0});
-			} else {
-				graph.connect_both(2 * n + boy, 5 * n + girl, {1, 0}, {0, 0});
+			switch(type) {
+				case '1':
+					flowgraph.connect_both(boy, 2 * n + girl, 1, 0);
+					break;
+				case '0':
+					flowgraph.connect_both(n + boy, 3 * n + girl, 1, 0);
 			}
 		}
 	}
 
-	size_t l = 0, r = n, ans = 0;
-	while (l <= r) {
-		size_t mid = (l + r) / 2;
-		if (check(mid, n, graph)) {
-			ans = mid;
-			l = mid + 1;
-		} else {
-			r = mid - 1;
+	for (size_t r = 1; r <= n + 1; r++){
+		for (auto& child: flowgraph.children(source)) {
+			child.edge() ++;
+		}
+		for (size_t girl = 0; girl < n; girl++) {
+			for (auto& child: flowgraph.children(2 * n + girl)) {
+				if (child == sink)
+					child.edge() ++;
+			}
+		}
+
+		std::vector<size_t> prev(size);
+		std::vector<decltype(flowgraph)::child*> edges(size);
+		std::queue<size_t> queue;
+
+		size_t cuts = 0;
+
+		while (true) {
+			std::fill(prev.begin(), prev.end(), std::numeric_limits<size_t>::max());
+
+			queue.push(source);
+
+			while (!queue.empty()) {
+				int parent = queue.front();
+				queue.pop();
+				for (auto& child: flowgraph.children(parent)) {
+					if (child.edge() > 0 && prev[child] == std::numeric_limits<size_t>::max()) {
+						edges[child] = &child;
+						prev[child] = parent;
+
+						queue.push(child);
+					}
+				}
+			}
+
+			if (prev[sink] == std::numeric_limits<size_t>::max()) break;
+
+			int max_flow = std::numeric_limits<int>::max();
+
+			for (size_t i = sink; i != source; i = prev[i])
+				max_flow = std::min(max_flow, edges[i]->edge());
+
+			for (size_t i = sink; i != source; i = prev[i]) {
+				edges[i]->edge() -= max_flow;
+				flowgraph.reverse(*edges[i]).edge() += max_flow;
+			}
+			cuts += max_flow;
+		}
+
+		if (cuts != n) {
+			std::cout << r - 1;
+			break;
 		}
 	}
-
-	std::cout << ans;
 }
