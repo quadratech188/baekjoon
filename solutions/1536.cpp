@@ -1,7 +1,6 @@
 #include "../modules/Graph.h"
 #include "../modules/ListGraph2.h"
 #include "../modules/FastIO.h"
-#include "../modules/Visualize.h"
 #include <limits>
 #include <queue>
 
@@ -95,5 +94,4 @@ int main() {
 			break;
 		}
 	}
-	dump_graph_json(flowgraph, "graph.json");
 }
