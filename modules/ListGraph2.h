@@ -13,8 +13,8 @@ public:
 	using container = ListGraph<V, E, Reversible, value>;
 
 	static constexpr bool reversible_v = Reversible;
-	template <typename... Args>
-	using container_t = Container<Args...>;
+	template <typename T>
+	using container_t = Container<T>;
 
 	using index_t = std::size_t;
 	using vertex_t = V;
@@ -27,8 +27,7 @@ public:
 		friend class ListGraph;
 
 	public:
-		child(index_t index, edge_t edge, index_t rev) noexcept
-			requires reversible_v:
+		child(index_t index, edge_t edge, index_t rev) noexcept:
 			_index(index), _edge(edge), _rev(rev) {}
 
 		child (index_t index, edge_t edge) noexcept:
@@ -83,6 +82,11 @@ public:
 	void reserve(size_t size) {
 		_data.reserve(size);
 		_connections.reserve(size);
+	}
+
+	void reserve_children(size_t size) {
+		for (auto& connection: _connections)
+			connection.reserve(size);
 	}
 
 	void resize(size_t size) {

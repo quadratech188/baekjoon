@@ -1,26 +1,28 @@
 #include <cstdio>
 #include <istream>
+#include <type_traits>
 
-class FastIstream: public std::istream {
-public:
-	FastIstream& operator>>(int& val) {
-		char ch;
+namespace Fast {
+	class istream {
+	public:
+		template <typename T>
+		inline istream& operator>>(T& val)
+		requires std::is_integral_v<T> {
+			char ch;
+			val = 0;
 
-		do {
-			ch = std::getchar();
-		} while (ch == ' ' || ch == '\n');
+			do {
+				ch = getchar_unlocked();
+			} while (ch == ' ' || ch == '\n');
 
-		int result = 0;
+			do {
+				val = 10 * val + ch - '0';
+				ch = getchar_unlocked();
+			} while ('0' <= ch && ch <= '9');
 
-		do {
-			result = 10 * result + ch - '0';
-			ch = std::getchar();
-		} while (ch != ' ' && ch != '\n');
+			return *this;
+		}
+	};
 
-		val = result;
-
-		return *this;
-	}
-};
-
-FastIstream FastCin;
+	istream cin;
+}

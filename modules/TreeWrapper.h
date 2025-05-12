@@ -43,8 +43,9 @@ public:
 	}
 
 	auto children(index_t parent) {
-		return graph.children(parent) | std::views::filter([this, parent](auto it) {
-				return it != parents[parent];
+		index_t const root = parents[parent];
+		return graph.children(parent) | std::views::filter([root](auto& it) {
+				return it != root;
 				});
 	}
 
