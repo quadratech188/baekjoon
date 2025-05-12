@@ -3,8 +3,6 @@
 #include "../modules/ModInt.h"
 #include "../modules/FastIO2.h"
 #include <iostream>
-#include <type_traits>
-#include <vector>
 
 sm32_1e9_7 traffic = 0;
 template <Graph G>
@@ -24,7 +22,7 @@ int main() {
 	size_t n;
 	Fast::cin >> n;
 
-	ListGraph<sm32_1e9_7, sm32_1e9_7>::container<std::pmr::vector> graph(n);
+	ListGraph<sm32_1e9_7, sm32_1e9_7> graph(n);
 
 	for (size_t i = 0; i < n - 1; i++) {
 		size_t a, b, w;

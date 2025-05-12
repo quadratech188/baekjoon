@@ -22,8 +22,8 @@ public:
 	using container = ListGraph<V, E, Reversible, value>;
 
 	static constexpr bool reversible_v = Reversible;
-	template <typename... Args>
-	using container_t = Container<Args...>;
+	template <typename T>
+	using container_t = Container<T>;
 
 	using index_t = std::size_t;
 	using vertex_t = V;
@@ -36,8 +36,7 @@ public:
 		friend class ListGraph;
 
 	public:
-		child(index_t index, edge_t edge, index_t rev) noexcept
-			requires reversible_v:
+		child(index_t index, edge_t edge, index_t rev) noexcept:
 			_index(index), _edge(edge), _rev(rev) {}
 
 		child (index_t index, edge_t edge) noexcept:
@@ -341,7 +340,6 @@ int main() {
 	Fast::cin >> n;
 
 	ListGraph<sm32_1e9_7, sm32_1e9_7> graph(n);
-	graph.reserve_children(2);
 
 	for (size_t i = 0; i < n - 1; i++) {
 		size_t a, b, w;
