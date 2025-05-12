@@ -94,6 +94,11 @@ public:
 		_connections.reserve(size);
 	}
 
+	void reserve_children(size_t size) {
+		for (auto& connection: _connections)
+			connection.reserve(size);
+	}
+
 	void resize(size_t size) {
 		_data.resize(size);
 		_connections.resize(size);
@@ -193,8 +198,9 @@ public:
 	}
 
 	auto children(index_t parent) {
-		return graph.children(parent) | std::views::filter([this, parent](auto it) {
-				return it != parents[parent];
+		index_t const root = parents[parent];
+		return graph.children(parent) | std::views::filter([root](auto& it) {
+				return it != root;
 				});
 	}
 
@@ -291,38 +297,57 @@ using dm32 = ModInt<uint32_t, uint64_t, DynamicModPolicy<uint32_t, tag>>;
 template <typename tag = void>
 using dm64 = ModInt<uint64_t, uint64_t, DynamicModPolicy<uint64_t, tag>>;
 
-inline void FastIO() {
-	std::ios::sync_with_stdio(false);
-	std::cin.tie(nullptr);
-	std::cout.tie(nullptr);
+namespace Fast {
+	class istream {
+	public:
+		template <typename T>
+		inline istream& operator>>(T& val)
+		requires std::is_integral_v<T> {
+			char ch;
+			val = 0;
+
+			do {
+				ch = getchar_unlocked();
+			} while (ch == ' ' || ch == '\n');
+
+			do {
+				val = 10 * val + ch - '0';
+				ch = getchar_unlocked();
+			} while ('0' <= ch && ch <= '9');
+
+			return *this;
+		}
+	};
+
+	istream cin;
 }
 
 sm32_1e9_7 traffic = 0;
-
 template <Graph G>
 void solve(G& tree, size_t root) {
 	sm32_1e9_7 sum = 0;
-	for (auto child: tree.children(root)) {
+	for (auto const& child: tree.children(root)) {
 		solve(tree, child);
-		traffic += tree[child] * child.edge() * sum;
-		sum += tree[child] * child.edge();
+		auto const contrib = tree[child] * child.edge();
+		traffic += contrib * sum;
+		sum += contrib;
 	}
 	traffic += sum;
 	tree[root] = sum + 1;
 }
 
 int main() {
-	FastIO();
-	int n;
-	std::cin >> n;
+	size_t n;
+	Fast::cin >> n;
 
 	ListGraph<sm32_1e9_7, sm32_1e9_7> graph(n);
+	graph.reserve_children(2);
 
-	for (int i = 0; i < n - 1; i++) {
-		int a, b, w;
-		std::cin >> a >> b >> w;
-		graph.connect(a - 1, b - 1, sm32_1e9_7::verified(w));
-		graph.connect(b - 1, a - 1, sm32_1e9_7::verified(w));
+	for (size_t i = 0; i < n - 1; i++) {
+		size_t a, b, w;
+		Fast::cin >> a >> b >> w;
+		graph.connect(a - 1, b - 1, w);
+		graph.connect(b - 1, a - 1, w);
 	}
 
 	TreeWrapper tree(graph, 0);
