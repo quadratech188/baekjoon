@@ -44,6 +44,10 @@ public:
 		return ModInt(val, raw{});
 	}
 
+	constexpr T val() const noexcept {
+		return value;
+	}
+
 	constexpr explicit operator T() const noexcept {
 		return value;
 	}
@@ -60,13 +64,29 @@ public:
 		return *this;
 	}
 
+	constexpr ModInt& operator++() noexcept {
+		if (value == Policy::mod() - 1)
+			value = 0;
+		else
+		 	++value;
+		return *this;
+	}
+
 	constexpr ModInt operator*(ModInt const& other) const noexcept {
 		return ModInt(static_cast<T2>(value) * other.value % Policy::mod(), raw{});
+	}
+
+	constexpr bool operator!=(T const& other) const noexcept {
+		return value != other;
 	}
 
 	friend std::ostream& operator<<(std::ostream& os, ModInt const& val) {
 		os << val.value;
 		return os;
+	}
+
+	static void set_mod(T val) {
+		Policy::mod() = val;
 	}
 };
 

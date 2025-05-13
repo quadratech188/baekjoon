@@ -1,9 +1,10 @@
 #pragma once
 
 #include <cmath>
+#include <cstdint>
 #include <iostream>
 
-template<typename T>
+template<typename T, typename T2 = T>
 struct Vec2 {
 	using type = T;
 	
@@ -65,23 +66,26 @@ struct Vec2 {
 				);
 	}
 
-	T dot(const Vec2& other) const noexcept {
-		return this->x * other.x + this->y * other.y;
+	T2 dot(const Vec2& other) const noexcept {
+		return static_cast<T2>(this->x) * other.x
+			+ static_cast<T2>(this->y) * other.y;
 	}
 
-	T cross(const Vec2& other) const noexcept {
-		return this->x * other.y - this->y * other.x;
+	T2 cross(const Vec2& other) const noexcept {
+		return static_cast<T2>(this->x) * other.y
+			- static_cast<T2>(this->y) * other.x;
 	}
 
-	T size2() const noexcept {
-		return this->x * this->x + this->y * this->y;
+	T2 size2() const noexcept {
+		return static_cast<T2>(this->x) * this->x
+			+ static_cast<T2>(this->y) * this->y;
 	}
 
-	double length() const noexcept {
+	auto length() const noexcept {
 		return std::sqrt(size2());
 	}
 
-	double theta() const noexcept {
+	auto theta() const noexcept {
 		return std::atan2(y, x);
 	}
 
@@ -98,11 +102,17 @@ struct Vec2 {
 	}
 };
 
-template <typename T>
-std::istream& operator>>(std::istream& is, Vec2<T>& vec2) {
+template <typename T, typename T2>
+std::istream& operator>>(std::istream& is, Vec2<T, T2>& vec2) {
 	is >> vec2.x >> vec2.y;
 	return is;
 }
 
-typedef Vec2<int> Int2;
-typedef Vec2<double> Double2;
+template <typename T, typename T2>
+std::ostream& operator<<(std::ostream& os, Vec2<T, T2>& vec2) {
+	os << vec2.x << ' ' << vec2.y;
+	return os;
+}
+
+typedef Vec2<int32_t, int64_t> Int2;
+typedef Vec2<double, double> Double2;
