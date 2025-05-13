@@ -25,7 +25,7 @@ public:
 	}
 
 	LazySum operator+(const LazySum& other) const {
-		return LazySum(value() + other.value());
+		return LazySum(value() + other.value(), length + other.length);
 	}
 
 	void resolve(LazySum& left, LazySum& right) {
