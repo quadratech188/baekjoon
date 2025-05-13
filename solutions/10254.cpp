@@ -3,7 +3,6 @@
 #include "../modules/ModInt.h"
 #include <algorithm>
 #include <cstdint>
-#include <iomanip>
 #include <stack>
 #include <vector>
 
@@ -15,7 +14,6 @@ void loop() {
 	for (auto& point: points)
 		std::cin >> point;
 
-	/*
 	size_t min_index = 0;
 
 	for (size_t i = 1; i < n; i++) {
@@ -24,14 +22,12 @@ void loop() {
 	}
 
 	std::swap(points[0], points[min_index]);
-	*/
-
-	std::sort(points.begin(), points.end());
 
 	Int2 min = points[0];
 
 	std::sort(std::next(points.begin()), points.end(), [min](Int2 const& l, Int2 const& r) {
-			return (l - min).cross(r - min) > 0;
+			if ((l - min).cross(r - min) != 0) return (l - min).cross(r - min) > 0;
+			return (l - min).size2() < (r - min).size2();
 			});
 
 	std::vector<Int2> shell;
@@ -50,6 +46,7 @@ void loop() {
 	dm32<> c = 0;
 	dm32<> d = 1;
 
+	size_t city1, city2;
 	int64_t length_square = 0;
 
 	size_t count = 0;
@@ -57,6 +54,8 @@ void loop() {
 		int64_t new_length_square = (shell[c.val()] - shell[a.val()]).size2();
 		if (length_square < new_length_square) {
 			length_square = new_length_square;
+			city2 = c.val();
+			city1 = a.val();
 		}
 		if ((shell[b.val()] - shell[a.val()]).cross(shell[d.val()] - shell[c.val()]) > 0) {
 			++c;
@@ -68,15 +67,13 @@ void loop() {
 			++count;
 		}
 	}
-	std::cout << std::fixed << std::setprecision(6) << std::sqrt(length_square);
+
+	std::cout << shell[city1] << ' ' << shell[city2] << '\n';
 }
 
 int main() {
 	FastIO();
-	/*
 	int t;
 	std::cin >> t;
 	for (int i = 0; i < t; i++) loop();
-	*/
-	loop();
 }

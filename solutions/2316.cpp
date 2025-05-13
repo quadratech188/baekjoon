@@ -1,63 +1,62 @@
-#include "modules/Matrix.h"
-#include "modules/ListGraph.h"
-#include "modules/Types.h"
-#include "modules/FastIO.h"
+#include "../modules/FastIO2.h"
+#include "../modules/ListGraph2.h"
 #include <iostream>
 #include <limits>
 #include <queue>
+#include <variant>
 
 int main() {
-	FastIO();
-	int n, p;
-	std::cin >> n >> p;
+	size_t n, p;
+	Fast::cin >> n >> p;
 
-	std::vector<int> usable(n, 1);
+	ListGraph<std::monostate, int>
+		::reversible<true> graph(2 * n);
 
-	ListGraph<None, None> graph(n);
-
-	int const source = 0;
-	int const sink = 1;
-
-	for (int i = 0; i < p; i++) {
-		int a, b;
-		std::cin >> a >> b;
-		graph.connect(a - 1, b - 1);
-		graph.connect(b - 1, a - 1);
+	for (size_t i = 0; i < n; i++) {
+		graph.connect_both(2 * i, 2 * i + 1, 1, 0);
 	}
+
+	for (size_t i = 0; i < p; i++) {
+		size_t a, b;
+		Fast::cin >> a >> b;
+		graph.connect_both(2 * a - 1, 2 * b - 2, std::numeric_limits<int>::max(), 0);
+		graph.connect_both(2 * b - 1, 2 * a - 2, std::numeric_limits<int>::max(), 0);
+	}
+
+	size_t const source = 2 * 0 + 1;
+	size_t const sink = 2 * 1;
+	size_t const size = 2 * n;
+
+	std::vector<size_t> prev(size);
+	std::vector<decltype(graph)::child*> edges(size);
+	std::queue<size_t> queue;
 
 	int count = 0;
 
 	while (true) {
-		std::vector<int> prev(n, -1);
-		std::vector<bool> in_queue(n, false);
-		std::queue<int> queue;
-		in_queue[source] = true;
+		std::fill(prev.begin(), prev.end(), std::numeric_limits<size_t>::max());
+
 		queue.push(source);
 
 		while (!queue.empty()) {
-			int parent = queue.front();
+			size_t parent = queue.front();
 			queue.pop();
-			in_queue[parent] = false;
-			for (auto child: graph.children(parent)) {
-				if (usable[child] && prev[child] == -1) {
-					prev[child] = parent;
 
-					if (!in_queue[child]) {
-						queue.push(child);
-						in_queue[child] = true;
-					}
+			for (auto& child: graph.children(parent)) {
+				if (child.edge() > 0 && prev[child] == std::numeric_limits<size_t>::max()) {
+					prev[child] = parent;
+					edges[child] = &child;
+					queue.push(child);
 				}
 			}
 		}
+		if (prev[sink] == std::numeric_limits<size_t>::max()) break;
 
-		if (prev[sink] == -1) break;
-
-		for (int i = sink; i != source; i = prev[i]) {
-			usable[i] --;
-			std::cout << i << '\n';
+		for (size_t i = sink; i != source; i = prev[i]) {
+			edges[i]->edge() --;
+			graph.reverse(*edges[i]).edge() ++;
 		}
 		count++;
 	}
-
-	std::cout << count << '\n';
+	std::cout << count;
 }
