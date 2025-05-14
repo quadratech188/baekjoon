@@ -2,7 +2,9 @@
 #include "../modules/TreeWrapper.h"
 #include "../modules/ModInt.h"
 #include "../modules/FastIO2.h"
+#include <ostream>
 #include <iostream>
+#include <unistd.h>
 
 sm32_1e9_7 traffic = 0;
 template <Graph G>
@@ -27,13 +29,14 @@ int main() {
 	for (size_t i = 0; i < n - 1; i++) {
 		size_t a, b, w;
 		Fast::cin >> a >> b >> w;
-		graph.connect(a - 1, b - 1, w);
-		graph.connect(b - 1, a - 1, w);
+		graph.connect(a - 1, b - 1, sm32_1e9_7::verified(w));
+		graph.connect(b - 1, a - 1, sm32_1e9_7::verified(w));
 	}
 
 	TreeWrapper tree(graph, 0);
 
 	solve(tree, 0);
 
-	std::cout << traffic;
+	std::cout << traffic << std::flush;
+	_exit(0);
 }

@@ -9,6 +9,7 @@
 #include <queue>
 #include <ranges>
 #include <type_traits>
+#include <unistd.h>
 #include <variant>
 #include <vector>
 
@@ -185,7 +186,7 @@ public:
 			queue.pop();
 			parents[parent] = before_parent;
 
-			for (auto child: graph.children(parent)) {
+			for (auto const& child: graph.children(parent)) {
 				if (child == before_parent) continue;
 				queue.emplace(parent, child);
 			}
@@ -255,6 +256,10 @@ public:
 		return ModInt(val, raw{});
 	}
 
+	constexpr T val() const noexcept {
+		return value;
+	}
+
 	constexpr explicit operator T() const noexcept {
 		return value;
 	}
@@ -271,13 +276,29 @@ public:
 		return *this;
 	}
 
+	constexpr ModInt& operator++() noexcept {
+		if (value == Policy::mod() - 1)
+			value = 0;
+		else
+		 	++value;
+		return *this;
+	}
+
 	constexpr ModInt operator*(ModInt const& other) const noexcept {
 		return ModInt(static_cast<T2>(value) * other.value % Policy::mod(), raw{});
+	}
+
+	constexpr bool operator!=(T const& other) const noexcept {
+		return value != other;
 	}
 
 	friend std::ostream& operator<<(std::ostream& os, ModInt const& val) {
 		os << val.value;
 		return os;
+	}
+
+	static void set_mod(T val) {
+		Policy::mod() = val;
 	}
 };
 
@@ -297,7 +318,7 @@ template <typename tag = void>
 using dm64 = ModInt<uint64_t, uint64_t, DynamicModPolicy<uint64_t, tag>>;
 
 namespace Fast {
-	class istream {
+	class istream: public std::istream {
 	public:
 		template <typename T>
 		inline istream& operator>>(T& val)
@@ -344,13 +365,14 @@ int main() {
 	for (size_t i = 0; i < n - 1; i++) {
 		size_t a, b, w;
 		Fast::cin >> a >> b >> w;
-		graph.connect(a - 1, b - 1, w);
-		graph.connect(b - 1, a - 1, w);
+		graph.connect(a - 1, b - 1, sm32_1e9_7::verified(w));
+		graph.connect(b - 1, a - 1, sm32_1e9_7::verified(w));
 	}
 
 	TreeWrapper tree(graph, 0);
 
 	solve(tree, 0);
 
-	std::cout << traffic;
+	std::cout << traffic << std::flush;
+	_exit(0);
 }
