@@ -31,7 +31,7 @@ public:
 			queue.pop();
 			parents[parent] = before_parent;
 
-			for (auto child: graph.children(parent)) {
+			for (auto const& child: graph.children(parent)) {
 				if (child == before_parent) continue;
 				queue.emplace(parent, child);
 			}
