@@ -3,7 +3,7 @@
 #include <type_traits>
 
 namespace Fast {
-	class istream: public std::istream {
+	class istream {
 	public:
 		template <typename T>
 		inline istream& operator>>(T& val)
