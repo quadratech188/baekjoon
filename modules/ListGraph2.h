@@ -3,20 +3,22 @@
 #include <variant>
 #include <vector>
 
-template <typename V, typename E, bool Reversible = false, template <typename...> class Container = std::vector>
+template <typename V, typename E, bool Reversible = false, template <typename...> class Container = std::vector, typename Index = std::size_t>
 class ListGraph {
 public:
 	// Builder
 	template <bool value>
-	using reversible = ListGraph<V, E, value, Container>;
+	using reversible = ListGraph<V, E, value, Container, Index>;
 	template <template <typename...> class value>
-	using container = ListGraph<V, E, Reversible, value>;
+	using container = ListGraph<V, E, Reversible, value, Index>;
+	template <typename value>
+	using index = ListGraph<V, E, Reversible, Container, value>;
 
 	static constexpr bool reversible_v = Reversible;
 	template <typename T>
 	using container_t = Container<T>;
 
-	using index_t = std::size_t;
+	using index_t = Index;
 	using vertex_t = V;
 	using edge_t = E;
 	template <typename T>
@@ -55,6 +57,7 @@ public:
 	private:
 		index_t _index;
 		edge_t _edge;
+		[[no_unique_address]]
 		std::conditional_t<reversible_v, index_t, std::monostate> _rev;
 	};
 

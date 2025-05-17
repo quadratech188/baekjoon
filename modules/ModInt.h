@@ -52,40 +52,40 @@ public:
 		return value;
 	}
 
-	constexpr ModInt operator+(ModInt const& other) const noexcept {
-		if (value + other.value >= Policy::mod())
-			return ModInt(value + other.value - Policy::mod(), raw{});
-		else
-		 	return ModInt(value + other.value, raw{});
+	constexpr inline ModInt operator+(ModInt const& other) const noexcept {
+		T sum = value + other.value;
+		if (sum >= Policy::mod()) sum -= Policy::mod();
+		return ModInt(sum, raw{});
 	}
 
-	constexpr ModInt& operator+=(ModInt const& other) noexcept {
-		*this = *this + other;
+	constexpr inline ModInt& operator+=(ModInt const& other) noexcept {
+		value += other.value;
+		if (value >= Policy::mod()) value -= Policy::mod();
 		return *this;
 	}
 
-	constexpr ModInt& operator++() noexcept {
-		if (value == Policy::mod() - 1)
-			value = 0;
-		else
-		 	++value;
+	constexpr inline ModInt& operator++() noexcept {
+		if (++value == Policy::mod()) value = 0;
 		return *this;
 	}
 
-	constexpr ModInt operator*(ModInt const& other) const noexcept {
+	constexpr inline ModInt operator*(ModInt const& other) const noexcept {
 		return ModInt(static_cast<T2>(value) * other.value % Policy::mod(), raw{});
 	}
 
-	constexpr bool operator!=(T const& other) const noexcept {
+	constexpr inline bool operator!=(T const& other) const noexcept {
 		return value != other;
 	}
+	constexpr inline bool operator==(T const& other) const noexcept {
+		return value == other;
+	}
 
-	friend std::ostream& operator<<(std::ostream& os, ModInt const& val) {
+	inline friend std::ostream& operator<<(std::ostream& os, ModInt const& val) {
 		os << val.value;
 		return os;
 	}
 
-	static void set_mod(T val) {
+	static inline void set_mod(T val) {
 		Policy::mod() = val;
 	}
 };

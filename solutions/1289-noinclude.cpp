@@ -1,3 +1,4 @@
+#include <array>
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
@@ -13,20 +14,22 @@
 #include <variant>
 #include <vector>
 
-template <typename V, typename E, bool Reversible = false, template <typename...> class Container = std::vector>
+template <typename V, typename E, bool Reversible = false, template <typename...> class Container = std::vector, typename Index = std::size_t>
 class ListGraph {
 public:
 	// Builder
 	template <bool value>
-	using reversible = ListGraph<V, E, value, Container>;
+	using reversible = ListGraph<V, E, value, Container, Index>;
 	template <template <typename...> class value>
-	using container = ListGraph<V, E, Reversible, value>;
+	using container = ListGraph<V, E, Reversible, value, Index>;
+	template <typename value>
+	using index = ListGraph<V, E, Reversible, Container, value>;
 
 	static constexpr bool reversible_v = Reversible;
 	template <typename T>
 	using container_t = Container<T>;
 
-	using index_t = std::size_t;
+	using index_t = Index;
 	using vertex_t = V;
 	using edge_t = E;
 	template <typename T>
@@ -65,6 +68,7 @@ public:
 	private:
 		index_t _index;
 		edge_t _edge;
+		[[no_unique_address]]
 		std::conditional_t<reversible_v, index_t, std::monostate> _rev;
 	};
 
@@ -264,40 +268,40 @@ public:
 		return value;
 	}
 
-	constexpr ModInt operator+(ModInt const& other) const noexcept {
-		if (value + other.value >= Policy::mod())
-			return ModInt(value + other.value - Policy::mod(), raw{});
-		else
-		 	return ModInt(value + other.value, raw{});
+	constexpr inline ModInt operator+(ModInt const& other) const noexcept {
+		T sum = value + other.value;
+		if (sum >= Policy::mod()) sum -= Policy::mod();
+		return ModInt(sum, raw{});
 	}
 
-	constexpr ModInt& operator+=(ModInt const& other) noexcept {
-		*this = *this + other;
+	constexpr inline ModInt& operator+=(ModInt const& other) noexcept {
+		value += other.value;
+		if (value >= Policy::mod()) value -= Policy::mod();
 		return *this;
 	}
 
-	constexpr ModInt& operator++() noexcept {
-		if (value == Policy::mod() - 1)
-			value = 0;
-		else
-		 	++value;
+	constexpr inline ModInt& operator++() noexcept {
+		if (++value == Policy::mod()) value = 0;
 		return *this;
 	}
 
-	constexpr ModInt operator*(ModInt const& other) const noexcept {
+	constexpr inline ModInt operator*(ModInt const& other) const noexcept {
 		return ModInt(static_cast<T2>(value) * other.value % Policy::mod(), raw{});
 	}
 
-	constexpr bool operator!=(T const& other) const noexcept {
+	constexpr inline bool operator!=(T const& other) const noexcept {
 		return value != other;
 	}
+	constexpr inline bool operator==(T const& other) const noexcept {
+		return value == other;
+	}
 
-	friend std::ostream& operator<<(std::ostream& os, ModInt const& val) {
+	inline friend std::ostream& operator<<(std::ostream& os, ModInt const& val) {
 		os << val.value;
 		return os;
 	}
 
-	static void set_mod(T val) {
+	static inline void set_mod(T val) {
 		Policy::mod() = val;
 	}
 };
@@ -317,8 +321,25 @@ using dm32 = ModInt<uint32_t, uint64_t, DynamicModPolicy<uint32_t, tag>>;
 template <typename tag = void>
 using dm64 = ModInt<uint64_t, uint64_t, DynamicModPolicy<uint64_t, tag>>;
 
+#ifndef FASTIO_BUFFER_SIZE
+#define FASTIO_BUFFER_SIZE 1 << 20
+#endif
+
 namespace Fast {
-	class istream: public std::istream {
+	class istream {
+	private:
+		char getchar() {
+			static char buffer[FASTIO_BUFFER_SIZE];
+			static char* ptr = buffer;
+			static char* end = buffer;
+
+			if (ptr == end) {
+				ssize_t size = read(STDIN_FILENO, buffer, sizeof(buffer));
+				ptr = buffer;
+				end = buffer + size;
+			}
+			return *(ptr++);
+		}
 	public:
 		template <typename T>
 		inline istream& operator>>(T& val)
@@ -327,12 +348,12 @@ namespace Fast {
 			val = 0;
 
 			do {
-				ch = getchar_unlocked();
+				ch = getchar();
 			} while (ch == ' ' || ch == '\n');
 
 			do {
 				val = 10 * val + ch - '0';
-				ch = getchar_unlocked();
+				ch = getchar();
 			} while ('0' <= ch && ch <= '9');
 
 			return *this;
@@ -356,11 +377,18 @@ void solve(G& tree, size_t root) {
 	tree[root] = sum + 1;
 }
 
+struct a {
+	uint32_t a;
+	uint32_t b;
+	std::monostate c;
+};
+
 int main() {
 	size_t n;
 	Fast::cin >> n;
 
-	ListGraph<sm32_1e9_7, sm32_1e9_7> graph(n);
+	ListGraph<sm32_1e9_7, sm32_1e9_7>
+		::index<uint32_t> graph(n);
 
 	for (size_t i = 0; i < n - 1; i++) {
 		size_t a, b, w;

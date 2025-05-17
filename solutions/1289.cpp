@@ -2,9 +2,11 @@
 #include "../modules/TreeWrapper.h"
 #include "../modules/ModInt.h"
 #include "../modules/FastIO2.h"
+#include <cstdint>
 #include <ostream>
 #include <iostream>
 #include <unistd.h>
+#include <variant>
 
 sm32_1e9_7 traffic = 0;
 template <Graph G>
@@ -20,11 +22,18 @@ void solve(G& tree, size_t root) {
 	tree[root] = sum + 1;
 }
 
+struct a {
+	uint32_t a;
+	uint32_t b;
+	std::monostate c;
+};
+
 int main() {
 	size_t n;
 	Fast::cin >> n;
 
-	ListGraph<sm32_1e9_7, sm32_1e9_7> graph(n);
+	ListGraph<sm32_1e9_7, sm32_1e9_7>
+		::index<uint32_t> graph(n);
 
 	for (size_t i = 0; i < n - 1; i++) {
 		size_t a, b, w;
