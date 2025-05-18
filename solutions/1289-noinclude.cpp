@@ -384,6 +384,8 @@ int main() {
 	ListGraph<sm32_1e9_7, sm32_1e9_7>
 		::index<uint> graph(n);
 
+	graph.reserve_children(4);
+
 	for (uint i = 0; i < n - 1; i++) {
 		uint a, b, w;
 		Fast::cin >> a >> b >> w;

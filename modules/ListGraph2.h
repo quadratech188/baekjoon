@@ -56,6 +56,7 @@ public:
 		}
 	private:
 		index_t _index;
+		[[no_unique_address]]
 		edge_t _edge;
 		[[no_unique_address]]
 		std::conditional_t<reversible_v, index_t, std::monostate> _rev;

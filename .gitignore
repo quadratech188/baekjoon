@@ -2,11 +2,11 @@
 *.exe
 *.pdb
 *.ilk
-*.valgrind
 
 *
 !*/
 !*.*
+*.valgrind
 
 !comp
 !merge
