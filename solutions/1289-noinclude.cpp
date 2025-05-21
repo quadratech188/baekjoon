@@ -19,11 +19,11 @@ class ListGraph {
 public:
 	// Builder
 	template <bool value>
-	using reversible = ListGraph<V, E, value, Container, Index>;
+	using with_reversible = ListGraph<V, E, value, Container, Index>;
 	template <template <typename...> class value>
-	using container = ListGraph<V, E, Reversible, value, Index>;
+	using with_container = ListGraph<V, E, Reversible, value, Index>;
 	template <typename value>
-	using index = ListGraph<V, E, Reversible, Container, value>;
+	using with_index = ListGraph<V, E, Reversible, Container, value>;
 
 	static constexpr bool reversible_v = Reversible;
 	template <typename T>
@@ -67,6 +67,7 @@ public:
 		}
 	private:
 		index_t _index;
+		[[no_unique_address]]
 		edge_t _edge;
 		[[no_unique_address]]
 		std::conditional_t<reversible_v, index_t, std::monostate> _rev;
@@ -382,7 +383,7 @@ int main() {
 	Fast::cin >> n;
 
 	ListGraph<sm32_1e9_7, sm32_1e9_7>
-		::index<uint> graph(n);
+		::with_index<uint> graph(n);
 
 	graph.reserve_children(4);
 

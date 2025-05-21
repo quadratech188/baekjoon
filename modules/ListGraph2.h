@@ -8,11 +8,11 @@ class ListGraph {
 public:
 	// Builder
 	template <bool value>
-	using reversible = ListGraph<V, E, value, Container, Index>;
+	using with_reversible = ListGraph<V, E, value, Container, Index>;
 	template <template <typename...> class value>
-	using container = ListGraph<V, E, Reversible, value, Index>;
+	using with_container = ListGraph<V, E, Reversible, value, Index>;
 	template <typename value>
-	using index = ListGraph<V, E, Reversible, Container, value>;
+	using with_index = ListGraph<V, E, Reversible, Container, value>;
 
 	static constexpr bool reversible_v = Reversible;
 	template <typename T>

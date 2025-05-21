@@ -25,7 +25,7 @@ int main() {
 	Fast::cin >> n;
 
 	ListGraph<sm32_1e9_7, sm32_1e9_7>
-		::index<uint> graph(n);
+		::with_index<uint> graph(n);
 
 	graph.reserve_children(4);
 

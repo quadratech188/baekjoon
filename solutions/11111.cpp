@@ -33,7 +33,8 @@ int main() {
 	int const sink = n * m + 1;
 	int const size = n * m + 2;
 	ListGraph<std::monostate, Edge>
-		::reversible<true> flowgraph(size);
+		::with_reversible<true>
+		::with_index<uint> flowgraph(size);
 
 	for (Int2 parent: matrix.bounds()) {
 		int index = matrix.rawIndex(parent);
