@@ -10,95 +10,103 @@ struct Vec2 {
 	
 	T x, y;
 
-	Vec2(T x, T y): x(x), y(y) {}
-	Vec2(): x(T()), y(T()) {}
+	constexpr Vec2(T x, T y) noexcept: x(x), y(y) {}
+	constexpr Vec2() noexcept : x(T()), y(T()) {}
 
-	Vec2 operator+(const Vec2& other) const noexcept {
+	constexpr Vec2 operator+(const Vec2& other) const noexcept {
 		return Vec2(this->x + other.x, this->y + other.y);
 	}
 
-	Vec2& operator+=(Vec2 const& other) noexcept {
+	constexpr Vec2& operator+=(Vec2 const& other) noexcept {
 		x += other.x;
 		y += other.y;
 		return *this;
 	}
 
-	Vec2 operator-(const Vec2& other) const noexcept {
+	constexpr Vec2 operator-(const Vec2& other) const noexcept {
 		return Vec2(this->x - other.x, this->y - other.y);
 	}
 
-	Vec2& operator-=(Vec2 const& other) noexcept {
+	constexpr Vec2& operator-=(Vec2 const& other) noexcept {
 		x -= other.x;
 		y -= other.y;
 		return *this;
 	}
 
 	template<typename D>
-	Vec2<D> operator/(const D other) const noexcept {
+	constexpr Vec2<D> operator/(const D other) const noexcept {
 		return Vec2<D>(this->x / other, this->y / other);
 	}
 
-	Vec2 operator*(T const& other) const noexcept {
+	constexpr Vec2 operator*(T const& other) const noexcept {
 		return {x * other, y * other};
 	}
 
-	friend Vec2 operator*(T const& l, Vec2<T> const& r) noexcept {
+	constexpr friend Vec2 operator*(T const& l, Vec2<T> const& r) noexcept {
 		return {l * r.x, l * r.y};
 	}
 
-	bool operator<(const Vec2& other) const noexcept {
+	constexpr bool operator<(const Vec2& other) const noexcept {
 		if (this->x != other.x) return this->x < other.x;
 		return this->y < other.y;
 	}
 
-	bool operator==(const Vec2& other) const noexcept {
+	constexpr bool operator==(const Vec2& other) const noexcept {
 		return this->x == other.x && this->y == other.y;
 	}
 
-	bool operator!=(const Vec2& other) const noexcept {
+	constexpr bool operator!=(const Vec2& other) const noexcept {
 		return this->x != other.x || this->y != other.y;
 	}
 
-	Vec2 rotate(const double angle) const noexcept {
+	constexpr Vec2 rotate(const double angle) const noexcept {
 		return Vec2(
 				x * std::cos(angle) - y * std::sin(angle),
 				x * std::sin(angle) + y * std::cos(angle)
 				);
 	}
 
-	T2 dot(const Vec2& other) const noexcept {
+	constexpr T2 dot(const Vec2& other) const noexcept {
 		return static_cast<T2>(this->x) * other.x
 			+ static_cast<T2>(this->y) * other.y;
 	}
 
-	T2 cross(const Vec2& other) const noexcept {
+	constexpr T2 cross(const Vec2& other) const noexcept {
 		return static_cast<T2>(this->x) * other.y
 			- static_cast<T2>(this->y) * other.x;
 	}
 
-	T2 size2() const noexcept {
+	constexpr T2 size2() const noexcept {
 		return static_cast<T2>(this->x) * this->x
 			+ static_cast<T2>(this->y) * this->y;
 	}
 
-	auto length() const noexcept {
+	constexpr auto length() const noexcept {
 		return std::sqrt(size2());
 	}
 
-	auto theta() const noexcept {
+	constexpr auto theta() const noexcept {
 		return std::atan2(y, x);
 	}
 
-	T taxi_distance(const Vec2& other) const noexcept {
+	constexpr T taxi_distance(const Vec2& other) const noexcept {
 		return std::abs(x - other.x) + std::abs(y - other.y);
 	}
 
-	static Vec2 zero() noexcept {
+	constexpr static Vec2 zero() noexcept {
 		return Vec2(0, 0);
 	}
 
-	static Vec2 one() noexcept {
+	constexpr static Vec2 one() noexcept {
 		return Vec2(1, 1);
+	}
+
+	constexpr static Vec2 i() noexcept {
+		return Vec2(1, 0);
+	}
+
+	constexpr static Vec2 j() noexcept {
+		return Vec2(0, 1);
 	}
 };
 

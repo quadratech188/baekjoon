@@ -8,7 +8,12 @@
 template <typename T>
 concept Lazy = requires(T t, T l, T r) {
 	{l + r} -> std::same_as<T>;
-	{t.resolve(l, r)};
+	{t.propagate(l, r)};
+	{t.reinit(l, r)};
+	{t.apply()};
+
+	typename T::extracted_t;
+	{t.extract()} -> std::same_as<typename T::extracted_t>;
 };
 
 template<typename T> requires Lazy<T>
@@ -33,15 +38,15 @@ public:
 		init(Segment(0, _size), 0, it);
 	}
 
-	T sum(Segment segment) {
+	T::extracted_t sum(Segment segment) {
 		return sum(segment, Segment(0, _size), 0);
 	}
 
-	T sum(size_t start, size_t end) {
+	T::extracted_t sum(size_t start, size_t end) {
 		return sum(Segment(start, end));
 	}
 
-	T at(size_t index) {
+	T::extracted_t at(size_t index) {
 		return sum(Segment(index, index + 1));
 	}
 
@@ -89,14 +94,15 @@ private:
 		_values[index] = _values[left] + _values[right];
 	}
 
-	T sum(Segment const query, Segment const segment, size_t const index) {
+	T::extracted_t sum(Segment const query, Segment const segment, size_t const index) {
 		if (query.includes(segment))
-			return _values[index];
+			return _values[index].extract();
 
 		size_t const left = index * 2 + 1;
 		size_t const right = index * 2 + 2;
 
-		_values[index].resolve(_values[left], _values[right]);
+		_values[index].propagate(_values[left], _values[right]);
+		_values[index].apply();
 
 		if (segment.center() <= query.start)
 			return sum(query, segment.right(), right);
@@ -126,7 +132,7 @@ private:
 
 		// Does the function mutate values?
 		if constexpr (!std::invocable<Callable, const T&>)
-			this->_values[value_index].resolve(this->_values[left], this->_values[right]);
+			this->_values[value_index].propagate(this->_values[left], this->_values[right]);
 
 		if (index.start < segment.center())
 			update(index, left, segment.left(), func);
@@ -134,7 +140,8 @@ private:
 		if (segment.center() < index.end)
 			update(index, right, segment.right(), func);
 
-		if constexpr (!std::invocable<Callable, const T&>)
-			_values[value_index] = _values[left] + _values[right];
+		if constexpr (!std::invocable<Callable, const T&>) {
+			_values[value_index].reinit(_values[left], _values[right]);
+		}
 	}
 };

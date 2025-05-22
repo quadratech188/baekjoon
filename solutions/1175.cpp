@@ -1,19 +1,12 @@
 #include <array>
 #include <queue>
 
-#include "modules/Matrix.h"
-#include "modules/Vec2.h"
-
-std::array<Vec2, 4> dirs = {
-	Vec2(0, 1),
-	Vec2(1, 0),
-	Vec2(0, -1),
-	Vec2(-1, 0)
-};
+#include "../modules/GridGraph.h"
+#include "../modules/Vec2.h"
 
 struct Man {
-	Vec2 pos;
-	Vec2 prevDir;
+	Int2 pos;
+	Int2 prevDir;
 	bool c1;
 	bool c2;
 	int count;
@@ -25,7 +18,7 @@ int main() {
 	Matrix<char> grid(m, n);
 	std::cin >> grid;
 
-	Vec2 s, c1, c2;
+	Int2 s, c1, c2;
 	int temp = 0;
 
 	for (int x = 0; x < grid.sizeX; x++) {

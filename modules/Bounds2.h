@@ -59,6 +59,10 @@ public:
 			&& left.y <= pos.y && pos.y < right.y;
 	}
 
+	Bounds2 pad(V2 start, V2 end) {
+		return Bounds2(left + start, right - end);
+	}
+
 	V2::type& x1() {
 		return left.x;
 	}

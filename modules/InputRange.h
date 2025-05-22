@@ -7,7 +7,7 @@ inline auto InputRange(size_t n, Input& is = std::cin) {
 	return std::views::iota(static_cast<size_t>(0), n)
 		| std::views::transform([&is](size_t) {
 				T temp;
-				std::cin >> temp;
+				is >> temp;
 				return temp;
 				});
 }

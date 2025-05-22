@@ -1,5 +1,6 @@
 #include <array>
 #include <cstdio>
+#include <iostream>
 #include <istream>
 #include <type_traits>
 #include <unistd.h>
@@ -32,13 +33,32 @@ namespace Fast {
 
 			do {
 				ch = getchar();
-			} while (ch == ' ' || ch == '\n');
+			} while (isspace(ch));
+
+			// Optimized away for non-signed types
+			bool negative = false;
+			if constexpr (std::is_signed_v<T>) {
+				if (ch == '-') {
+					negative = true;
+					ch = getchar();
+				}
+			}
 
 			do {
 				val = 10 * val + ch - '0';
 				ch = getchar();
 			} while ('0' <= ch && ch <= '9');
 
+			if constexpr (std::is_signed_v<T>)
+				if (negative) val = -val;
+
+			return *this;
+		}
+
+		inline istream& operator>>(char& val) {
+			do {
+				val = getchar();
+			} while (val == '\n' || val == ' ');
 			return *this;
 		}
 	};

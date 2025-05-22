@@ -1,52 +1,58 @@
 #include "../modules/FastIO.h"
+#include "../modules/FastIO2.h"
 #include "../modules/InputRange.h"
 #include "../modules/LazySegmentTree.h"
 #include "../modules/ModInt.h"
+#include <cstdint>
 #include <iostream>
+#include <ostream>
+#include <ranges>
 
 struct Update {
 	sm32_1e9_7 a, b;
 };
 
 struct Data {
+	using extracted_t = sm32_1e9_7;
+
 	sm32_1e9_7 a;
 	sm32_1e9_7 b;
-	sm32_1e9_7 _value;
-	size_t length;
+	sm32_1e9_7 sum;
+	int32_t length;
 
-	Data(sm32_1e9_7 value = 0, size_t length = 1):
-		a(1), b(0), _value(value), length(length) {}
+	Data(sm32_1e9_7 value = 0, int32_t length = 1):
+		a(1), b(0), sum(value), length(length) {}
+
+	void update(sm32_1e9_7 c, sm32_1e9_7 d) noexcept {
+		a *= c;
+		b *= c;
+		b += d;
+	}
 	
-	constexpr sm32_1e9_7 value() const {
-		return this->a * this->_value + this->b * this->length;
+	sm32_1e9_7 extract() const noexcept {
+		return this->a * this->sum + this->b * this->length;
 	}
 
-	Data operator+(const Data& other) const {
+	Data operator+(const Data& other) const noexcept {
 		return Data(
-				value() + other.value(),
+				extract() + other.extract(),
 				length + other.length
 				);
 	}
 
-	inline void update(Update update) {
-		a *= update.a;
-		b *= update.a;
-		b += update.b;
+	void propagate(Data& child1, Data& child2) const noexcept {
+		child1.update(a, b);
+		child2.update(a, b);
 	}
 
-	inline void resolve(Data& child1, Data& child2) {
+	void reinit(Data& child1, Data& child2) noexcept {
+		sum = child1.extract() + child2.extract();
+		a = 1;
+		b = 0;
+	}
 
-		child1.a *= a;
-		
-		child1.b *= a;
-		child1.b += b;
-
-		child2.a *= a;
-		
-		child2.b *= a;
-		child2.b += b;
-
-		_value = value();
+	void apply() noexcept {
+		sum = extract();
 		a = 1;
 		b = 0;
 	}
@@ -54,36 +60,45 @@ struct Data {
 
 int main() {
 	FastIO();
-	int n;
-	std::cin >> n;
+	size_t n;
+	Fast::cin >> n;
 
-	LazySegmentTree<Data> root{InputRange<int>(n)};
+	LazySegmentTree<Data> root(InputRange<uint, Fast::istream>(n, Fast::cin)
+			| std::views::transform([](int const& val) {return sm32_1e9_7::verified(val);}));
 
-	int m;
-	std::cin >> m;
+	uint m;
+	Fast::cin >> m;
 
-	for (int i = 0; i < m; i++) {
-		int type;
+	for (uint i = 0; i < m; i++) {
+		char type;
 		size_t x, y;
-		std::cin >> type >> x >> y;
-		if (type != 4) {
-			Update update;
-			int v;
-			std::cin >> v;
-			switch(type) {
-				case 1:
-					update = {1, v}; break;
-				case 2:
-					update = {v, 0}; break;
-				case 3:
-					update = {0, v}; break;
-			}
-			root.update(x - 1, y, [update](Data& val) {
-					val.update(update);
-					});
-		}
-		else {
-			std::cout << root.sum(x - 1, y).value() << '\n';
+		Fast::cin >> type >> x >> y;
+
+		uint v;
+		if (type != '4')
+			Fast::cin >> v;
+
+		switch(type) {
+			case '1':
+				root.update(x - 1, y, [v](Data& val) {
+						val.update(1, sm32_1e9_7::verified(v));
+						});
+				break;
+			case '2':
+				root.update(x - 1, y, [v](Data& val) {
+						val.update(sm32_1e9_7::verified(v), 0);
+						});
+				break;
+			case '3':
+				root.update(x - 1, y, [v](Data& val) {
+						val.update(0, sm32_1e9_7::verified(v));
+						});
+				break;
+			case '4':
+				std::cout << root.sum(x - 1, y) << '\n';
 		}
 	}
+
+	std::cout << std::flush;
+	_exit(0);
 }

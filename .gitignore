@@ -6,7 +6,7 @@
 *
 !*/
 !*.*
-*.valgrind
+*.callgrind
 
 !comp
 !merge

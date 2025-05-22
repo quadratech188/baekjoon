@@ -1,3 +1,4 @@
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -5,9 +6,12 @@
 #include <iostream>
 #include <istream>
 #include <iterator>
+#include <limits>
 #include <locale>
 #include <ostream>
 #include <ranges>
+#include <type_traits>
+#include <unistd.h>
 #include <vector>
 
 inline void FastIO() {
@@ -16,87 +20,76 @@ inline void FastIO() {
 	std::cout.tie(nullptr);
 }
 
-template <typename T>
-inline auto InputRange(size_t n, std::istream& is = std::cin) {
-	return std::views::iota(static_cast<size_t>(0), n)
-		| std::views::transform([&is](size_t) {
-				T temp;
-				std::cin >> temp;
-				return temp;
-				});
-}
+#ifndef FASTIO_BUFFER_SIZE
+#define FASTIO_BUFFER_SIZE 1 << 20
+#endif
 
-/*
-template <typename T>
-class InputRange: public std::ranges::view_interface<InputRange<T>> {
-public:
-	InputRange(size_t size, std::istream& is = std::cin):
-		is(&is), _size(size) {}
-
-	InputRange():
-		_size(0), is(nullptr) {}
-
-private:
-	std::istream* is;
-	size_t _size;
-
-public:
-	class iterator {
-	public:
-		using difference_type = std::ptrdiff_t;
-		using value_type = T;
-
-		iterator(std::istream* is, size_t index):
-			is(is), index(index) {
-			++(*this);
-		}
-
-		iterator():
-			is(nullptr), index(0) {}
-
+namespace Fast {
+	class istream {
 	private:
-		std::istream* is;
-		size_t index;
+		char getchar() {
+			static char buffer[FASTIO_BUFFER_SIZE];
+			static char* ptr = buffer;
+			static char* end = buffer;
 
-	public:
-		T operator*() const {
-			T value;
-			(*is) >> value;
-			return value;
+			if (ptr == end) {
+				ssize_t size = read(STDIN_FILENO, buffer, sizeof(buffer));
+				ptr = buffer;
+				end = buffer + size;
+			}
+			return *(ptr++);
 		}
+	public:
+		template <typename T>
+		inline istream& operator>>(T& val)
+		requires std::is_integral_v<T> {
+			char ch;
+			val = 0;
 
-		iterator& operator++() {
+			do {
+				ch = getchar();
+			} while (isspace(ch));
+
+			// Optimized away for non-signed types
+			bool negative = false;
+			if constexpr (std::is_signed_v<T>) {
+				if (ch == '-') {
+					negative = true;
+					ch = getchar();
+				}
+			}
+
+			do {
+				val = 10 * val + ch - '0';
+				ch = getchar();
+			} while ('0' <= ch && ch <= '9');
+
+			if constexpr (std::is_signed_v<T>)
+				if (negative) val = -val;
+
 			return *this;
 		}
 
-		iterator operator++(int) {
-			iterator temp = *this;
-			++(*this);
-			return temp;
-		}
-
-		bool operator!=(iterator const& other) const {
-			return index != other.index;
-		}
-
-		bool operator==(iterator const& other) const {
-			return index == other.index;
+		inline istream& operator>>(char& val) {
+			do {
+				val = getchar();
+			} while (val == '\n' || val == ' ');
+			return *this;
 		}
 	};
 
-	iterator begin() const {
-		return iterator(is, 0);
-	}
+	istream cin;
+}
 
-	iterator end() const {
-		return iterator(is, _size);
-	}
-
-	size_t size() const noexcept {
-		return _size;
-	}
-};
-*/
+template <typename T, typename Input = std::istream>
+inline auto InputRange(size_t n, Input& is = std::cin) {
+	return std::views::iota(static_cast<size_t>(0), n)
+		| std::views::transform([&is](size_t) {
+				T temp;
+				is >> temp;
+				return temp;
+				});
+}
 
 struct Segment {
 	constexpr Segment(): start(0), end(0) {}
@@ -143,7 +136,12 @@ private:
 template <typename T>
 concept Lazy = requires(T t, T l, T r) {
 	{l + r} -> std::same_as<T>;
-	{t.resolve(l, r)};
+	{t.propagate(l, r)};
+	{t.reinit(l, r)};
+	{t.apply()};
+
+	typename T::extracted_t;
+	{t.extract()} -> std::same_as<typename T::extracted_t>;
 };
 
 template<typename T> requires Lazy<T>
@@ -168,15 +166,15 @@ public:
 		init(Segment(0, _size), 0, it);
 	}
 
-	T sum(Segment segment) {
+	T::extracted_t sum(Segment segment) {
 		return sum(segment, Segment(0, _size), 0);
 	}
 
-	T sum(size_t start, size_t end) {
+	T::extracted_t sum(size_t start, size_t end) {
 		return sum(Segment(start, end));
 	}
 
-	T at(size_t index) {
+	T::extracted_t at(size_t index) {
 		return sum(Segment(index, index + 1));
 	}
 
@@ -224,14 +222,15 @@ private:
 		_values[index] = _values[left] + _values[right];
 	}
 
-	T sum(Segment const query, Segment const segment, size_t const index) {
+	T::extracted_t sum(Segment const query, Segment const segment, size_t const index) {
 		if (query.includes(segment))
-			return _values[index];
+			return _values[index].extract();
 
 		size_t const left = index * 2 + 1;
 		size_t const right = index * 2 + 2;
 
-		_values[index].resolve(_values[left], _values[right]);
+		_values[index].propagate(_values[left], _values[right]);
+		_values[index].apply();
 
 		if (segment.center() <= query.start)
 			return sum(query, segment.right(), right);
@@ -261,7 +260,7 @@ private:
 
 		// Does the function mutate values?
 		if constexpr (!std::invocable<Callable, const T&>)
-			this->_values[value_index].resolve(this->_values[left], this->_values[right]);
+			this->_values[value_index].propagate(this->_values[left], this->_values[right]);
 
 		if (index.start < segment.center())
 			update(index, left, segment.left(), func);
@@ -269,19 +268,21 @@ private:
 		if (segment.center() < index.end)
 			update(index, right, segment.right(), func);
 
-		if constexpr (!std::invocable<Callable, const T&>)
-			_values[value_index] = _values[left] + _values[right];
+		if constexpr (!std::invocable<Callable, const T&>) {
+			_values[value_index].reinit(_values[left], _values[right]);
+		}
 	}
 };
 
 template <typename T, T MOD>
 struct StaticModPolicy {
+	static_assert(MOD < std::numeric_limits<T>::max() / 2);
 	static constexpr T mod() {
 		return MOD;
 	}
 };
 
-template <typename T, int tag>
+template <typename T, typename tag = void>
 struct DynamicModPolicy {
 	static T& mod() {
 		static T value = 0;
@@ -292,83 +293,91 @@ struct DynamicModPolicy {
 template <typename T, typename T2, typename Policy>
 class ModInt {
 public:
-
-	constexpr ModInt(T2 val) noexcept {
-		_val = val % Policy::mod();
-		if (_val < 0) _val += Policy::mod();
+	constexpr ModInt(T val) noexcept {
+		if (val < 0) val += Policy::mod();
+		val %= Policy::mod();
+		value = val;
 	}
+
 	constexpr ModInt() noexcept:
-		_val(0) {}
+		value(0) {}
 
-	constexpr ModInt operator+(T const& other) const noexcept {
-		return ModInt(_val + other);
+private:
+	T value;
+
+	struct raw {};
+	constexpr ModInt(T val, raw) noexcept:
+		value(val) {}
+public:
+	constexpr static ModInt verified(T val) noexcept {
+		return ModInt(val, raw{});
 	}
 
-	constexpr ModInt operator+(ModInt const& other) const noexcept {
-		return ModInt(_val + other._val);
+	constexpr T val() const noexcept {
+		return value;
 	}
 
-	constexpr ModInt& operator+=(const ModInt& other) noexcept {
-		_val += other._val;
-		if (_val >= Policy::mod()) _val -= Policy::mod();
+	constexpr explicit operator T() const noexcept {
+		return value;
+	}
+
+	constexpr inline ModInt operator+(ModInt const& other) const noexcept {
+		T sum = value + other.value;
+		if (sum >= Policy::mod()) sum -= Policy::mod();
+		return ModInt(sum, raw{});
+	}
+
+	constexpr inline ModInt& operator+=(ModInt const& other) noexcept {
+		value += other.value;
+		if (value >= Policy::mod()) value -= Policy::mod();
 		return *this;
 	}
 
-	constexpr ModInt& operator++(int) noexcept {
-		_val = (_val + 1) % Policy::mod();
+	constexpr inline ModInt operator-(ModInt const& other) const noexcept {
+		if (value < other.value)
+			return ModInt(value + Policy::mod() - other.value);
+		else
+		 	return ModInt(value - other.value);
+	}
+
+	constexpr inline ModInt& operator-=(ModInt const& other) noexcept {
+		if (value < other.value)
+			value += (Policy::mod() - other.value);
+		else
+			value -= other.value;
+
 		return *this;
 	}
 
-	template <typename O>
-	constexpr ModInt operator*(const O& other) const noexcept {
-		return ModInt(static_cast<T2>(_val) * other);
-	}
-
-	constexpr ModInt operator*(const ModInt& other) const noexcept {
-		return ModInt(static_cast<T2>(_val) * other._val);
-	}
-
-	constexpr ModInt& operator*=(const ModInt& other) noexcept {
-		*this = ModInt(static_cast<T2>(_val) * other._val);
+	constexpr inline ModInt& operator++() noexcept {
+		if (++value == Policy::mod()) value = 0;
 		return *this;
 	}
 
-	constexpr ModInt& operator=(const ModInt& other) = default;
-
-	constexpr bool operator==(const ModInt& other) const noexcept {
-		return _val == other._val;
+	constexpr inline ModInt operator*(ModInt const& other) const noexcept {
+		return ModInt(static_cast<T2>(value) * other.value % Policy::mod(), raw{});
 	}
 
-	constexpr bool operator!=(const ModInt& other) const noexcept {
-		return _val != other._val;
+	constexpr inline ModInt& operator*=(ModInt const& other) noexcept {
+		value = static_cast<T2>(value) * other.value % Policy::mod();
+		return *this;
 	}
 
-	constexpr bool operator<=(const ModInt& other) const noexcept {
-		return _val <= other._val;
+	constexpr inline bool operator!=(T const& other) const noexcept {
+		return value != other;
+	}
+	constexpr inline bool operator==(T const& other) const noexcept {
+		return value == other;
 	}
 
-	constexpr operator T() const noexcept {
-		return _val;
-	}
-
-	friend std::ostream& operator<<(std::ostream& os, ModInt const& data) {
-		os << data._val;
+	inline friend std::ostream& operator<<(std::ostream& os, ModInt const& val) {
+		os << val.value;
 		return os;
 	}
 
-	friend std::istream& operator>>(std::istream& is, ModInt& data) {
-		T temp;
-		is >> temp;
-		data = ModInt(temp);
-		return is;
+	static inline void set_mod(T val) {
+		Policy::mod() = val;
 	}
-
-	static void setMod(T mod) {
-		Policy::mod() = mod;
-	}
-
-private:
-	T _val;
 };
 
 template <uint32_t MOD>
@@ -380,10 +389,10 @@ using sm64 = ModInt<uint64_t, uint64_t, StaticModPolicy<uint64_t, MOD>>;
 using sm32_1e9_7 = sm32<1'000'000'007>;
 using sm64_1e9_7 = sm64<1'000'000'007>;
 
-template <int tag = 0>
+template <typename tag = void>
 using dm32 = ModInt<uint32_t, uint64_t, DynamicModPolicy<uint32_t, tag>>;
 
-template <int tag = 0>
+template <typename tag = void>
 using dm64 = ModInt<uint64_t, uint64_t, DynamicModPolicy<uint64_t, tag>>;
 
 struct Update {
@@ -391,44 +400,46 @@ struct Update {
 };
 
 struct Data {
+	using extracted_t = sm32_1e9_7;
+
 	sm32_1e9_7 a;
 	sm32_1e9_7 b;
-	sm32_1e9_7 _value;
-	size_t length;
+	sm32_1e9_7 sum;
+	int32_t length;
 
-	Data(sm32_1e9_7 value = 0, size_t length = 1):
-		a(1), b(0), _value(value), length(length) {}
+	Data(sm32_1e9_7 value = 0, int32_t length = 1):
+		a(1), b(0), sum(value), length(length) {}
+
+	void update(sm32_1e9_7 c, sm32_1e9_7 d) noexcept {
+		a *= c;
+		b *= c;
+		b += d;
+	}
 	
-	constexpr sm32_1e9_7 value() const {
-		return this->a * this->_value + this->b * this->length;
+	sm32_1e9_7 extract() const noexcept {
+		return this->a * this->sum + this->b * this->length;
 	}
 
-	Data operator+(const Data& other) const {
+	Data operator+(const Data& other) const noexcept {
 		return Data(
-				value() + other.value(),
+				extract() + other.extract(),
 				length + other.length
 				);
 	}
 
-	inline void update(Update update) {
-		a *= update.a;
-		b *= update.a;
-		b += update.b;
+	void propagate(Data& child1, Data& child2) const noexcept {
+		child1.update(a, b);
+		child2.update(a, b);
 	}
 
-	inline void resolve(Data& child1, Data& child2) {
+	void reinit(Data& child1, Data& child2) noexcept {
+		sum = child1.extract() + child2.extract();
+		a = 1;
+		b = 0;
+	}
 
-		child1.a *= a;
-		
-		child1.b *= a;
-		child1.b += b;
-
-		child2.a *= a;
-		
-		child2.b *= a;
-		child2.b += b;
-
-		_value = value();
+	void apply() noexcept {
+		sum = extract();
 		a = 1;
 		b = 0;
 	}
@@ -436,36 +447,45 @@ struct Data {
 
 int main() {
 	FastIO();
-	int n;
-	std::cin >> n;
+	size_t n;
+	Fast::cin >> n;
 
-	LazySegmentTree<Data> root{InputRange<int>(n)};
+	LazySegmentTree<Data> root(InputRange<uint, Fast::istream>(n, Fast::cin)
+			| std::views::transform([](int const& val) {return sm32_1e9_7::verified(val);}));
 
-	int m;
-	std::cin >> m;
+	uint m;
+	Fast::cin >> m;
 
-	for (int i = 0; i < m; i++) {
-		int type;
+	for (uint i = 0; i < m; i++) {
+		char type;
 		size_t x, y;
-		std::cin >> type >> x >> y;
-		if (type != 4) {
-			Update update;
-			int v;
-			std::cin >> v;
-			switch(type) {
-				case 1:
-					update = {1, v}; break;
-				case 2:
-					update = {v, 0}; break;
-				case 3:
-					update = {0, v}; break;
-			}
-			root.update(x - 1, y, [update](Data& val) {
-					val.update(update);
-					});
-		}
-		else {
-			std::cout << root.sum(x - 1, y).value() << '\n';
+		Fast::cin >> type >> x >> y;
+
+		uint v;
+		if (type != '4')
+			Fast::cin >> v;
+
+		switch(type) {
+			case '1':
+				root.update(x - 1, y, [v](Data& val) {
+						val.update(1, sm32_1e9_7::verified(v));
+						});
+				break;
+			case '2':
+				root.update(x - 1, y, [v](Data& val) {
+						val.update(sm32_1e9_7::verified(v), 0);
+						});
+				break;
+			case '3':
+				root.update(x - 1, y, [v](Data& val) {
+						val.update(0, sm32_1e9_7::verified(v));
+						});
+				break;
+			case '4':
+				std::cout << root.sum(x - 1, y) << '\n';
 		}
 	}
+
+	std::cout << std::flush;
+	_exit(0);
 }

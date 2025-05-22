@@ -64,6 +64,22 @@ public:
 		return *this;
 	}
 
+	constexpr inline ModInt operator-(ModInt const& other) const noexcept {
+		if (value < other.value)
+			return ModInt(value + Policy::mod() - other.value);
+		else
+		 	return ModInt(value - other.value);
+	}
+
+	constexpr inline ModInt& operator-=(ModInt const& other) noexcept {
+		if (value < other.value)
+			value += (Policy::mod() - other.value);
+		else
+			value -= other.value;
+
+		return *this;
+	}
+
 	constexpr inline ModInt& operator++() noexcept {
 		if (++value == Policy::mod()) value = 0;
 		return *this;
@@ -71,6 +87,11 @@ public:
 
 	constexpr inline ModInt operator*(ModInt const& other) const noexcept {
 		return ModInt(static_cast<T2>(value) * other.value % Policy::mod(), raw{});
+	}
+
+	constexpr inline ModInt& operator*=(ModInt const& other) noexcept {
+		value = static_cast<T2>(value) * other.value % Policy::mod();
+		return *this;
 	}
 
 	constexpr inline bool operator!=(T const& other) const noexcept {

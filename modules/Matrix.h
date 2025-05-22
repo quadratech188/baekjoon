@@ -16,7 +16,7 @@ public:
 	Matrix(int columns, int rows, T defaultValue = T()):
 		_values(columns * rows, defaultValue), _size(columns, rows) {}
 
-	Matrix(): _size(Int2::zero()), _values() {}
+	Matrix(): _values(), _size(Int2::zero()) {}
 
 	static Matrix identity(int n) {
 		Matrix result(n, n);
