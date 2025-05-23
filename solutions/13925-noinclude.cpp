@@ -20,15 +20,19 @@ inline void FastIO() {
 	std::cout.tie(nullptr);
 }
 
-#ifndef FASTIO_BUFFER_SIZE
-#define FASTIO_BUFFER_SIZE 1 << 20
+#ifndef FASTISTREAM_BUFFER_SIZE
+#define FASTISTREAM_BUFFER_SIZE 1 << 20
+#endif
+
+#ifndef FASTOSTREAM_BUFFER_SIZE
+#define FASTOSTREAM_BUFFER_SIZE 1 << 20
 #endif
 
 namespace Fast {
 	class istream {
 	private:
-		char getchar() {
-			static char buffer[FASTIO_BUFFER_SIZE];
+		inline char getchar() {
+			static char buffer[FASTISTREAM_BUFFER_SIZE];
 			static char* ptr = buffer;
 			static char* end = buffer;
 
@@ -73,12 +77,36 @@ namespace Fast {
 		inline istream& operator>>(char& val) {
 			do {
 				val = getchar();
-			} while (val == '\n' || val == ' ');
+			} while (isspace(val));
 			return *this;
 		}
 	};
 
 	istream cin;
+
+	/*
+	class ostream {
+		private:
+			inline void putchar(char const& ch) {
+				static char buffer[FASTOSTREAM_BUFFER_SIZE];
+				static char* ptr = buffer;
+				static char* end = buffer + (FASTOSTREAM_BUFFER_SIZE);
+
+				if (ptr == end) {
+					write(STDOUT_FILENO, buffer, FASTOSTREAM_BUFFER_SIZE);
+					ptr = buffer;
+				}
+				*(ptr++) = ch;
+			}
+		public:
+			template <typename T>
+				inline ostream& operator<<(T& val)
+				requires std::is_integral_v<T> {
+					if (val < 0)
+						putchar('-');
+				}
+	};
+	*/
 }
 
 template <typename T, typename Input = std::istream>
@@ -147,6 +175,8 @@ concept Lazy = requires(T t, T l, T r) {
 template<typename T> requires Lazy<T>
 class LazySegmentTree {
 public:
+	using value_type = T;
+
 	LazySegmentTree(const size_t size, const T& val = T()):
 	_size(size), _values(4 * size) {
 		DummyIterator<T> iter(val);
@@ -407,7 +437,8 @@ struct Data {
 	sm32_1e9_7 sum;
 	int32_t length;
 
-	Data(sm32_1e9_7 value = 0, int32_t length = 1):
+	Data() {}
+	Data(sm32_1e9_7 value, int32_t length = 1):
 		a(1), b(0), sum(value), length(length) {}
 
 	void update(sm32_1e9_7 c, sm32_1e9_7 d) noexcept {
@@ -432,7 +463,7 @@ struct Data {
 		child2.update(a, b);
 	}
 
-	void reinit(Data& child1, Data& child2) noexcept {
+	void reinit(Data const& child1, Data const& child2) noexcept {
 		sum = child1.extract() + child2.extract();
 		a = 1;
 		b = 0;
@@ -450,7 +481,7 @@ int main() {
 	size_t n;
 	Fast::cin >> n;
 
-	LazySegmentTree<Data> root(InputRange<uint, Fast::istream>(n, Fast::cin)
+	LazySegmentTree<Data> tree(InputRange<uint, Fast::istream>(n, Fast::cin)
 			| std::views::transform([](int const& val) {return sm32_1e9_7::verified(val);}));
 
 	uint m;
@@ -467,22 +498,22 @@ int main() {
 
 		switch(type) {
 			case '1':
-				root.update(x - 1, y, [v](Data& val) {
+				tree.update(x - 1, y, [v](Data& val) {
 						val.update(1, sm32_1e9_7::verified(v));
 						});
 				break;
 			case '2':
-				root.update(x - 1, y, [v](Data& val) {
+				tree.update(x - 1, y, [v](Data& val) {
 						val.update(sm32_1e9_7::verified(v), 0);
 						});
 				break;
 			case '3':
-				root.update(x - 1, y, [v](Data& val) {
+				tree.update(x - 1, y, [v](Data& val) {
 						val.update(0, sm32_1e9_7::verified(v));
 						});
 				break;
 			case '4':
-				std::cout << root.sum(x - 1, y) << '\n';
+				std::cout << tree.sum(x - 1, y) << '\n';
 		}
 	}
 

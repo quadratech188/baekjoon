@@ -1,11 +1,16 @@
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <functional>
 #include <iostream>
+#include <istream>
 #include <iterator>
 #include <locale>
 #include <ranges>
+#include <sys/types.h>
+#include <type_traits>
+#include <unistd.h>
 #include <vector>
 
 struct Segment {
@@ -53,12 +58,19 @@ private:
 template <typename T>
 concept Lazy = requires(T t, T l, T r) {
 	{l + r} -> std::same_as<T>;
-	{t.resolve(l, r)};
+	{t.propagate(l, r)};
+	{t.reinit(l, r)};
+	{t.apply()};
+
+	typename T::extracted_t;
+	{t.extract()} -> std::same_as<typename T::extracted_t>;
 };
 
 template<typename T> requires Lazy<T>
 class LazySegmentTree {
 public:
+	using value_type = T;
+
 	LazySegmentTree(const size_t size, const T& val = T()):
 	_size(size), _values(4 * size) {
 		DummyIterator<T> iter(val);
@@ -78,15 +90,15 @@ public:
 		init(Segment(0, _size), 0, it);
 	}
 
-	T sum(Segment segment) {
+	T::extracted_t sum(Segment segment) {
 		return sum(segment, Segment(0, _size), 0);
 	}
 
-	T sum(size_t start, size_t end) {
+	T::extracted_t sum(size_t start, size_t end) {
 		return sum(Segment(start, end));
 	}
 
-	T at(size_t index) {
+	T::extracted_t at(size_t index) {
 		return sum(Segment(index, index + 1));
 	}
 
@@ -134,14 +146,15 @@ private:
 		_values[index] = _values[left] + _values[right];
 	}
 
-	T sum(Segment const query, Segment const segment, size_t const index) {
+	T::extracted_t sum(Segment const query, Segment const segment, size_t const index) {
 		if (query.includes(segment))
-			return _values[index];
+			return _values[index].extract();
 
 		size_t const left = index * 2 + 1;
 		size_t const right = index * 2 + 2;
 
-		_values[index].resolve(_values[left], _values[right]);
+		_values[index].propagate(_values[left], _values[right]);
+		_values[index].apply();
 
 		if (segment.center() <= query.start)
 			return sum(query, segment.right(), right);
@@ -171,7 +184,7 @@ private:
 
 		// Does the function mutate values?
 		if constexpr (!std::invocable<Callable, const T&>)
-			this->_values[value_index].resolve(this->_values[left], this->_values[right]);
+			this->_values[value_index].propagate(this->_values[left], this->_values[right]);
 
 		if (index.start < segment.center())
 			update(index, left, segment.left(), func);
@@ -179,31 +192,40 @@ private:
 		if (segment.center() < index.end)
 			update(index, right, segment.right(), func);
 
-		if constexpr (!std::invocable<Callable, const T&>)
-			_values[value_index] = _values[left] + _values[right];
+		if constexpr (!std::invocable<Callable, const T&>) {
+			_values[value_index].reinit(_values[left], _values[right]);
+		}
 	}
 };
 
-template <typename T>
+template <typename T, typename Length = std::size_t>
 class LazySum {
 public:
-	LazySum():
-		_value(), length(1), delta() {}
-	LazySum(T value):
-		_value(value), length(1), delta() {}
-	LazySum(T value, int length):
-		_value(value), length(length), delta() {}
+	// Builder
+	template <typename value>
+	using with_length = LazySum<T, value>;
+
 private:
-	T _value;
-	int length;
+	using size_t = Length;
+
+public:
+	using extracted_t = T;
+
+	LazySum():
+		value(), length(1), delta() {}
+	LazySum(T&& value):
+		value(value), length(1), delta() {}
+	LazySum(T&& value, size_t length):
+		value(value), length(length), delta() {}
+
+private:
+	T value;
+	size_t length;
 	T delta;
 
 public:
-	T value() const {
-		return _value + delta * length;
-	}
-	operator T() const {
-		return value();
+	T extract() const {
+		return value + delta * length;
 	}
 
 	void operator+=(const T& other) {
@@ -211,23 +233,31 @@ public:
 	}
 
 	LazySum operator+(const LazySum& other) const {
-		return LazySum(value() + other.value(), length + other.length);
+		return LazySum(extract() + other.extract(), length + other.length);
 	}
 
-	void resolve(LazySum& left, LazySum& right) {
+	void propagate(LazySum& left, LazySum& right) {
 		left += delta;
 		right += delta;
-		_value = value();
+	}
+
+	void reinit(LazySum const& left, LazySum const& right) {
+		value = left.extract() + right.extract();
+		delta = 0;
+	}
+
+	void apply() {
+		value = extract();
 		delta = 0;
 	}
 };
 
-template <typename T>
-inline auto InputRange(size_t n, std::istream& is = std::cin) {
+template <typename T, typename Input = std::istream>
+inline auto InputRange(size_t n, Input& is = std::cin) {
 	return std::views::iota(static_cast<size_t>(0), n)
 		| std::views::transform([&is](size_t) {
 				T temp;
-				std::cin >> temp;
+				is >> temp;
 				return temp;
 				});
 }
@@ -238,31 +268,121 @@ inline void FastIO() {
 	std::cout.tie(nullptr);
 }
 
+#ifndef FASTISTREAM_BUFFER_SIZE
+#define FASTISTREAM_BUFFER_SIZE 1 << 20
+#endif
+
+#ifndef FASTOSTREAM_BUFFER_SIZE
+#define FASTOSTREAM_BUFFER_SIZE 1 << 20
+#endif
+
+namespace Fast {
+	class istream {
+	private:
+		inline char getchar() {
+			static char buffer[FASTISTREAM_BUFFER_SIZE];
+			static char* ptr = buffer;
+			static char* end = buffer;
+
+			if (ptr == end) {
+				ssize_t size = read(STDIN_FILENO, buffer, sizeof(buffer));
+				ptr = buffer;
+				end = buffer + size;
+			}
+			return *(ptr++);
+		}
+	public:
+		template <typename T>
+		inline istream& operator>>(T& val)
+		requires std::is_integral_v<T> {
+			char ch;
+			val = 0;
+
+			do {
+				ch = getchar();
+			} while (isspace(ch));
+
+			// Optimized away for non-signed types
+			bool negative = false;
+			if constexpr (std::is_signed_v<T>) {
+				if (ch == '-') {
+					negative = true;
+					ch = getchar();
+				}
+			}
+
+			do {
+				val = 10 * val + ch - '0';
+				ch = getchar();
+			} while ('0' <= ch && ch <= '9');
+
+			if constexpr (std::is_signed_v<T>)
+				if (negative) val = -val;
+
+			return *this;
+		}
+
+		inline istream& operator>>(char& val) {
+			do {
+				val = getchar();
+			} while (isspace(val));
+			return *this;
+		}
+	};
+
+	istream cin;
+
+	/*
+	class ostream {
+		private:
+			inline void putchar(char const& ch) {
+				static char buffer[FASTOSTREAM_BUFFER_SIZE];
+				static char* ptr = buffer;
+				static char* end = buffer + (FASTOSTREAM_BUFFER_SIZE);
+
+				if (ptr == end) {
+					write(STDOUT_FILENO, buffer, FASTOSTREAM_BUFFER_SIZE);
+					ptr = buffer;
+				}
+				*(ptr++) = ch;
+			}
+		public:
+			template <typename T>
+				inline ostream& operator<<(T& val)
+				requires std::is_integral_v<T> {
+					if (val < 0)
+						putchar('-');
+				}
+	};
+	*/
+}
+
 int main() {
 	FastIO();
 	size_t n, m, k;
-	std::cin >> n >> m >> k;
+	Fast::cin >> n >> m >> k;
 
-	LazySegmentTree<LazySum<int64_t>> tree(InputRange<int64_t>(n));
+	LazySegmentTree<LazySum<int64_t>
+		::with_length<uint>> tree(InputRange<int64_t, Fast::istream>(n, Fast::cin));
 
 	for (size_t i = 0; i < m + k; i++) {
 		char type;
-		std::cin >> type;
+		Fast::cin >> type;
 
 		switch(type) {
 			case '1': {
 				size_t b, c;
 				int64_t d;
-				std::cin >> b >> c >> d;
+				Fast::cin >> b >> c >> d;
 
-				tree.update(b - 1, c, [d](LazySum<int64_t>& val) {
+				tree.update(b - 1, c, [d](decltype(tree)::value_type& val) {
 						val += d;
 						});
 				break;
 		  	}
 			case '2': {
 				size_t b, c;
-				std::cin >> b >> c;
+				Fast::cin >> b >> c;
 
 				std::cout << tree.sum(b - 1, c) << '\n';
 		  	}

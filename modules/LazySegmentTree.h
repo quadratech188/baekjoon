@@ -19,6 +19,8 @@ concept Lazy = requires(T t, T l, T r) {
 template<typename T> requires Lazy<T>
 class LazySegmentTree {
 public:
+	using value_type = T;
+
 	LazySegmentTree(const size_t size, const T& val = T()):
 	_size(size), _values(4 * size) {
 		DummyIterator<T> iter(val);

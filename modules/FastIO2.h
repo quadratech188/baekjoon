@@ -5,15 +5,19 @@
 #include <type_traits>
 #include <unistd.h>
 
-#ifndef FASTIO_BUFFER_SIZE
-#define FASTIO_BUFFER_SIZE 1 << 20
+#ifndef FASTISTREAM_BUFFER_SIZE
+#define FASTISTREAM_BUFFER_SIZE 1 << 20
+#endif
+
+#ifndef FASTOSTREAM_BUFFER_SIZE
+#define FASTOSTREAM_BUFFER_SIZE 1 << 20
 #endif
 
 namespace Fast {
 	class istream {
 	private:
-		char getchar() {
-			static char buffer[FASTIO_BUFFER_SIZE];
+		inline char getchar() {
+			static char buffer[FASTISTREAM_BUFFER_SIZE];
 			static char* ptr = buffer;
 			static char* end = buffer;
 
@@ -58,10 +62,34 @@ namespace Fast {
 		inline istream& operator>>(char& val) {
 			do {
 				val = getchar();
-			} while (val == '\n' || val == ' ');
+			} while (isspace(val));
 			return *this;
 		}
 	};
 
 	istream cin;
+
+	/*
+	class ostream {
+		private:
+			inline void putchar(char const& ch) {
+				static char buffer[FASTOSTREAM_BUFFER_SIZE];
+				static char* ptr = buffer;
+				static char* end = buffer + (FASTOSTREAM_BUFFER_SIZE);
+
+				if (ptr == end) {
+					write(STDOUT_FILENO, buffer, FASTOSTREAM_BUFFER_SIZE);
+					ptr = buffer;
+				}
+				*(ptr++) = ch;
+			}
+		public:
+			template <typename T>
+				inline ostream& operator<<(T& val)
+				requires std::is_integral_v<T> {
+					if (val < 0)
+						putchar('-');
+				}
+	};
+	*/
 }

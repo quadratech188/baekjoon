@@ -1,23 +1,34 @@
-template <typename T>
+#include <iterator>
+#include <sys/types.h>
+
+template <typename T, typename Length = std::size_t>
 class LazySum {
 public:
-	LazySum():
-		_value(), length(1), delta() {}
-	LazySum(T value):
-		_value(value), length(1), delta() {}
-	LazySum(T value, int length):
-		_value(value), length(length), delta() {}
+	// Builder
+	template <typename value>
+	using with_length = LazySum<T, value>;
+
 private:
-	T _value;
-	int length;
+	using size_t = Length;
+
+public:
+	using extracted_t = T;
+
+	LazySum():
+		value(), length(1), delta() {}
+	LazySum(T&& value):
+		value(value), length(1), delta() {}
+	LazySum(T&& value, size_t length):
+		value(value), length(length), delta() {}
+
+private:
+	T value;
+	size_t length;
 	T delta;
 
 public:
-	T value() const {
-		return _value + delta * length;
-	}
-	operator T() const {
-		return value();
+	T extract() const {
+		return value + delta * length;
 	}
 
 	void operator+=(const T& other) {
@@ -25,13 +36,21 @@ public:
 	}
 
 	LazySum operator+(const LazySum& other) const {
-		return LazySum(value() + other.value(), length + other.length);
+		return LazySum(extract() + other.extract(), length + other.length);
 	}
 
-	void resolve(LazySum& left, LazySum& right) {
+	void propagate(LazySum& left, LazySum& right) {
 		left += delta;
 		right += delta;
-		_value = value();
+	}
+
+	void reinit(LazySum const& left, LazySum const& right) {
+		value = left.extract() + right.extract();
+		delta = 0;
+	}
+
+	void apply() {
+		value = extract();
 		delta = 0;
 	}
 };
