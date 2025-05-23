@@ -66,9 +66,9 @@ public:
 
 	constexpr inline ModInt operator-(ModInt const& other) const noexcept {
 		if (value < other.value)
-			return ModInt(value + Policy::mod() - other.value);
+			return ModInt(value + Policy::mod() - other.value, raw{});
 		else
-		 	return ModInt(value - other.value);
+		 	return ModInt(value - other.value, raw{});
 	}
 
 	constexpr inline ModInt& operator-=(ModInt const& other) noexcept {

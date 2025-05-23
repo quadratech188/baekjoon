@@ -29,6 +29,11 @@ struct Data {
 		b *= c;
 		b += d;
 	}
+
+	void set(sm32_1e9_7 v) noexcept {
+		a = 0;
+		b = v;
+	}
 	
 	sm32_1e9_7 extract() const noexcept {
 		return this->a * this->sum + this->b * this->length;
@@ -92,7 +97,7 @@ int main() {
 				break;
 			case '3':
 				tree.update(x - 1, y, [v](Data& val) {
-						val.update(0, sm32_1e9_7::verified(v));
+						val.set(sm32_1e9_7::verified(v));
 						});
 				break;
 			case '4':

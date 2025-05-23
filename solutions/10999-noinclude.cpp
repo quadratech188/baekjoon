@@ -66,6 +66,11 @@ concept Lazy = requires(T t, T l, T r) {
 	{t.extract()} -> std::same_as<typename T::extracted_t>;
 };
 
+template <typename Callable, typename Arg>
+concept const_invocable = requires(Callable callable, Arg const& arg) {
+	callable(arg);
+};
+
 template<typename T> requires Lazy<T>
 class LazySegmentTree {
 public:
@@ -166,25 +171,20 @@ private:
 		     + sum(query, segment.right(), right);
 	}
 
+	// Non-const
+
 	template <typename Callable>
+	requires (!std::invocable<Callable, T const&>)
 	void update(Segment const index, size_t const value_index, Segment const segment, Callable func) {
 		if (index.includes(segment)) {
-			if constexpr (std::same_as<std::invoke_result_t<decltype(func), decltype(_values[value_index])>,
-					bool>) {
-				if (!std::invoke(func, _values[value_index]) || segment.size() == 1)
-					return;
-			} else {
-				std::invoke(func, _values[value_index]);
-				return;
-			}
+			std::invoke(func, _values[value_index]);
+			return;
 		}
 
 		size_t const left = value_index * 2 + 1;
 		size_t const right = value_index * 2 + 2;
 
-		// Does the function mutate values?
-		if constexpr (!std::invocable<Callable, const T&>)
-			this->_values[value_index].propagate(this->_values[left], this->_values[right]);
+		this->_values[value_index].propagate(this->_values[left], this->_values[right]);
 
 		if (index.start < segment.center())
 			update(index, left, segment.left(), func);
@@ -192,9 +192,27 @@ private:
 		if (segment.center() < index.end)
 			update(index, right, segment.right(), func);
 
-		if constexpr (!std::invocable<Callable, const T&>) {
-			_values[value_index].reinit(_values[left], _values[right]);
+		_values[value_index].reinit(_values[left], _values[right]);
+	}
+
+	// Const
+	
+	template <typename Callable>
+	requires std::invocable<Callable, T const&>
+	void update(Segment const index, size_t const value_index, Segment const segment, Callable func) {
+		if (index.includes(segment)) {
+			std::invoke(func, _values[value_index]);
+			return;
 		}
+
+		size_t const left = value_index * 2 + 1;
+		size_t const right = value_index * 2 + 2;
+
+		if (index.start < segment.center())
+			update(index, left, segment.left(), func);
+
+		if (segment.center() < index.end)
+			update(index, right, segment.right(), func);
 	}
 };
 
@@ -375,7 +393,7 @@ int main() {
 				int64_t d;
 				Fast::cin >> b >> c >> d;
 
-				tree.update(b - 1, c, [d](decltype(tree)::value_type& val) {
+				tree.update(b - 1, c, [d](auto& val) {
 						val += d;
 						});
 				break;
