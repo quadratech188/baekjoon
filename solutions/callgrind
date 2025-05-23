@@ -1,0 +1,3 @@
+#!/bin/sh
+
+valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file="$1.callgrind" ./"$1" < "$2"
