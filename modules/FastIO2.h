@@ -37,7 +37,7 @@ namespace Fast {
 
 			do {
 				ch = getchar();
-			} while (isspace(ch));
+			} while (std::isspace(ch));
 
 			// Optimized away for non-signed types
 			bool negative = false;
@@ -62,7 +62,7 @@ namespace Fast {
 		inline istream& operator>>(char& val) {
 			do {
 				val = getchar();
-			} while (isspace(val));
+			} while (std::isspace(val));
 			return *this;
 		}
 	};

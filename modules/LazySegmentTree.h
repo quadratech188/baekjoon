@@ -1,3 +1,4 @@
+#include <concepts>
 #include <functional>
 #include <locale>
 #include <vector>
@@ -8,7 +9,6 @@
 template <typename T>
 concept Lazy = requires(T t, T l, T r) {
 	{l + r} -> std::same_as<T>;
-	{t.propagate(l, r)};
 	{t.reinit(l, r)};
 	{t.apply()};
 
@@ -16,9 +16,19 @@ concept Lazy = requires(T t, T l, T r) {
 	{t.extract()} -> std::same_as<typename T::extracted_t>;
 };
 
-template <typename Callable, typename Arg>
-concept const_invocable = requires(Callable callable, Arg const& arg) {
-	callable(arg);
+template <typename T>
+class BasicLazy {
+public:
+	void propagate(T&, T&) {}
+	void reinit(T const& l, T const& r) {
+		static_cast<T&>(*this) = l + r;
+	}
+	void apply() {}
+
+	using extracted_t = T;
+	extracted_t extract() {
+		return static_cast<T const&>(*this);
+	}
 };
 
 template<typename T> requires Lazy<T>
@@ -124,8 +134,17 @@ private:
 	template <typename Callable>
 	void update(Segment const index, size_t const value_index, Segment const segment, Callable func) {
 		if (index.includes(segment)) {
-			std::invoke(func, _values[value_index]);
-			return;
+			if constexpr (std::is_same_v<std::invoke_result_t<Callable, T&>, bool>) {
+				if (std::invoke(func, _values[value_index])) {
+					// Keep iterating
+				}
+				else
+					return;
+			}
+			else {
+				std::invoke(func, _values[value_index]);
+				return;
+			}
 		}
 
 		size_t const left = value_index * 2 + 1;

@@ -8,10 +8,6 @@
 #include <ostream>
 #include <ranges>
 
-struct Update {
-	sm32_1e9_7 a, b;
-};
-
 struct Data {
 	using extracted_t = sm32_1e9_7;
 
@@ -29,14 +25,9 @@ struct Data {
 		b *= c;
 		b += d;
 	}
-
-	void set(sm32_1e9_7 v) noexcept {
-		a = 0;
-		b = v;
-	}
 	
 	sm32_1e9_7 extract() const noexcept {
-		return this->a * this->sum + this->b * this->length;
+		return a * sum + b * sm32_1e9_7::verified(length);
 	}
 
 	Data operator+(const Data& other) const noexcept {
@@ -70,7 +61,7 @@ int main() {
 	Fast::cin >> n;
 
 	LazySegmentTree<Data> tree(InputRange<uint, Fast::istream>(n, Fast::cin)
-			| std::views::transform([](int const& val) {return sm32_1e9_7::verified(val);}));
+			| std::views::transform([](uint const& val) {return sm32_1e9_7::verified(val);}));
 
 	uint m;
 	Fast::cin >> m;
@@ -87,17 +78,19 @@ int main() {
 		switch(type) {
 			case '1':
 				tree.update(x - 1, y, [v](Data& val) {
-						val.update(1, sm32_1e9_7::verified(v));
+						val.b += sm32_1e9_7::verified(v);
 						});
 				break;
 			case '2':
 				tree.update(x - 1, y, [v](Data& val) {
-						val.update(sm32_1e9_7::verified(v), 0);
+						val.a *= sm32_1e9_7::verified(v);
+						val.b *= sm32_1e9_7::verified(v);
 						});
 				break;
 			case '3':
 				tree.update(x - 1, y, [v](Data& val) {
-						val.set(sm32_1e9_7::verified(v));
+						val.a = 0;
+						val.b = sm32_1e9_7::verified(v);
 						});
 				break;
 			case '4':

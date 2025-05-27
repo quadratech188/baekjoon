@@ -1,4 +1,5 @@
 #include <array>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -10,6 +11,8 @@
 #include <locale>
 #include <ostream>
 #include <ranges>
+#include <sys/mman.h>
+#include <sys/stat.h>
 #include <type_traits>
 #include <unistd.h>
 #include <vector>
@@ -31,6 +34,19 @@ inline void FastIO() {
 namespace Fast {
 	class istream {
 	private:
+#ifdef ONLINE_JUDGE
+		static char* ptr;
+	public:
+		istream() {
+			struct stat st;
+			fstat(STDIN_FILENO, &st);
+			ptr = (char*)mmap(0, st.st_size, PROT_READ, MAP_PRIVATE, STDIN_FILENO, 0);
+		}
+	private:
+		inline char getchar() {
+			return *(ptr++);
+		}
+#else
 		inline char getchar() {
 			static char buffer[FASTISTREAM_BUFFER_SIZE];
 			static char* ptr = buffer;
@@ -43,8 +59,10 @@ namespace Fast {
 			}
 			return *(ptr++);
 		}
+#endif
 	public:
 		template <typename T>
+
 		inline istream& operator>>(T& val)
 		requires std::is_integral_v<T> {
 			char ch;
@@ -83,6 +101,7 @@ namespace Fast {
 	};
 
 	istream cin;
+	char* istream::ptr = nullptr;
 
 	/*
 	class ostream {
@@ -164,7 +183,6 @@ private:
 template <typename T>
 concept Lazy = requires(T t, T l, T r) {
 	{l + r} -> std::same_as<T>;
-	{t.propagate(l, r)};
 	{t.reinit(l, r)};
 	{t.apply()};
 
@@ -172,9 +190,19 @@ concept Lazy = requires(T t, T l, T r) {
 	{t.extract()} -> std::same_as<typename T::extracted_t>;
 };
 
-template <typename Callable, typename Arg>
-concept const_invocable = requires(Callable callable, Arg const& arg) {
-	callable(arg);
+template <typename T>
+class BasicLazy {
+public:
+	void propagate(T&, T&) {}
+	void reinit(T const& l, T const& r) {
+		static_cast<T&>(*this) = l + r;
+	}
+	void apply() {}
+
+	using extracted_t = T;
+	extracted_t extract() {
+		return static_cast<T const&>(*this);
+	}
 };
 
 template<typename T> requires Lazy<T>
@@ -277,14 +305,20 @@ private:
 		     + sum(query, segment.right(), right);
 	}
 
-	// Non-const
-
 	template <typename Callable>
-	requires (!std::invocable<Callable, T const&>)
 	void update(Segment const index, size_t const value_index, Segment const segment, Callable func) {
 		if (index.includes(segment)) {
-			std::invoke(func, _values[value_index]);
-			return;
+			if constexpr (std::is_same_v<std::invoke_result_t<Callable, T&>, bool>) {
+				if (std::invoke(func, _values[value_index])) {
+					// Keep iterating
+				}
+				else
+					return;
+			}
+			else {
+				std::invoke(func, _values[value_index]);
+				return;
+			}
 		}
 
 		size_t const left = value_index * 2 + 1;
@@ -299,26 +333,6 @@ private:
 			update(index, right, segment.right(), func);
 
 		_values[value_index].reinit(_values[left], _values[right]);
-	}
-
-	// Const
-	
-	template <typename Callable>
-	requires std::invocable<Callable, T const&>
-	void update(Segment const index, size_t const value_index, Segment const segment, Callable func) {
-		if (index.includes(segment)) {
-			std::invoke(func, _values[value_index]);
-			return;
-		}
-
-		size_t const left = value_index * 2 + 1;
-		size_t const right = value_index * 2 + 2;
-
-		if (index.start < segment.center())
-			update(index, left, segment.left(), func);
-
-		if (segment.center() < index.end)
-			update(index, right, segment.right(), func);
 	}
 };
 
@@ -383,9 +397,9 @@ public:
 
 	constexpr inline ModInt operator-(ModInt const& other) const noexcept {
 		if (value < other.value)
-			return ModInt(value + Policy::mod() - other.value);
+			return ModInt(value + Policy::mod() - other.value, raw{});
 		else
-		 	return ModInt(value - other.value);
+		 	return ModInt(value - other.value, raw{});
 	}
 
 	constexpr inline ModInt& operator-=(ModInt const& other) noexcept {
@@ -443,10 +457,6 @@ using dm32 = ModInt<uint32_t, uint64_t, DynamicModPolicy<uint32_t, tag>>;
 template <typename tag = void>
 using dm64 = ModInt<uint64_t, uint64_t, DynamicModPolicy<uint64_t, tag>>;
 
-struct Update {
-	sm32_1e9_7 a, b;
-};
-
 struct Data {
 	using extracted_t = sm32_1e9_7;
 
@@ -466,7 +476,7 @@ struct Data {
 	}
 	
 	sm32_1e9_7 extract() const noexcept {
-		return this->a * this->sum + this->b * this->length;
+		return a * sum + b * sm32_1e9_7::verified(length);
 	}
 
 	Data operator+(const Data& other) const noexcept {
@@ -500,7 +510,7 @@ int main() {
 	Fast::cin >> n;
 
 	LazySegmentTree<Data> tree(InputRange<uint, Fast::istream>(n, Fast::cin)
-			| std::views::transform([](int const& val) {return sm32_1e9_7::verified(val);}));
+			| std::views::transform([](uint const& val) {return sm32_1e9_7::verified(val);}));
 
 	uint m;
 	Fast::cin >> m;
@@ -517,17 +527,19 @@ int main() {
 		switch(type) {
 			case '1':
 				tree.update(x - 1, y, [v](Data& val) {
-						val.update(1, sm32_1e9_7::verified(v));
+						val.b += sm32_1e9_7::verified(v);
 						});
 				break;
 			case '2':
 				tree.update(x - 1, y, [v](Data& val) {
-						val.update(sm32_1e9_7::verified(v), 0);
+						val.a *= sm32_1e9_7::verified(v);
+						val.b *= sm32_1e9_7::verified(v);
 						});
 				break;
 			case '3':
 				tree.update(x - 1, y, [v](Data& val) {
-						val.update(0, sm32_1e9_7::verified(v));
+						val.a = 0;
+						val.b = sm32_1e9_7::verified(v);
 						});
 				break;
 			case '4':

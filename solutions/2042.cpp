@@ -1,26 +1,39 @@
-#include <iostream>
-#include "modules/InputIterator.h"
-#include "modules/SegmentTree.h"
-#include "modules/FastIO.h"
+#include "../modules/SegmentTree.h"
+#include "../modules/InputRange.h"
+#include "../modules/FastIO.h"
+#include "../modules/FastIO2.h"
+#include <cstdint>
+#include <sys/types.h>
 
 int main() {
 	FastIO();
-	int n, m, k;
-	std::cin >> n >> m >> k;
+	uint n, m, k;
+	Fast::cin >> n >> m >> k;
 
-	SegmentTree<long long int> tree(n, InputIterator<long long int>());
+	SegmentTree<int64_t> tree(n, [](int64_t& val) {Fast::cin >> val;});
 
-	for (int i = 0; i < m + k; i++) {
-		long long int a, b, c;
-		std::cin >> a >> b >> c;
+	for (uint i = 0; i < m + k; i++) {
+		char a;
+		Fast::cin >> a;
+
 		switch(a) {
-			case 1:
-				tree.update(b - 1, [c](long long int& val) {
+			case '1': {
+				size_t b;
+				int64_t c;
+
+				Fast::cin >> b >> c;
+
+				tree.update(b - 1, [c](int64_t& val) {
 						val = c;
 						});
 				break;
-			case 2:
+			}
+			case '2': {
+				size_t b, c;
+				Fast::cin >> b >> c;
+
 				std::cout << tree.sum(b - 1, c) << '\n';
+			}
 		}
 	}
 }
