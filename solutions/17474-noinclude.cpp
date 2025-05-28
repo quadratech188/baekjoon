@@ -62,9 +62,6 @@ concept Lazy = requires(T t, T l, T r) {
 	{l + r} -> std::same_as<T>;
 	{t.reinit(l, r)};
 	{t.apply()};
-
-	typename T::extracted_t;
-	{t.extract()} -> std::same_as<typename T::extracted_t>;
 };
 
 template <typename T>
@@ -75,11 +72,6 @@ public:
 		static_cast<T&>(*this) = l + r;
 	}
 	void apply() {}
-
-	using extracted_t = T;
-	extracted_t extract() {
-		return static_cast<T const&>(*this);
-	}
 };
 
 template<typename T> requires Lazy<T>
@@ -106,16 +98,19 @@ public:
 		init(Segment(0, _size), 0, it);
 	}
 
-	T::extracted_t sum(Segment segment) {
-		return sum(segment, Segment(0, _size), 0);
+	template <typename Callable = std::identity>
+	auto sum(Segment segment, Callable callable = {}) {
+		return sum(segment, Segment(0, _size), 0, callable);
 	}
 
-	T::extracted_t sum(size_t start, size_t end) {
-		return sum(Segment(start, end));
+	template <typename Callable = std::identity>
+	auto sum(size_t start, size_t end, Callable callable = {}) {
+		return sum(Segment(start, end), callable);
 	}
 
-	T::extracted_t at(size_t index) {
-		return sum(Segment(index, index + 1));
+	template <typename Callable = std::identity>
+	auto at(size_t index, Callable callable = {}) {
+		return sum(Segment(index, index + 1), callable);
 	}
 
 	template <typename Callable>
@@ -162,9 +157,10 @@ private:
 		_values[index] = _values[left] + _values[right];
 	}
 
-	T::extracted_t sum(Segment const query, Segment const segment, size_t const index) {
+	template <typename Callable>
+	auto sum(Segment const query, Segment const segment, size_t const index, Callable func) {
 		if (query.includes(segment))
-			return _values[index].extract();
+			return std::invoke(func, static_cast<T const&>(_values[index]));
 
 		size_t const left = index * 2 + 1;
 		size_t const right = index * 2 + 2;
@@ -173,13 +169,13 @@ private:
 		_values[index].apply();
 
 		if (segment.center() <= query.start)
-			return sum(query, segment.right(), right);
+			return sum(query, segment.right(), right, func);
 
 		if (query.end <= segment.center())
-			return sum(query, segment.left(), left);
+			return sum(query, segment.left(), left, func);
 
-		return sum(query, segment.left(), left)
-		     + sum(query, segment.right(), right);
+		return sum(query, segment.left(), left, func)
+		     + sum(query, segment.right(), right, func);
 	}
 
 	template <typename Callable>
@@ -255,7 +251,7 @@ namespace Fast {
 
 			do {
 				ch = getchar();
-			} while (isspace(ch));
+			} while (std::isspace(ch));
 
 			// Optimized away for non-signed types
 			bool negative = false;
@@ -280,7 +276,7 @@ namespace Fast {
 		inline istream& operator>>(char& val) {
 			do {
 				val = getchar();
-			} while (isspace(val));
+			} while (std::isspace(val));
 			return *this;
 		}
 	};
@@ -318,6 +314,62 @@ inline void FastIO() {
 	std::cout.tie(nullptr);
 }
 
+template <typename T>
+class Min {
+public:
+	T operator()(const T& l, const T& r) const {
+		return std::min(l, r);
+	}
+};
+
+template <typename T>
+class Max {
+public:
+	T operator()(const T& l, const T& r) const {
+		return std::max(l, r);
+	}
+};
+
+template <typename T>
+class Mul {
+public:
+	T operator()(const T& l, const T& r) const {
+		return l * r;
+	}
+};
+
+template <typename T, typename Operator>
+class OverloadedPlus {
+public:
+	using value_type = T;
+
+	OverloadedPlus() {}
+
+	OverloadedPlus(T const& value, Operator op = Operator()):
+		value(value), op(op) {}
+private:
+	T value;
+	Operator op;
+public:
+	explicit operator T const&() {
+		return value;
+	}
+
+	T const& val() {
+		return value;
+	}
+
+	OverloadedPlus operator+(OverloadedPlus const& other) {
+		return op(value, other.value);
+	}
+};
+
+template <typename T>
+using maxxer = OverloadedPlus<T, Max<T>>;
+
+template <typename T>
+using minner = OverloadedPlus<T, Min<T>>;
+
 struct Element: public BasicLazy<Element> {
 	int max;
 	int max_cnt;
@@ -354,7 +406,6 @@ struct Element: public BasicLazy<Element> {
 					std::max(max2, other.max2),
 					sum + other.sum
 					);
-
 		else
 			return Element(
 					max,
@@ -376,27 +427,6 @@ struct Element: public BasicLazy<Element> {
 		sum += static_cast<int64_t>(new_max - max) * max_cnt;
 		max = new_max;
 		return false;
-	}
-
-	struct extracted {
-		int max;
-		int64_t sum;
-
-		extracted operator+(extracted const& other) {
-			return extracted {
-				std::max(max, other.max),
-				sum + other.sum
-			};
-		}
-	};
-
-	using extracted_t = extracted;
-
-	extracted extract() {
-		return extracted {
-			max,
-			sum
-		};
 	}
 };
 
@@ -423,10 +453,14 @@ int main() {
 						});
 				break;
 			case '2':
-				std::cout << tree.sum(l - 1, r).max << '\n';
+				std::cout << tree.sum(l - 1, r, [](Element const& val) {
+						return maxxer<int>(val.max);
+						}).val() << '\n';
 				break;
 			case '3':
-				std::cout << tree.sum(l - 1, r).sum << '\n';
+				std::cout << tree.sum(l - 1, r, [](Element const& val) {
+						return val.sum;
+						}) << '\n';
 		}
 	}
 }

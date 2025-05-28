@@ -2,6 +2,7 @@
 #include "../modules/InputRange.h"
 #include "../modules/FastIO2.h"
 #include "../modules/FastIO.h"
+#include "../modules/OverloadedPlus.h"
 #include <cstdint>
 #include <iostream>
 #include <algorithm>
@@ -43,7 +44,6 @@ struct Element: public BasicLazy<Element> {
 					std::max(max2, other.max2),
 					sum + other.sum
 					);
-
 		else
 			return Element(
 					max,
@@ -91,10 +91,14 @@ int main() {
 						});
 				break;
 			case '2':
-				std::cout << tree.sum(l - 1, r).max << '\n';
+				std::cout << tree.sum(l - 1, r, [](Element const& val) {
+						return maxxer<int>(val.max);
+						}).val() << '\n';
 				break;
 			case '3':
-				std::cout << tree.sum(l - 1, r).sum << '\n';
+				std::cout << tree.sum(l - 1, r, [](Element const& val) {
+						return val.sum;
+						}) << '\n';
 		}
 	}
 }

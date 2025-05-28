@@ -11,9 +11,6 @@ concept Lazy = requires(T t, T l, T r) {
 	{l + r} -> std::same_as<T>;
 	{t.reinit(l, r)};
 	{t.apply()};
-
-	typename T::extracted_t;
-	{t.extract()} -> std::same_as<typename T::extracted_t>;
 };
 
 template <typename T>
@@ -24,11 +21,6 @@ public:
 		static_cast<T&>(*this) = l + r;
 	}
 	void apply() {}
-
-	using extracted_t = T;
-	extracted_t extract() {
-		return static_cast<T const&>(*this);
-	}
 };
 
 template<typename T> requires Lazy<T>
@@ -55,16 +47,19 @@ public:
 		init(Segment(0, _size), 0, it);
 	}
 
-	T::extracted_t sum(Segment segment) {
-		return sum(segment, Segment(0, _size), 0);
+	template <typename Callable = std::identity>
+	auto sum(Segment segment, Callable callable = {}) {
+		return sum(segment, Segment(0, _size), 0, callable);
 	}
 
-	T::extracted_t sum(size_t start, size_t end) {
-		return sum(Segment(start, end));
+	template <typename Callable = std::identity>
+	auto sum(size_t start, size_t end, Callable callable = {}) {
+		return sum(Segment(start, end), callable);
 	}
 
-	T::extracted_t at(size_t index) {
-		return sum(Segment(index, index + 1));
+	template <typename Callable = std::identity>
+	auto at(size_t index, Callable callable = {}) {
+		return sum(Segment(index, index + 1), callable);
 	}
 
 	template <typename Callable>
@@ -111,9 +106,10 @@ private:
 		_values[index] = _values[left] + _values[right];
 	}
 
-	T::extracted_t sum(Segment const query, Segment const segment, size_t const index) {
+	template <typename Callable>
+	auto sum(Segment const query, Segment const segment, size_t const index, Callable func) {
 		if (query.includes(segment))
-			return _values[index].extract();
+			return std::invoke(func, static_cast<T const&>(_values[index]));
 
 		size_t const left = index * 2 + 1;
 		size_t const right = index * 2 + 2;
@@ -122,13 +118,13 @@ private:
 		_values[index].apply();
 
 		if (segment.center() <= query.start)
-			return sum(query, segment.right(), right);
+			return sum(query, segment.right(), right, func);
 
 		if (query.end <= segment.center())
-			return sum(query, segment.left(), left);
+			return sum(query, segment.left(), left, func);
 
-		return sum(query, segment.left(), left)
-		     + sum(query, segment.right(), right);
+		return sum(query, segment.left(), left, func)
+		     + sum(query, segment.right(), right, func);
 	}
 
 	template <typename Callable>
