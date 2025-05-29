@@ -9,7 +9,8 @@
 template <typename T>
 concept Lazy = requires(T t, T l, T r) {
 	{l + r} -> std::same_as<T>;
-	{t.reinit(l, r)};
+	{t.reinit((T const&) l, (T const&) r)};
+	{t.propagate((T&)l, (T&)r)};
 	{t.apply()};
 };
 
