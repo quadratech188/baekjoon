@@ -3,7 +3,6 @@
 #include <ranges>
 
 #include "Segment.h"
-#include "DummyIterator.h"
 
 template <typename T>
 concept SegmentTreeElement = requires(T x, T l, T r) {
