@@ -1,52 +1,55 @@
-#include "modules/InputIterator.h"
-#include "modules/LazySegmentTree.h"
-#include "modules/FastIO.h"
+#include "../modules/SegmentTree2.h"
+#include "../modules/FastIO2.h"
+#include "../modules/FastIO.h"
+#include "../modules/InputRange.h"
 #include <algorithm>
-#include <iostream>
+#include <vector>
 
-struct Data {
-	Data():
-		length(0) {}
-	Data(int value):
-		length(1) {
-		values.push_back(value);
-	}
+struct Element {
+	Element() = default;
 
-	size_t length;
-	std::vector<int> values;
+	Element(uint value):
+		values({value}) {}
 
-	Data operator+(const Data& other) {
-		Data result(length + other.length);
-		result.values.reserve(result.length);
+	std::vector<uint> values;
 
-		std::merge(values.begin(), values.end(),
+	Element operator+(Element const& other) const {
+		Element result;
+		result.values.reserve(values.size() + other.values.size());
+
+		std::merge(
+				values.begin(), values.end(),
 				other.values.begin(), other.values.end(),
-				std::back_inserter(result.values));
+				std::back_inserter(result.values)
+				);
 
 		return result;
 	}
 
-	void resolve(Data& left, Data& right) {}
+	void reinit(Element const&, Element const&) {}
 };
 
 int main() {
 	FastIO();
-	int n;
-	std::cin >> n;
 
-	LazySegmentTree<Data> tree(n, InputIterator<int>());
+	size_t n;
+	Fast::cin >> n;
 
-	int m;
-	std::cin >> m;
+	SegmentTree<Element> tree(
+			InputRange<uint, Fast::istream>(n, Fast::cin)
+			);
 
-	for (int _ = 0; _ < m; _++) {
-		int i, j, k;
-		std::cin >> i >> j >> k;
+	uint m;
+	Fast::cin >> m;
 
-		int total = 0;
-		tree.update(i - 1, j, [&total, k](const Data& data){
-				total += data.values.end() - std::upper_bound(data.values.begin(), data.values.end(), k);
-				});
-		std::cout << total << '\n';
+	for (uint _ = 0; _ < m; _++) {
+		size_t i, j;
+		uint k;
+
+		Fast::cin >> i >> j >> k;
+
+		std::cout << tree.sum(i - 1, j, [k](Element const& val) -> size_t {
+				return val.values.end() - std::upper_bound(val.values.begin(), val.values.end(), k);
+				}) << '\n';
 	}
 }
