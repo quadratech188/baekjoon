@@ -9,8 +9,6 @@
 #include <ranges>
 
 struct Data {
-	using extracted_t = sm32_1e9_7;
-
 	sm32_1e9_7 a;
 	sm32_1e9_7 b;
 	sm32_1e9_7 sum;
@@ -94,7 +92,9 @@ int main() {
 						});
 				break;
 			case '4':
-				std::cout << tree.sum(x - 1, y) << '\n';
+				std::cout << tree.sum(x - 1, y, [](Data const& val) -> sm32_1e9_7 {
+						return val.extract();
+						}) << '\n';
 		}
 	}
 

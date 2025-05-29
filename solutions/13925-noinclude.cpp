@@ -11,8 +11,6 @@
 #include <locale>
 #include <ostream>
 #include <ranges>
-#include <sys/mman.h>
-#include <sys/stat.h>
 #include <type_traits>
 #include <unistd.h>
 #include <vector>
@@ -34,19 +32,6 @@ inline void FastIO() {
 namespace Fast {
 	class istream {
 	private:
-#ifdef ONLINE_JUDGE
-		static char* ptr;
-	public:
-		istream() {
-			struct stat st;
-			fstat(STDIN_FILENO, &st);
-			ptr = (char*)mmap(0, st.st_size, PROT_READ, MAP_PRIVATE, STDIN_FILENO, 0);
-		}
-	private:
-		inline char getchar() {
-			return *(ptr++);
-		}
-#else
 		inline char getchar() {
 			static char buffer[FASTISTREAM_BUFFER_SIZE];
 			static char* ptr = buffer;
@@ -59,10 +44,8 @@ namespace Fast {
 			}
 			return *(ptr++);
 		}
-#endif
 	public:
 		template <typename T>
-
 		inline istream& operator>>(T& val)
 		requires std::is_integral_v<T> {
 			char ch;
@@ -70,7 +53,7 @@ namespace Fast {
 
 			do {
 				ch = getchar();
-			} while (isspace(ch));
+			} while (std::isspace(ch));
 
 			// Optimized away for non-signed types
 			bool negative = false;
@@ -95,13 +78,12 @@ namespace Fast {
 		inline istream& operator>>(char& val) {
 			do {
 				val = getchar();
-			} while (isspace(val));
+			} while (std::isspace(val));
 			return *this;
 		}
 	};
 
 	istream cin;
-	char* istream::ptr = nullptr;
 
 	/*
 	class ostream {
@@ -185,9 +167,6 @@ concept Lazy = requires(T t, T l, T r) {
 	{l + r} -> std::same_as<T>;
 	{t.reinit(l, r)};
 	{t.apply()};
-
-	typename T::extracted_t;
-	{t.extract()} -> std::same_as<typename T::extracted_t>;
 };
 
 template <typename T>
@@ -198,11 +177,6 @@ public:
 		static_cast<T&>(*this) = l + r;
 	}
 	void apply() {}
-
-	using extracted_t = T;
-	extracted_t extract() {
-		return static_cast<T const&>(*this);
-	}
 };
 
 template<typename T> requires Lazy<T>
@@ -229,16 +203,19 @@ public:
 		init(Segment(0, _size), 0, it);
 	}
 
-	T::extracted_t sum(Segment segment) {
-		return sum(segment, Segment(0, _size), 0);
+	template <typename Extractor = std::identity>
+	auto sum(Segment segment, Extractor extractor = {}) {
+		return sum(segment, Segment(0, _size), 0, extractor);
 	}
 
-	T::extracted_t sum(size_t start, size_t end) {
-		return sum(Segment(start, end));
+	template <typename Extractor = std::identity>
+	auto sum(size_t start, size_t end, Extractor extractor = {}) {
+		return sum(Segment(start, end), extractor);
 	}
 
-	T::extracted_t at(size_t index) {
-		return sum(Segment(index, index + 1));
+	template <typename Extractor = std::identity>
+	auto at(size_t index, Extractor extractor = {}) {
+		return sum(Segment(index, index + 1), extractor);
 	}
 
 	template <typename Callable>
@@ -285,9 +262,10 @@ private:
 		_values[index] = _values[left] + _values[right];
 	}
 
-	T::extracted_t sum(Segment const query, Segment const segment, size_t const index) {
+	template <typename Extractor>
+	auto sum(Segment const query, Segment const segment, size_t const index, Extractor extractor) {
 		if (query.includes(segment))
-			return _values[index].extract();
+			return std::invoke(extractor, static_cast<T const&>(_values[index]));
 
 		size_t const left = index * 2 + 1;
 		size_t const right = index * 2 + 2;
@@ -296,13 +274,13 @@ private:
 		_values[index].apply();
 
 		if (segment.center() <= query.start)
-			return sum(query, segment.right(), right);
+			return sum(query, segment.right(), right, extractor);
 
 		if (query.end <= segment.center())
-			return sum(query, segment.left(), left);
+			return sum(query, segment.left(), left, extractor);
 
-		return sum(query, segment.left(), left)
-		     + sum(query, segment.right(), right);
+		return sum(query, segment.left(), left, extractor)
+		     + sum(query, segment.right(), right, extractor);
 	}
 
 	template <typename Callable>
@@ -458,8 +436,6 @@ template <typename tag = void>
 using dm64 = ModInt<uint64_t, uint64_t, DynamicModPolicy<uint64_t, tag>>;
 
 struct Data {
-	using extracted_t = sm32_1e9_7;
-
 	sm32_1e9_7 a;
 	sm32_1e9_7 b;
 	sm32_1e9_7 sum;
@@ -543,7 +519,9 @@ int main() {
 						});
 				break;
 			case '4':
-				std::cout << tree.sum(x - 1, y) << '\n';
+				std::cout << tree.sum(x - 1, y, [](Data const& val) -> sm32_1e9_7 {
+						return val.extract();
+						}) << '\n';
 		}
 	}
 
