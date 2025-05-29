@@ -9,6 +9,10 @@ For C++ solutions, there are usually 2 files for each problem:
 
 Due to the ever-changing nature of `modules/`, `$(PROBLEM).cpp` will very often fail to compile.
 
+It also contains `comp` and `merge`, 2 utility scripts.
+- `comp PROBLEM` compiles `$(PROBLEM).cpp` with debug symbols.
+- `merge PROBLEM` merges `$(PROBLEM).cpp`, saves it to `$(PROBLEM)-noinclude.cpp`, and copies it to the clipboard (for Wayland users)
+
 ## `modules/`
 Contains C++ headers for problem solving. Unlike other PS libraries, these headers are meant to be `#include`d, not modified. It uses heavy templating to achieve this.
 
