@@ -47,19 +47,19 @@ public:
 		init(Segment(0, _size), 0, it);
 	}
 
-	template <typename Callable = std::identity>
-	auto sum(Segment segment, Callable callable = {}) {
-		return sum(segment, Segment(0, _size), 0, callable);
+	template <typename Extractor = std::identity>
+	auto sum(Segment segment, Extractor extractor = {}) {
+		return sum(segment, Segment(0, _size), 0, extractor);
 	}
 
-	template <typename Callable = std::identity>
-	auto sum(size_t start, size_t end, Callable callable = {}) {
-		return sum(Segment(start, end), callable);
+	template <typename Extractor = std::identity>
+	auto sum(size_t start, size_t end, Extractor extractor = {}) {
+		return sum(Segment(start, end), extractor);
 	}
 
-	template <typename Callable = std::identity>
-	auto at(size_t index, Callable callable = {}) {
-		return sum(Segment(index, index + 1), callable);
+	template <typename Extractor = std::identity>
+	auto at(size_t index, Extractor extractor = {}) {
+		return sum(Segment(index, index + 1), extractor);
 	}
 
 	template <typename Callable>
@@ -106,10 +106,10 @@ private:
 		_values[index] = _values[left] + _values[right];
 	}
 
-	template <typename Callable>
-	auto sum(Segment const query, Segment const segment, size_t const index, Callable func) {
+	template <typename Extractor>
+	auto sum(Segment const query, Segment const segment, size_t const index, Extractor extractor) {
 		if (query.includes(segment))
-			return std::invoke(func, static_cast<T const&>(_values[index]));
+			return std::invoke(extractor, static_cast<T const&>(_values[index]));
 
 		size_t const left = index * 2 + 1;
 		size_t const right = index * 2 + 2;
@@ -118,13 +118,13 @@ private:
 		_values[index].apply();
 
 		if (segment.center() <= query.start)
-			return sum(query, segment.right(), right, func);
+			return sum(query, segment.right(), right, extractor);
 
 		if (query.end <= segment.center())
-			return sum(query, segment.left(), left, func);
+			return sum(query, segment.left(), left, extractor);
 
-		return sum(query, segment.left(), left, func)
-		     + sum(query, segment.right(), right, func);
+		return sum(query, segment.left(), left, extractor)
+		     + sum(query, segment.right(), right, extractor);
 	}
 
 	template <typename Callable>
