@@ -98,8 +98,8 @@ private:
 			return;
 		}
 
-		size_t left = index * 2 + 1;
-		size_t right = index * 2 + 2;
+		size_t const left = index * 2 + 1;
+		size_t const right = index * 2 + 2;
 
 		init(segment.left(), left, iterator);
 		init(segment.right(), right, iterator);
