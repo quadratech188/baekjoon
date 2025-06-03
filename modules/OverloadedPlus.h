@@ -11,6 +11,7 @@ public:
 		value(value), op(op) {}
 private:
 	T value;
+	[[no_unique_address]]
 	Operator op;
 public:
 	explicit operator T const&() {
