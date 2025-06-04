@@ -20,8 +20,7 @@ struct Data {
 
 	void update(sm32_1e9_7 c, sm32_1e9_7 d) noexcept {
 		a *= c;
-		b *= c;
-		b += d;
+		b.mul_add(c, d);
 	}
 	
 	sm32_1e9_7 extract() const noexcept {

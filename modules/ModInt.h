@@ -94,6 +94,11 @@ public:
 		return *this;
 	}
 
+	constexpr inline ModInt& mul_add(ModInt const& a, ModInt const& b) noexcept {
+		value = (static_cast<T2>(value) * a.value + b.value) % Policy::mod();
+		return *this;
+	}
+
 	constexpr inline bool operator!=(T const& other) const noexcept {
 		return value != other;
 	}

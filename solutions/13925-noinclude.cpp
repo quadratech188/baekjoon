@@ -165,7 +165,8 @@ private:
 template <typename T>
 concept Lazy = requires(T t, T l, T r) {
 	{l + r} -> std::same_as<T>;
-	{t.reinit(l, r)};
+	{t.reinit((T const&) l, (T const&) r)};
+	{t.propagate((T&)l, (T&)r)};
 	{t.apply()};
 };
 
@@ -253,8 +254,8 @@ private:
 			return;
 		}
 
-		size_t left = index * 2 + 1;
-		size_t right = index * 2 + 2;
+		size_t const left = index * 2 + 1;
+		size_t const right = index * 2 + 2;
 
 		init(segment.left(), left, iterator);
 		init(segment.right(), right, iterator);
@@ -333,14 +334,14 @@ struct DynamicModPolicy {
 template <typename T, typename T2, typename Policy>
 class ModInt {
 public:
-	constexpr ModInt(T val) noexcept {
+	template <typename U>
+	constexpr ModInt(U val) noexcept {
 		if (val < 0) val += Policy::mod();
 		val %= Policy::mod();
 		value = val;
 	}
 
-	constexpr ModInt() noexcept:
-		value(0) {}
+	constexpr ModInt() noexcept {}
 
 private:
 	T value;
@@ -447,8 +448,7 @@ struct Data {
 
 	void update(sm32_1e9_7 c, sm32_1e9_7 d) noexcept {
 		a *= c;
-		b *= c;
-		b += d;
+		b = sm32_1e9_7(static_cast<uint64_t>(b.val()) * c.val() + d.val());
 	}
 	
 	sm32_1e9_7 extract() const noexcept {
