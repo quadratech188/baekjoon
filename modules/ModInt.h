@@ -24,7 +24,8 @@ struct DynamicModPolicy {
 template <typename T, typename T2, typename Policy>
 class ModInt {
 public:
-	constexpr ModInt(T val) noexcept {
+	template <typename U>
+	constexpr ModInt(U val) noexcept {
 		if (val < 0) val += Policy::mod();
 		val %= Policy::mod();
 		value = val;
