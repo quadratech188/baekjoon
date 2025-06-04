@@ -358,6 +358,10 @@ public:
 		return value;
 	}
 
+	constexpr T2 big_val() const noexcept {
+		return static_cast<T2>(value);
+	}
+
 	constexpr explicit operator T() const noexcept {
 		return value;
 	}
@@ -401,6 +405,11 @@ public:
 
 	constexpr inline ModInt& operator*=(ModInt const& other) noexcept {
 		value = static_cast<T2>(value) * other.value % Policy::mod();
+		return *this;
+	}
+
+	constexpr inline ModInt& mul_add(ModInt const& a, ModInt const& b) noexcept {
+		value = (static_cast<T2>(value) * a.value + b.value) % Policy::mod();
 		return *this;
 	}
 
@@ -448,11 +457,11 @@ struct Data {
 
 	void update(sm32_1e9_7 c, sm32_1e9_7 d) noexcept {
 		a *= c;
-		b = sm32_1e9_7(static_cast<uint64_t>(b.val()) * c.val() + d.val());
+		b.mul_add(c, d);
 	}
 	
-	sm32_1e9_7 extract() const noexcept {
-		return a * sum + b * sm32_1e9_7::verified(length);
+	uint64_t extract() const noexcept {
+		return a.big_val() * sum.big_val() + b.big_val() * length;
 	}
 
 	Data operator+(const Data& other) const noexcept {

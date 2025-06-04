@@ -23,8 +23,8 @@ struct Data {
 		b.mul_add(c, d);
 	}
 	
-	sm32_1e9_7 extract() const noexcept {
-		return a * sum + b * sm32_1e9_7::verified(length);
+	uint64_t extract() const noexcept {
+		return a.big_val() * sum.big_val() + b.big_val() * length;
 	}
 
 	Data operator+(const Data& other) const noexcept {

@@ -48,6 +48,10 @@ public:
 		return value;
 	}
 
+	constexpr T2 big_val() const noexcept {
+		return static_cast<T2>(value);
+	}
+
 	constexpr explicit operator T() const noexcept {
 		return value;
 	}
