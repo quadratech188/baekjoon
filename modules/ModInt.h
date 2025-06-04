@@ -30,8 +30,7 @@ public:
 		value = val;
 	}
 
-	constexpr ModInt() noexcept:
-		value(0) {}
+	constexpr ModInt() noexcept {}
 
 private:
 	T value;
