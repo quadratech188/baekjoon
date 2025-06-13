@@ -109,8 +109,8 @@ private:
 	Int2 _size;
 };
 
-template<typename T>
-std::istream& operator>>(std::istream& input, Matrix<T>& matrix) {
+template<typename CIN, typename T>
+CIN& operator>>(CIN& input, Matrix<T>& matrix) {
 	for (Int2 index: matrix.bounds())
 		input >> matrix[index];
 
