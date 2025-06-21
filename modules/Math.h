@@ -5,7 +5,7 @@
 
 namespace Math {
 	template<typename T>
-	T power(T data, long long int exponent, T&& identity) {
+	T power(T data, size_t exponent, T&& identity) {
 		T result = identity;
 
 		while (exponent > 0) {
@@ -28,8 +28,20 @@ namespace Math {
 	template <typename T>
 	T factorial(T n) {
 		T result = 1;
-		for (T i = 1; i <= n; i++) result *= i;
+		for (T i = 1; i < n; ++i) result *= i;
 		return result;
+	}
+
+	template <typename T>
+	T C(T n, T k) {
+		T dividend = 1;
+		T divisor = 1;
+		for (T i = 0; i < k; ++i) {
+			dividend *= (n - i);
+			divisor *= (i + 1);
+		}
+
+		return dividend / divisor;
 	}
 
 	template <typename T>
