@@ -5,7 +5,7 @@
 
 namespace Math {
 	template<typename T>
-	T power(T data, size_t exponent, T&& identity) {
+	T power(T&& data, size_t exponent, T&& identity = 1) {
 		T result = identity;
 
 		while (exponent > 0) {
