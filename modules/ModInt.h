@@ -5,6 +5,8 @@
 #include <limits>
 #include <ostream>
 
+#include "Math.h"
+
 template <typename T, T MOD>
 struct StaticModPolicy {
 	static_assert(MOD < std::numeric_limits<T>::max() / 2);
@@ -98,9 +100,17 @@ public:
 		return *this;
 	}
 
+	constexpr inline ModInt operator/(ModInt const& other) const noexcept {
+		return *this * other.inverse();
+	}
+
 	constexpr inline ModInt& mul_add(ModInt const& a, ModInt const& b) noexcept {
 		value = (static_cast<T2>(value) * a.value + b.value) % Policy::mod();
 		return *this;
+	}
+
+	constexpr inline ModInt inverse() const noexcept {
+		return Math::power(*this, Policy::mod() - 2, verified(1));
 	}
 
 	constexpr inline bool operator!=(T const& other) const noexcept {
@@ -108,6 +118,10 @@ public:
 	}
 	constexpr inline bool operator==(T const& other) const noexcept {
 		return value == other;
+	}
+	
+	constexpr inline bool operator<(ModInt const& other) const noexcept {
+		return value < other.value;
 	}
 
 	inline friend std::ostream& operator<<(std::ostream& os, ModInt const& val) {
