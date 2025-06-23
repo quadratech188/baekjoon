@@ -110,7 +110,7 @@ public:
 	}
 
 	constexpr inline ModInt inverse() const noexcept {
-		return Math::power(*this, Policy::mod() - 2, verified(1));
+		return Math::power<ModInt>(*this, Policy::mod() - 2);
 	}
 
 	constexpr inline bool operator!=(T const& other) const noexcept {
