@@ -76,7 +76,7 @@ public:
 		return _size;
 	}
 
-	index_t add(vertex_t data) {
+	index_t add(vertex_t data = {}) {
 		_data.push_back(data);
 		_connections.emplace_back();
 		_size ++;
