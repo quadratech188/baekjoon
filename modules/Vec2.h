@@ -1,8 +1,6 @@
 #pragma once
 
 #include <cmath>
-#include <cstdint>
-#include <iostream>
 
 template<typename T, typename T2 = T>
 struct Vec2 {
@@ -110,14 +108,14 @@ struct Vec2 {
 	}
 };
 
-template <typename T, typename T2>
-std::istream& operator>>(std::istream& is, Vec2<T, T2>& vec2) {
+template <typename IS, typename T, typename T2>
+IS& operator>>(IS& is, Vec2<T, T2>& vec2) {
 	is >> vec2.x >> vec2.y;
 	return is;
 }
 
-template <typename T, typename T2>
-std::ostream& operator<<(std::ostream& os, Vec2<T, T2>& vec2) {
+template <typename OS, typename T, typename T2>
+OS& operator<<(OS& os, Vec2<T, T2>& vec2) {
 	os << vec2.x << ' ' << vec2.y;
 	return os;
 }
