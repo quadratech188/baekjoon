@@ -309,12 +309,55 @@ public:
 	}
 };
 
+template <typename T>
+class frac {
+public:
+	frac():
+		_top(1), _bottom(1) {}
+
+	frac(T value):
+		_top(value), _bottom(1) {}
+
+	frac(T top, T bottom) {
+		T gcd = std::gcd(top, bottom);
+
+		_top = top / gcd;
+		_bottom = bottom / gcd;
+	}
+
+private:
+	struct raw {};
+	frac(T top, T bottom, raw):
+		_top(top), _bottom(bottom) {}
+
+	T _top;
+	T _bottom;
+
+public:
+	static frac verified(T top, T bottom) {
+		return frac(top, bottom, {});
+	}
+
+	frac operator*(frac const& other) const {
+		return frac(_top * other._top, _bottom * other._bottom);
+	}
+
+	T& bottom() {
+		return _bottom;
+	}
+	T& top() {
+		return _top;
+	}
+
+	T to_T(T const& multiplier) {
+		return _top * (multiplier / _bottom);
+	}
+};
+
 template <Graph G>
 void dfs(G& graph, size_t parent) {
 	for (auto& child: graph.children(parent)) {
-		std::pair<int, int> frac = {child.edge().first * graph[parent].first, child.edge().second * graph[parent].second};
-		int gcd = std::gcd(frac.first, frac.second);
-		graph[child] = {frac.first / gcd, frac.second / gcd};
+		graph[child] = graph[parent] * child.edge();
 		dfs(graph, child);
 	}
 }
@@ -323,15 +366,15 @@ int main() {
 	size_t n;
 	Fast::cin >> n;
 
-	ListGraph<std::pair<int, int>, std::pair<int, int>> graph(n);
+	ListGraph<frac<int>, frac<int>> graph(n);
 
 	for (size_t i = 0; i < n - 1; i++) {
 		size_t a, b;
 		int p, q;
 		Fast::cin >> a >> b >> p >> q;
 
-		graph.connect(a, b, {p, q});
-		graph.connect(b, a, {q, p});
+		graph.connect(a, b, {q, p});
+		graph.connect(b, a, {p, q});
 	}
 
 	TreeWrapper tree(graph, 0);
@@ -341,9 +384,8 @@ int main() {
 
 	int lcm = 1;
 	for (size_t i = 0; i < graph.size(); i++)
-		lcm = std::lcm(lcm, graph[i].first);
+		lcm = std::lcm(lcm, graph[i].bottom());
 
-	for (size_t i = 0; i < graph.size(); i++) {
-		std::cout << graph[i].second * (lcm / graph[i].first) << ' ';
-	}
+	for (size_t i = 0; i < graph.size(); i++)
+		std::cout << graph[i].to_T(lcm) << ' ';
 }
