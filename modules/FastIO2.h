@@ -1,4 +1,5 @@
 #include <array>
+#include <cassert>
 #include <cstdio>
 #include <iostream>
 #include <istream>
@@ -23,6 +24,7 @@ namespace Fast {
 
 			if (ptr == end) {
 				ssize_t size = read(STDIN_FILENO, buffer, sizeof(buffer));
+				if (size <= 0) return EOF;
 				ptr = buffer;
 				end = buffer + size;
 			}
