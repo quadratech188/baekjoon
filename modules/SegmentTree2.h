@@ -3,6 +3,7 @@
 #include <ranges>
 
 #include "Segment.h"
+#include "DummyIterator.h"
 
 template <typename T>
 concept SegmentTreeElement = requires(T x, T l, T r) {
@@ -10,7 +11,7 @@ concept SegmentTreeElement = requires(T x, T l, T r) {
 	{x.reinit((T const&)l, (T const&)r)};
 };
 
-template <typename T>
+template <typename T> requires SegmentTreeElement<T>
 class SegmentTree {
 public:
 	using value_type = T;
@@ -19,6 +20,12 @@ public:
 	SegmentTree(R&& range):
 		_size(std::ranges::size(range)), _values(4 * _size) {
 		auto it = std::ranges::begin(range);
+		init(Segment(0, _size), 0, it);
+	}
+
+	SegmentTree(size_t size, T&& default_value = T()):
+		_size(size), _values(4 * size) {
+		auto it = DummyIterator<T>(default_value);
 		init(Segment(0, _size), 0, it);
 	}
 
@@ -44,6 +51,7 @@ public:
 	constexpr T const& root() const noexcept {
 		return _values[0];
 	}
+
 private:
 	size_t const _size;
 	std::vector<T> _values;
@@ -95,8 +103,7 @@ private:
 
 		if (index < segment.center())
 			update(index, left, segment.left(), func);
-
-		if (segment.center() < index)
+		else
 			update(index, right, segment.right(), func);
 
 		_values[value_index].reinit(_values[left], _values[right]);

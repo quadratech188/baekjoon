@@ -1,81 +1,74 @@
-#include "modules/SegmentTree.h"
-#include <stdio.h>
+#include "../modules/SegmentTree2.h"
+#include "../modules/FastIO.h"
+#include "../modules/FastIO2.h"
+#include <algorithm>
 
-enum Letter {
+enum Type {
 	L,
 	R
 };
 
-struct Data {
-	Letter left;
-	Letter right;
-	int length_full;
-	int length_left;
-	int length_right;
-	int length_floating;
+struct Element {
 
-	Data operator+(const Data& other) const {
-		Data result;
-		result.left = this->left;
-		result.right = other.right;
-		if (this->right != other.left) {
-			if (this->length_full != 0 && other.length_full != 0) {
-				result.length_full = this->length_full + other.length_full;
-			}
-			else {
-				result.length_full = 0;
-			}
+	Type left;
+	Type right;
 
-			if (this->length_full != 0)
-				result.length_left = this->length_full + other.length_left;
-			else
-				result.length_left = this->length_left;
+	uint _max_, _max, max_;
 
-			if (other.length_full != 0)
-				result.length_right = this->length_right + other.length_full;
-			else
-				result.length_right = other.length_right;
+	Element():
+		left(L), right(L), _max_(1), _max(1), max_(1) {}
 
-			result.length_floating = std::max(std::max(this->length_floating, other.length_floating), this->length_right + other.length_left);
+	void reinit(Element const& l, Element const& r) {
+		left = l.left;
+		right = r.right;
+
+		if (l.right == r.left) {
+			_max_ = std::max(l._max_, r._max_);
+			_max = r._max;
+			max_ = l.max_;
 		}
 		else {
-			result.length_full = 0;
-			result.length_left = this->length_left;
-			result.length_right = other.length_right;
-			result.length_floating = std::max(this->length_floating, other.length_floating);
+			_max_ = std::max({l._max_, l._max + r.max_, r._max_});
+			
+			if (r.max_ == SegmentTree<Element>::combine_ctx.right.size())
+				_max = l._max + SegmentTree<Element>::combine_ctx.right.size();
+			else
+			 	_max = r._max;
+
+			if (l.max_ == SegmentTree<Element>::combine_ctx.left.size())
+				max_ = SegmentTree<Element>::combine_ctx.left.size() + r.max_;
+			else
+			 	max_ = l.max_;
 		}
+	}
+
+	Element operator+(Element const& other) {
+		Element result;
+		result.reinit(*this, other);
 		return result;
 	}
 
-	void update(bool action) {
-		if (this->left == L) {
-			this->left = R;
-			this->right = R;
-		}
-		else {
-			this->left = L;
-			this->right = L;
-		}
+	void toggle() {
+		if (left == L)
+			left = right = R;
+		else
+		 	left = right = L;
 	}
 };
 
 int main() {
-	int n, q;
-	scanf("%d %d", &n, &q);
-	
-	SegmentTree<Data, bool> tree(n, {
-			.left = L,
-			.right = L,
-			.length_full = 1,
-			.length_left = 1,
-			.length_right = 1,
-			.length_floating = 1
-			});
+	FastIO();
+	uint N, Q;
+	Fast::cin >> N >> Q;
 
-	for (int i = 0; i < q; i++) {
-		size_t index;
-		scanf("%zu", &index);
-		tree.update(index - 1, true);
-		printf("%d\n", tree.root().length_floating);
+	SegmentTree<Element> tree(N);
+
+	for (uint i = 0; i < Q; i++) {
+		uint index;
+		Fast::cin >> index;
+
+		tree.update(index - 1, &Element::toggle);
+
+		std::cout << tree.root()._max_ << '\n';
 	}
 }
