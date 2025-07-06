@@ -1,63 +1,84 @@
+#include <cmath>
 #include <complex>
-#include <valarray>
+#include <ranges>
+#include <vector>
 
 #include "Math.h"
 
+template <typename T = double>
 class FFT {
+public:
+	using value_t = T;
+	using complex_t = std::complex<T>;
+
+	FFT(size_t n): _size(n), _roots(n + 1), a(n), b(n), primary(a), secondary(b) {
+		complex_t unit(0, -Math::tau / n);
+
+		for (size_t i = 0; i < n + 1; i++)
+			_roots[i] = std::exp(unit * static_cast<double>(i));
+	}
+
 private:
-	typedef std::complex<double> Complex;
+	size_t _size;
+	std::vector<complex_t> _roots;
+
+	std::vector<complex_t> a;
+	std::vector<complex_t> b;
+
+	std::vector<complex_t>& primary;
+	std::vector<complex_t>& secondary;
 
 public:
-	typedef std::valarray<Complex> Result;
-
-	FFT(int n): _original(n), _n(Math::powerCeil(2, n)), _roots(_n) {
-
-		double step = Math::tau / _n;
-
-		for (int i = 0; i < n; i++) {
-			_roots[i] = std::polar(1.0, step * i);
-		}
+	template <std::ranges::range R>
+	std::vector<complex_t> fft(R&& values) {
+		return fft(values, 1, 0);
 	}
 
-	template <typename Iterable>
-	Result operator()(Iterable values) {
-		std::valarray<Complex> temp(_n);
-		for (int i = 0; i < values.size(); i++) {
-			temp[i] = values[i];
-		}
-
-		return fft(temp, 0, 1);
-	}
-
-	std::valarray<double> inverse(Result input) {
-		Result temp = fft(input, 0, 1);
-		std::valarray<double> result;
-		for (int i = 0; i < _original; i++)
-			result[i] = temp[i].real();
-
-		return result;
+	template <std::ranges::range R>
+	std::vector<complex_t> ifft(R&& values) {
+		return ifft(values, 1, 0);
 	}
 
 private:
-	Result fft(std::valarray<Complex>& coefficients, int offset, int step) {
-		int length = coefficients.size() / step;
-		if (length <= 1) return {coefficients[offset]};
+	template <std::ranges::range R>
+	std::vector<complex_t> fft(R&& values, size_t step, size_t offset) {
+		// https://en.wikipedia.org/wiki/Cooley-Tukey_FFT_algorithm
+		
+		if (step == _size) {
+			return {values[offset]};
+		}
+		
+		auto E_k = fft(values, 2 * step, offset);
+		auto O_k = fft(values, 2 * step, offset + step);
 
-		Result even = fft(coefficients, offset, 2 * step);
-		Result odd = fft(coefficients, offset + step, 2 * step);
+		std::vector<complex_t> X_k(_size / step);
 
-		Result result(length);
-
-		for (int i = 0; i < length / 2; i++) {
-			Complex temp = _roots[i * step] * odd[i];
-			result[i] = even[i] + temp;
-			result[i + length / 2] = even[i] - temp;
+		for (size_t i = 0; i < X_k.size() / 2; i++) {
+			X_k[i] = E_k[i] + _roots[step * i] * O_k[i];
+			X_k[i + X_k.size() / 2] = E_k[i] - _roots[step * i] * O_k[i];
 		}
 
-		return result;
+		return X_k;
 	}
 
-	int _n;
-	int _original;
-	std::valarray<Complex> _roots;
+	template <std::ranges::range R>
+	std::vector<complex_t> ifft(R&& values, size_t step, size_t offset) {
+		// https://en.wikipedia.org/wiki/Cooley-Tukey_FFT_algorithm
+		
+		if (step == _size) {
+			return {values[offset] / T(_size)};
+		}
+		
+		auto E_k = ifft(values, 2 * step, offset);
+		auto O_k = ifft(values, 2 * step, offset + step);
+
+		std::vector<complex_t> X_k(_size / step);
+
+		for (size_t i = 0; i < X_k.size() / 2; i++) {
+			X_k[i] = E_k[i] + _roots[_size - step * i] * O_k[i];
+			X_k[i + X_k.size() / 2] = E_k[i] - _roots[_size - step * i] * O_k[i];
+		}
+
+		return X_k;
+	}
 };
