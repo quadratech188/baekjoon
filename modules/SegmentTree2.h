@@ -6,12 +6,6 @@
 #include "DummyIterator.h"
 
 template <typename T>
-concept SegmentTreeElement = requires(T x, T l, T r) {
-	{l + r} -> std::same_as<T>;
-	{x.reinit((T const&)l, (T const&)r)};
-};
-
-template <typename T> requires SegmentTreeElement<T>
 class SegmentTree {
 public:
 	using value_type = T;
@@ -106,6 +100,9 @@ private:
 		else
 			update(index, right, segment.right(), func);
 
-		_values[value_index].reinit(_values[left], _values[right]);
+		if constexpr (requires (T x, T const& y, T const& z) {x.reinit(y, z);})
+			_values[value_index].reinit(_values[left], _values[right]);
+		else
+		 	_values[value_index] = _values[left] + _values[right];
 	}
 };
