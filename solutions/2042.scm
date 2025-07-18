@@ -1,7 +1,9 @@
+(import (chicken foreign)) (define fread (foreign-lambda* long () "long long i;scanf(\"%lld\",&i);C_return(i);"))
+
 (let* (
-	   (n (read))
-	   (m (read))
-	   (k (read))
+	   (n (fread))
+	   (m (fread))
+	   (k (fread))
 	   (seg-values (make-vector (* 4 n) 0))
 	   )
   (define (init-segtree index l r)
@@ -9,7 +11,7 @@
 	  ((
 		value
 		(if (= (- r l) 1)
-		  (read)
+		  (fread)
 		  (let ((center (quotient (+ l r) 2)))
 			(+
 			  (init-segtree (+ (* 2 index) 1) l center)
@@ -45,6 +47,6 @@
 			 (query-segtree right-index center r query-l query-r)))))))
   
   (do ((i 0 (+ i 1))) ((>= i (+ m k)))
-	(if (= 1 (read))
-	  (update-segtree 0 0 n (- (read) 1) (read))
-	  (print (query-segtree 0 0 n (- (read) 1) (read))))))
+	(if (= 1 (fread))
+	  (update-segtree 0 0 n (- (fread) 1) (fread))
+	  (print (query-segtree 0 0 n (- (fread) 1) (fread))))))
