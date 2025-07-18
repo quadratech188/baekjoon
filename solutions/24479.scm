@@ -1,0 +1,67 @@
+(import (chicken sort))
+
+(let* (
+	  (n (read))
+	  (m (read))
+	  (r (read))
+	  (graph (make-vector n '()))
+	  (visited (make-vector n #f))
+	  (order (make-vector n 0))
+	  (counter 1)
+	  )
+  (begin
+	(do (
+		 (i 0 (+ i 1))
+		 )
+	  ((>= i m))
+	  (let (
+			(u (read))
+			(v (read))
+			)
+		(begin
+		  (vector-set! graph (- u 1) (cons (- v 1) (vector-ref graph (- u 1))))
+		  (vector-set! graph (- v 1) (cons (- u 1) (vector-ref graph (- v 1))))
+		  )
+		)
+	  )
+	(do (
+		 (i 0 (+ i 1))
+		 )
+	  ((>= i n))
+	  (begin
+		(vector-set! graph i (list->vector (vector-ref graph i)))
+		(sort! (vector-ref graph i) <)
+		;(print (vector-ref graph i))
+		)
+	  )
+	(define (dfs parent)
+	  (do (
+		   (child-index 0 (+ child-index 1))
+		   )
+		((>= child-index (vector-length (vector-ref graph parent))))
+		(let (
+			  (child (vector-ref (vector-ref graph parent) child-index))
+			  )
+		  (if (vector-ref visited child)
+			'()
+			(begin
+			  (vector-set! visited child #t)
+			  (vector-set! order child counter)
+			  (set! counter (+ counter 1))
+			  (dfs child)
+			  )
+			)
+		  )
+		)
+	  )
+	(vector-set! visited (- r 1) #t)
+	(vector-set! order (- r 1) counter)
+	(set! counter (+ counter 1))
+	(dfs (- r 1))
+	(do (
+		 (i 0 (+ i 1))
+		 )
+	  ((>= i n))
+	  (print (vector-ref order i)))
+	)
+  )
