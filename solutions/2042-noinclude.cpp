@@ -1,5 +1,6 @@
 #include <array>
 #include <cassert>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -11,7 +12,6 @@
 #include <sys/types.h>
 #include <type_traits>
 #include <unistd.h>
-#include <vector>
 
 struct Segment {
 	constexpr Segment(): start(0), end(0) {}
@@ -55,48 +55,32 @@ private:
 	const T& _val;
 };
 
-template <typename T, typename Operator = std::plus<T>>
+template <typename T>
 class SegmentTree {
 public:
-	SegmentTree(const size_t size, const T& val = T(), Operator op = Operator()):
-		_size(size), _values(4 * size), _operator(op) {
-		init(Segment(0, _size), 0, [&val](){return val;});
-	}
-
-	/*
-	template <typename Iter>
-	SegmentTree(const size_t size, Iter iterator, Operator op = Operator()):
-		_size(size), _values(4 * size), _operator(op) {
-		init(Segment(0, _size), 0, iterator);
-	}
-	*/
+	using value_type = T;
 
 	template <std::ranges::range R>
-	SegmentTree(R&& range, Operator op = Operator()):
-		_size(std::ranges::distance(range)), _values(4 * _size), _operator(op) {
-		init(Segment(0, _size), 0, std::ranges::begin(range)); 
+	SegmentTree(R&& range):
+		_size(std::ranges::size(range)), _values(4 * _size) {
+		auto it = std::ranges::begin(range);
+		init(Segment(0, _size), 0, it);
 	}
 
-	template <typename Next>
-	SegmentTree(const size_t size, Next next, Operator op = Operator()):
-		_size(size), _values(4 * size), _operator(op) {
-		init(Segment(0, _size), 0, next);
+	SegmentTree(size_t size, T&& default_value = T()):
+		_size(size), _values(4 * size) {
+		auto it = DummyIterator<T>(default_value);
+		init(Segment(0, _size), 0, it);
 	}
 
-	inline T sum(Segment segment) {
-		return sum(segment, Segment(0, _size), 0);
+	template <typename Extractor = std::identity>
+	auto sum(Segment segment, Extractor extractor = {}) {
+		return sum(segment, Segment(0, _size), 0, extractor);
 	}
 
-	inline T sum(size_t start, size_t end) {
-		return sum(Segment(start, end));
-	}
-
-	inline T root() {
-		return sum(0, _size);
-	}
-
-	inline T at(size_t index) {
-		return sum(Segment(index, index + 1));
+	template <typename Extractor = std::identity>
+	auto sum(size_t start, size_t end, Extractor extractor = {}) {
+		return sum(Segment(start, end), extractor);
 	}
 
 	template <typename Callable>
@@ -104,66 +88,72 @@ public:
 		return update(index, 0, Segment(0, _size), func);
 	}
 
-	inline size_t size() {
+	constexpr size_t size() const noexcept {
 		return _size;
 	}
 
-#ifndef HACKABLE
-private:
-#endif
-	const size_t _size;
-	std::vector<T> _values;
-	const Operator _operator;
+	constexpr T const& root() const noexcept {
+		return _values[0];
+	}
 
-	template <typename Next>
-	void init(Segment segment, size_t index, Next&& next) {
+private:
+	size_t const _size;
+	std::vector<T> _values;
+
+	template <typename Iter>
+	void init(Segment segment, size_t index, Iter& iterator) {
 		if (segment.size() == 1) {
-			next(_values[index]);
+			_values[index] = T(*iterator);
+			++iterator;
 			return;
 		}
 
 		size_t left = 2 * index + 1;
 		size_t right = 2 * index + 2;
-		init(segment.left(), left, next);
-		init(segment.right(), right, next);
 
-		_values[index] = _operator(_values[left], _values[right]);
+		init(segment.left(), left, iterator);
+		init(segment.right(), right, iterator);
+
+		_values[index] = _values[left] + _values[right];
 	}
 
-	T sum(Segment query, Segment segment, size_t index) {
-
+	template <typename Extractor>
+	auto sum(Segment const query, Segment const segment, size_t const index, Extractor extractor) {
 		if (query.includes(segment))
-			return _values[index];
+			return std::invoke(extractor, static_cast<T const&>(_values[index]));
 
-		size_t left = 2 * index + 1;
-		size_t right = 2 * index + 2;
+		size_t const left = index * 2 + 1;
+		size_t const right = index * 2 + 2;
 
 		if (segment.center() <= query.start)
-			return sum(query, segment.right(), right);
+			return sum(query, segment.right(), right, extractor);
 
 		if (query.end <= segment.center())
-			return sum(query, segment.left(), left);
+			return sum(query, segment.left(), left, extractor);
 
-		return _operator(sum(query, segment.left(), left)
-		          ,sum(query, segment.right(), right));
+		return sum(query, segment.left(), left, extractor)
+		     + sum(query, segment.right(), right, extractor);
 	}
 
 	template <typename Callable>
-	void update(size_t index, size_t value_index, Segment segment, Callable func) {
+	void update(size_t const index, size_t const value_index, Segment const segment, Callable func) {
 		if (segment.size() == 1) {
 			std::invoke(func, _values[value_index]);
 			return;
 		}
 
-		size_t left = 2 * value_index + 1;
-		size_t right = 2 * value_index + 2;
-		
+		size_t const left = value_index * 2 + 1;
+		size_t const right = value_index * 2 + 2;
+
 		if (index < segment.center())
 			update(index, left, segment.left(), func);
 		else
-		 	update(index, right, segment.right(), func);
+			update(index, right, segment.right(), func);
 
-		_values[value_index] = _operator(_values[left], _values[right]);
+		if constexpr (requires (T x, T const& y, T const& z) {x.reinit(y, z);})
+			_values[value_index].reinit(_values[left], _values[right]);
+		else
+		 	_values[value_index] = _values[left] + _values[right];
 	}
 };
 
@@ -201,6 +191,7 @@ namespace Fast {
 
 			if (ptr == end) {
 				ssize_t size = read(STDIN_FILENO, buffer, sizeof(buffer));
+				if (size <= 0) return EOF;
 				ptr = buffer;
 				end = buffer + size;
 			}
@@ -277,7 +268,7 @@ int main() {
 	uint n, m, k;
 	Fast::cin >> n >> m >> k;
 
-	SegmentTree<int64_t> tree(n, [](int64_t& val) {Fast::cin >> val;});
+	SegmentTree<int64_t> tree(InputRange<int64_t, Fast::istream>(n, Fast::cin));
 
 	for (uint i = 0; i < m + k; i++) {
 		char a;

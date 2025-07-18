@@ -1,4 +1,4 @@
-#include "../modules/SegmentTree.h"
+#include "../modules/SegmentTree2.h"
 #include "../modules/InputRange.h"
 #include "../modules/FastIO.h"
 #include "../modules/FastIO2.h"
@@ -10,7 +10,7 @@ int main() {
 	uint n, m, k;
 	Fast::cin >> n >> m >> k;
 
-	SegmentTree<int64_t> tree(n, [](int64_t& val) {Fast::cin >> val;});
+	SegmentTree<int64_t> tree(InputRange<int64_t, Fast::istream>(n, Fast::cin));
 
 	for (uint i = 0; i < m + k; i++) {
 		char a;
