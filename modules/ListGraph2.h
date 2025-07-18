@@ -1,3 +1,5 @@
+#include "hackable_private.h"
+
 #include <cstddef>
 #include <type_traits>
 #include <variant>
@@ -54,7 +56,7 @@ public:
 		inline bool operator<(child const& other) const noexcept {
 			return _index < other._index;
 		}
-	private:
+	hackable_private:
 		index_t _index;
 		[[no_unique_address]]
 		edge_t _edge;
@@ -62,7 +64,7 @@ public:
 		std::conditional_t<reversible_v, index_t, std::monostate> _rev;
 	};
 
-private:
+hackable_private:
 	using connection_list_t = Container<child>;
 	std::vector<vertex_t> _data;
 	std::vector<connection_list_t> _connections;
