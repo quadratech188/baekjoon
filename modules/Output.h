@@ -12,3 +12,10 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& values) {
 
 	return os;
 }
+
+template <typename T1, typename T2>
+std::ostream& operator<<(std::ostream& os, std::pair<T1, T2> const& pair) {
+	std::cout << pair.first << ' ' << pair.second;
+
+	return os;
+}
