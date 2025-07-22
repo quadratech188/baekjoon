@@ -2,6 +2,7 @@
 #include "../modules/InputRange.h"
 #include "../modules/FastIO.h"
 #include "../modules/FastIO2.h"
+#include "../modules/NoInitializer.h"
 #include <cstdint>
 #include <sys/types.h>
 
@@ -10,7 +11,7 @@ int main() {
 	uint n, m, k;
 	Fast::cin >> n >> m >> k;
 
-	SegmentTree<int64_t> tree(InputRange<int64_t, Fast::istream>(n, Fast::cin));
+	SegmentTree<no_init<int64_t>> tree(InputRange<int64_t, Fast::istream>(n, Fast::cin));
 
 	for (uint i = 0; i < m + k; i++) {
 		char a;
@@ -23,7 +24,7 @@ int main() {
 
 				Fast::cin >> b >> c;
 
-				tree.update(b - 1, [c](int64_t& val) {
+				tree.update(b - 1, [c](no_init<int64_t>& val) {
 						val = c;
 						});
 				break;
@@ -32,7 +33,9 @@ int main() {
 				size_t b, c;
 				Fast::cin >> b >> c;
 
-				std::cout << tree.sum(b - 1, c) << '\n';
+				std::cout << tree.sum(b - 1, c, [](no_init<int64_t> const& val) {
+						return val.val();
+						}) << '\n';
 			}
 		}
 	}
