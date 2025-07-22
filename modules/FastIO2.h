@@ -5,6 +5,7 @@
 #include <istream>
 #include <type_traits>
 #include <unistd.h>
+#include <utility>
 #include <vector>
 
 #include "../modules/NoInitializer.h"
@@ -68,6 +69,12 @@ namespace Fast {
 			do {
 				val = getchar();
 			} while (std::isspace(val));
+			return *this;
+		}
+
+		template <typename T1, typename T2>
+		inline istream& operator>>(std::pair<T1, T2>& pair) {
+			(*this) >> pair.first >> pair.second;
 			return *this;
 		}
 
