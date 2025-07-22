@@ -1,96 +1,303 @@
+#include <array>
+#include <cassert>
+#include <cmath>
+#include <cstdio>
 #include <iostream>
+#include <istream>
+#include <type_traits>
+#include <unistd.h>
+#include <utility>
+#include <vector>
 
 template<typename T, typename T2 = T>
 struct Vec2 {
+	using type = T;
+	
 	T x, y;
 
-	Vec2(T x, T y): x(x), y(y) {}
-	Vec2(): x(T()), y(T()) {}
+	constexpr Vec2(T x, T y) noexcept: x(x), y(y) {}
+	constexpr Vec2() noexcept : x(T()), y(T()) {}
 
-	Vec2 operator+(const Vec2& other) const {
+	constexpr Vec2 operator+(const Vec2& other) const noexcept {
 		return Vec2(this->x + other.x, this->y + other.y);
 	}
 
-	Vec2 operator-(const Vec2& other) const {
+	constexpr Vec2& operator+=(Vec2 const& other) noexcept {
+		x += other.x;
+		y += other.y;
+		return *this;
+	}
+
+	constexpr Vec2 operator-(const Vec2& other) const noexcept {
 		return Vec2(this->x - other.x, this->y - other.y);
 	}
 
+	constexpr Vec2& operator-=(Vec2 const& other) noexcept {
+		x -= other.x;
+		y -= other.y;
+		return *this;
+	}
+
 	template<typename D>
-	Vec2<D> operator/(const D other) const {
+	constexpr Vec2<D> operator/(const D other) const noexcept {
 		return Vec2<D>(this->x / other, this->y / other);
 	}
 
-	Vec2<T2> operator*(const T other) const {
-		return Vec2<T2>((T2)this->x * other, (T2)this->y * other);
+	constexpr Vec2 operator*(T const& other) const noexcept {
+		return {x * other, y * other};
 	}
 
-	bool operator<(const Vec2& other) const {
+	constexpr friend Vec2 operator*(T const& l, Vec2<T> const& r) noexcept {
+		return {l * r.x, l * r.y};
+	}
+
+	constexpr bool operator<(const Vec2& other) const noexcept {
 		if (this->x != other.x) return this->x < other.x;
 		return this->y < other.y;
 	}
 
-	bool operator==(const Vec2& other) const {
+	constexpr bool operator==(const Vec2& other) const noexcept {
 		return this->x == other.x && this->y == other.y;
 	}
 
-	bool operator!=(const Vec2& other) const {
+	constexpr bool operator!=(const Vec2& other) const noexcept {
 		return this->x != other.x || this->y != other.y;
 	}
 
-	T2 dot(const Vec2& other) const {
-		return static_cast<T2>(this->x) * other.x + static_cast<T2>(this->y) * other.y;
+	constexpr Vec2 rotate(const double angle) const noexcept {
+		return Vec2(
+				x * std::cos(angle) - y * std::sin(angle),
+				x * std::sin(angle) + y * std::cos(angle)
+				);
 	}
 
-	T2 cross(const Vec2& other) const {
-		return static_cast<T2>(this->x) * other.y - static_cast<T2>(this->y) * other.x;
+	constexpr T2 dot(const Vec2& other) const noexcept {
+		return static_cast<T2>(this->x) * other.x
+			+ static_cast<T2>(this->y) * other.y;
 	}
 
-	T2 size2() const {
-		return static_cast<T2>(this->x) * this->x + static_cast<T2>(this->y) * this->y;
+	constexpr T2 cross(const Vec2& other) const noexcept {
+		return static_cast<T2>(this->x) * other.y
+			- static_cast<T2>(this->y) * other.x;
 	}
 
-	static Vec2 zero() {
+	constexpr T2 size2() const noexcept {
+		return static_cast<T2>(this->x) * this->x
+			+ static_cast<T2>(this->y) * this->y;
+	}
+
+	constexpr auto length() const noexcept {
+		return std::sqrt(size2());
+	}
+
+	constexpr auto theta() const noexcept {
+		return std::atan2(y, x);
+	}
+
+	constexpr T taxi_distance(const Vec2& other) const noexcept {
+		return std::abs(x - other.x) + std::abs(y - other.y);
+	}
+
+	constexpr static Vec2 zero() noexcept {
 		return Vec2(0, 0);
 	}
 
-	static Vec2 one() {
+	constexpr static Vec2 one() noexcept {
 		return Vec2(1, 1);
+	}
+
+	constexpr static Vec2 i() noexcept {
+		return Vec2(1, 0);
+	}
+
+	constexpr static Vec2 j() noexcept {
+		return Vec2(0, 1);
 	}
 };
 
-template <typename T, typename T2>
-std::istream& operator>>(std::istream& is, Vec2<T, T2>& vec2) {
+template <typename IS, typename T, typename T2>
+IS& operator>>(IS& is, Vec2<T, T2>& vec2) {
 	is >> vec2.x >> vec2.y;
 	return is;
 }
 
-typedef Vec2<int, long long int> Int2;
+template <typename OS, typename T, typename T2>
+OS& operator<<(OS& os, Vec2<T, T2>& vec2) {
+	os << vec2.x << ' ' << vec2.y;
+	return os;
+}
 
+typedef Vec2<int32_t, int64_t> Int2;
 typedef Vec2<double, double> Double2;
 
-bool intersects(Double2 v1, Double2 v2, Double2 v3, Double2 v4) {
-	double ratio1 = (v2 - v1).cross(v3 - v1);
-	double ratio2 = (v2 - v1).cross(v4 - v1);
+template <typename T>
+struct no_init {
 
-	if (ratio1 == 0 && ratio2 == 0) {
-		return 0 <= (v3 - v1).dot(v2 - v1) &&
-			(v3 - v1).dot(v2 - v1) <= (v2 - v1).size2() ||
-			0 <= (v4 - v1).dot(v2 - v1) &&
-			(v4 - v1).dot(v2 - v1) <= (v2 - v1).size2() ||
-			intersects(v3, v4, v1, v2);
+	T value;
+
+	no_init() {}
+
+	no_init(T value):
+		value(value) {}
+
+	T& val() {
+		return value;
 	}
 
-	if (ratio1 * ratio2 > 0) return false;
+	no_init& operator=(T&& other) {
+		value = other;
+		return *this;
+	}
 
-	Double2 intersection = (v3 * ratio2 - v4 * ratio1) / (ratio2 - ratio1);
+	operator T() {
+		return value;
+	}
+};
 
-	return 0 <= (intersection - v1).dot(v2 - v1) &&
-		(intersection - v1).dot(v2 - v1) <= (v2 - v1).size2();
+#ifndef FASTISTREAM_BUFFER_SIZE
+#define FASTISTREAM_BUFFER_SIZE 1 << 20
+#endif
+
+#ifndef FASTOSTREAM_BUFFER_SIZE
+#define FASTOSTREAM_BUFFER_SIZE 1 << 20
+#endif
+
+namespace Fast {
+	class istream {
+	private:
+		inline char getchar() {
+			static char buffer[FASTISTREAM_BUFFER_SIZE];
+			static char* ptr = buffer;
+			static char* end = buffer;
+
+			if (ptr == end) {
+				ssize_t size = read(STDIN_FILENO, buffer, sizeof(buffer));
+				if (size <= 0) return EOF;
+				ptr = buffer;
+				end = buffer + size;
+			}
+			return *(ptr++);
+		}
+	public:
+		template <typename T>
+		inline istream& operator>>(T& val)
+		requires std::is_integral_v<T> {
+			char ch;
+			val = 0;
+
+			do {
+				ch = getchar();
+			} while (std::isspace(ch));
+
+			// Optimized away for non-signed types
+			bool negative = false;
+			if constexpr (std::is_signed_v<T>) {
+				if (ch == '-') {
+					negative = true;
+					ch = getchar();
+				}
+			}
+
+			do {
+				val = 10 * val + ch - '0';
+				ch = getchar();
+			} while ('0' <= ch && ch <= '9');
+
+			if constexpr (std::is_signed_v<T>)
+				if (negative) val = -val;
+
+			return *this;
+		}
+
+		inline istream& operator>>(char& val) {
+			do {
+				val = getchar();
+			} while (std::isspace(val));
+			return *this;
+		}
+
+		template <typename T1, typename T2>
+		inline istream& operator>>(std::pair<T1, T2>& pair) {
+			(*this) >> pair.first >> pair.second;
+			return *this;
+		}
+
+		template <typename T>
+		std::vector<T> to_vec(uint size) {
+			std::vector<T> result(size);
+
+			for (auto& val: result)
+				(*this) >> val;
+
+			return result;
+		}
+	};
+
+	istream cin;
+
+	/*
+	class ostream {
+		private:
+			inline void putchar(char const& ch) {
+				static char buffer[FASTOSTREAM_BUFFER_SIZE];
+				static char* ptr = buffer;
+				static char* end = buffer + (FASTOSTREAM_BUFFER_SIZE);
+
+				if (ptr == end) {
+					write(STDOUT_FILENO, buffer, FASTOSTREAM_BUFFER_SIZE);
+					ptr = buffer;
+				}
+				*(ptr++) = ch;
+			}
+		public:
+			template <typename T>
+				inline ostream& operator<<(T& val)
+				requires std::is_integral_v<T> {
+					if (val < 0)
+						putchar('-');
+				}
+	};
+	*/
+}
+
+bool check(int64_t numerator, int64_t denominator) {
+	if (denominator == 0) return true;
+
+	if (denominator < 0)
+		return denominator <= numerator && numerator <= 0;
+	else
+	 	return 0 <= numerator && numerator <= denominator;
 }
 
 int main() {
-	Double2 v1, v2, v3, v4;
-	std::cin >> v1 >> v2 >> v3 >> v4;
+	Int2 a1, a2, b1, b2;
+	Fast::cin >> a1 >> a2 >> b1 >> b2;
 
-	std::cout << intersects(v1, v2, v3, v4);
+	bool result = true;
+
+	// a1 + (a2 - a1) x = b1 + (b2 - b1) y
+	
+	// (a2 - a1) cross (b2 - b1) x = (b1 - a1) cross (b2 - b1)
+	
+	result &= check((b1 - a1).cross(b2 - b1), (a2 - a1).cross(b2 - b1));
+
+	// (a1 - b1) cross (a2 - a1) = (b2 - b1) cross (a2 - a1) y
+	result &= check((a1 - b1).cross(a2 - a1), (b2 - b1).cross(a2 - a1));
+
+	if ((a2 - a1).cross(b2 - b1) == 0) {
+		result &= (b1 - a1).cross(a2 - a1) == 0;
+		result &= (b1 - a2).cross(a2 - a1) == 0;
+		result &= (b2 - a1).cross(a2 - a1) == 0;
+		result &= (b2 - a2).cross(a2 - a1) == 0;
+
+		if (a1.x > a2.x) std::swap(a1, a2);
+		if (b1.x > b2.x) std::swap(b1, b2);
+		result &= a1.x <= b2.x && b1.x <= a2.x;
+
+		if (a1.y > a2.y) std::swap(a1, a2);
+		if (b1.y > b2.y) std::swap(b1, b2);
+		result &= a1.y <= b2.y && b1.y <= a2.y;
+	}
+
+	std::cout << result;
 }
