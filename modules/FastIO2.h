@@ -8,8 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "../modules/NoInitializer.h"
-
 #ifndef FASTISTREAM_BUFFER_SIZE
 #define FASTISTREAM_BUFFER_SIZE 1 << 20
 #endif
@@ -90,28 +88,4 @@ namespace Fast {
 	};
 
 	istream cin;
-
-	/*
-	class ostream {
-		private:
-			inline void putchar(char const& ch) {
-				static char buffer[FASTOSTREAM_BUFFER_SIZE];
-				static char* ptr = buffer;
-				static char* end = buffer + (FASTOSTREAM_BUFFER_SIZE);
-
-				if (ptr == end) {
-					write(STDOUT_FILENO, buffer, FASTOSTREAM_BUFFER_SIZE);
-					ptr = buffer;
-				}
-				*(ptr++) = ch;
-			}
-		public:
-			template <typename T>
-				inline ostream& operator<<(T& val)
-				requires std::is_integral_v<T> {
-					if (val < 0)
-						putchar('-');
-				}
-	};
-	*/
 }
