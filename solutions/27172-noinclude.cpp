@@ -7,6 +7,29 @@
 #include <type_traits>
 #include <unistd.h>
 #include <vector>
+template <typename T>
+struct no_init {
+
+	T value;
+
+	no_init() {}
+
+	no_init(T value):
+		value(value) {}
+
+	T& val() {
+		return value;
+	}
+
+	no_init& operator=(T&& other) {
+		value = other;
+		return *this;
+	}
+
+	operator T() {
+		return value;
+	}
+};
 
 #ifndef FASTISTREAM_BUFFER_SIZE
 #define FASTISTREAM_BUFFER_SIZE 1 << 20
@@ -69,6 +92,16 @@ namespace Fast {
 			} while (std::isspace(val));
 			return *this;
 		}
+
+		template <typename T>
+		std::vector<T> to_vec(uint size) {
+			std::vector<T> result(size);
+
+			for (auto& val: result)
+				(*this) >> val;
+
+			return result;
+		}
 	};
 
 	istream cin;
@@ -109,9 +142,7 @@ int main() {
 	uint n;
 	Fast::cin >> n;
 
-	std::vector<uint> values(n);
-	for (auto& val: values)
-		Fast::cin >> val;
+	auto values = Fast::cin.to_vec<uint>(n);
 
 	uint max = std::ranges::max(values);
 

@@ -5,6 +5,9 @@
 #include <istream>
 #include <type_traits>
 #include <unistd.h>
+#include <vector>
+
+#include "../modules/NoInitializer.h"
 
 #ifndef FASTISTREAM_BUFFER_SIZE
 #define FASTISTREAM_BUFFER_SIZE 1 << 20
@@ -66,6 +69,16 @@ namespace Fast {
 				val = getchar();
 			} while (std::isspace(val));
 			return *this;
+		}
+
+		template <typename T>
+		std::vector<T> to_vec(uint size) {
+			std::vector<T> result(size);
+
+			for (auto& val: result)
+				(*this) >> val;
+
+			return result;
 		}
 	};
 

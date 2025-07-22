@@ -8,9 +8,7 @@ int main() {
 	uint n;
 	Fast::cin >> n;
 
-	std::vector<uint> values(n);
-	for (auto& val: values)
-		Fast::cin >> val;
+	auto values = Fast::cin.to_vec<uint>(n);
 
 	uint max = std::ranges::max(values);
 
