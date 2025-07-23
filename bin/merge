@@ -1,3 +1,5 @@
-#!/bin/sh
+#!/bin/bash
 
-cpp-merge "$1.cpp" | tee "$1-noinclude.cpp" | wl-copy
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+python ${__dir}/cpp-merge.py "$1.cpp" | tee "$1-noinclude.cpp" | wl-copy
