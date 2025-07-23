@@ -1,5 +1,4 @@
 # PS Library
-This library uses [`cpp-merge`](https://github.com/FastAlien/cpp-merge).
 ## `solutions/`
 Contains solutions for [acmicpc.net](https://www.acmicpc.net) (though they are often sourced from somewhere else) problems.
 
