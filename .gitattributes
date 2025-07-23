@@ -1,0 +1,3 @@
+*.in.* linguist-generated
+*.out.* linguist-generated
+*-noinclude.cpp linguist-generated
