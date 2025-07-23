@@ -1,30 +1,28 @@
+#include <numeric>
 #include <vector>
 
 class UnionFind {
 public:
-	UnionFind(int size) {
-		this->size = size;
-		data.reserve(size);
-		for (int i = 0; i < size; i++)
-			data.push_back(i);
+	UnionFind(size_t size) {
+		next.resize(size);
+		std::iota(next.begin(), next.end(), 0);
 	}
 
-	int find(int x) {
-		if (data[x] == x)
+	size_t find(size_t x) {
+		if (next[x] == x)
 			return x;
-		data[x] = find(data[x]);
-		return data[x];
+		next[x] = find(next[x]);
+		return next[x];
 	}
 
-	void connect(int x, int y) {
-		data[find(x)] = find(y);
+	void connect(size_t from, size_t to) {
+		next[find(from)] = find(to);
 	}
 
-	bool connected(int x, int y) {
+	bool connected(size_t x, size_t y) {
 		return find(x) == find(y);
 	}
 
 private:
-	std::vector<int> data;
-	int size;
+	std::vector<size_t> next;
 };
