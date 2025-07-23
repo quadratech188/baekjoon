@@ -6,7 +6,8 @@ INCLUDE_QUOTES_REGEX = re.compile('#include "(?P<path>.+)"')
 
 visited_headers = set()
 def parse_file(filepath: pathlib.Path):
-    if filepath in visited_headers: return
+    if filepath.resolve() in visited_headers: return
+    visited_headers.add(filepath.resolve())
 
     with open(filepath, mode='r') as f:
         for line in f.readlines():
