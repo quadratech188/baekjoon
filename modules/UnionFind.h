@@ -23,6 +23,15 @@ public:
 		return find(x) == find(y);
 	}
 
+	void flatten() {
+		for (size_t i = 0; i < next.size(); i++)
+			find(i);
+	}
+
+	size_t at(size_t index) {
+		return next[index];
+	}
+
 private:
 	std::vector<size_t> next;
 };
