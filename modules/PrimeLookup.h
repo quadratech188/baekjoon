@@ -1,27 +1,28 @@
 #include <array>
+#include <vector>
 
 template <int size>
 class PrimeLookup {
 public:
 	constexpr PrimeLookup() {
-		primes.fill(true);
+		is_prime.fill(true);
 
-		primes[0] = false;
-		primes[1] = false;
+		is_prime[0] = false;
+		is_prime[1] = false;
 
 		for (int i = 2; i * i <= size; i++) {
-			if (primes[i]) {
+			if (is_prime[i]) {
 				for (int j = i * i; j <= size; j += i)
-					primes[j] = false;
+					is_prime[j] = false;
 			}
+		}
+
+		for (int i = 2; i <= size; i++) {
+			if (is_prime[i])
+				primes.push_back(i);
 		}
 	};
 
-	bool operator()(int n) const {
-		return primes[n];
-	}
-
-private:
-	std::array<bool, size+1> primes;
-
+	std::array<bool, size+1> is_prime;
+	std::vector<int> primes;
 };
