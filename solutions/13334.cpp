@@ -26,7 +26,7 @@ int main() {
 	int current = 0;
 	int max = 0;
 
-	int last_pos;
+	int last_pos = updates[0].first;
 	for (auto [pos, update]: updates) {
 		// std::cout << pos << ' ' << (int)update << '\n';
 		if (last_pos != pos)
