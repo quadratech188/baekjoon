@@ -16,12 +16,12 @@ public:
 
 private:
 	G& graph;
-	index_t root;
+	index_t _root;
 	storage_t<index_t> parents;
 
 public:
 	TreeWrapper(G& graph, index_t root):
-		graph(graph), root(root), parents(graph.size()) {
+		graph(graph), _root(root), parents(graph.size()) {
 
 		std::queue<std::pair<index_t, index_t>> queue;
 		queue.emplace(root, root);
@@ -38,6 +38,10 @@ public:
 		}
 	}
 
+	index_t root() {
+		return _root;
+	}
+
 	vertex_t& operator[](index_t index) {
 		return graph[index];
 	}
@@ -50,7 +54,7 @@ public:
 	}
 
 	int degree(index_t parent) {
-		return graph.degree(parent) - (parent == root? 0 : 1);
+		return graph.degree(parent) - (parent == _root? 0 : 1);
 	}
 
 	index_t parent(index_t child) {
