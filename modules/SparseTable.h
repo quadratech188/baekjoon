@@ -33,7 +33,6 @@ struct SparseTable {
 	}
 
 	size_t after(size_t index, int iterations) {
-		int i = 0;
 		size_t result = index;
 
 		for (size_t i = 0; iterations > 0; i++) {
