@@ -116,6 +116,10 @@ public:
 	constexpr inline bool operator!=(T const& other) const noexcept {
 		return value != other;
 	}
+	constexpr inline bool operator!=(ModInt const& other) const noexcept {
+		return value != other.value;
+	}
+
 	constexpr inline bool operator==(T const& other) const noexcept {
 		return value == other;
 	}
