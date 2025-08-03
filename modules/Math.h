@@ -28,7 +28,7 @@ namespace Math {
 	template <typename T>
 	T factorial(T n) {
 		T result = 1;
-		for (T i = 1; i < n; ++i) result *= i;
+		for (T i = 1; i <= n; ++i) result *= i;
 		return result;
 	}
 
