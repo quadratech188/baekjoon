@@ -1,8 +1,10 @@
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <cstdio>
 #include <iostream>
 #include <istream>
+#include <ranges>
 #include <type_traits>
 #include <unistd.h>
 #include <utility>
@@ -84,6 +86,16 @@ namespace Fast {
 				(*this) >> val;
 
 			return result;
+		}
+
+		template <typename T>
+		auto to_range(uint size) {
+			return std::views::iota(0u, size)
+				| std::views::transform([this](uint) {
+						T temp;
+						(*this) >> temp;
+						return temp;
+						});
 		}
 	};
 
