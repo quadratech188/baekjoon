@@ -47,7 +47,7 @@ public:
 	struct child_ref {
 		friend ListGraph;
 
-		index_t& index() {
+		index_t index() {
 			return _ref._index;
 		}
 		edge_t& edge() {
