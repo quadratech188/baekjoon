@@ -1,6 +1,8 @@
 #include "hackable_private.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <ranges>
 #include <type_traits>
 #include <variant>
 #include <vector>
@@ -27,36 +29,8 @@ public:
 	using storage_t = std::vector<T>;
 	using size_t = std::size_t;
 
-	class child {
-		friend class ListGraph;
-
-	public:
-		child(index_t index, edge_t edge, index_t rev) noexcept:
-			_index(index), _edge(edge), _rev(rev) {}
-
-		child (index_t index, edge_t edge) noexcept:
-			_index(index), _edge(edge) {}
-
-		child() = default;
-
-		inline index_t index() const noexcept {
-			return _index;
-		}
-		inline edge_t& edge() noexcept {
-			return _edge;
-		}
-		inline edge_t const& edge() const noexcept {
-			return _edge;
-		}
-
-		inline operator index_t() const noexcept {
-			return _index;
-		}
-
-		inline bool operator<(child const& other) const noexcept {
-			return _index < other._index;
-		}
-	hackable_private:
+hackable_private:
+	struct child {
 		index_t _index;
 		[[no_unique_address]]
 		edge_t _edge;
@@ -64,13 +38,32 @@ public:
 		std::conditional_t<reversible_v, index_t, std::monostate> _rev;
 	};
 
-hackable_private:
 	using connection_list_t = Container<child>;
 	std::vector<vertex_t> _data;
 	std::vector<connection_list_t> _connections;
 	size_t _size;
 
 public:
+	struct child_ref {
+		friend ListGraph;
+
+		index_t& index() {
+			return _ref._index;
+		}
+		edge_t& edge() {
+			return _ref._edge;
+		}
+		operator index_t() {
+			return _ref._index;
+		}
+
+	hackable_private:
+		child_ref(child& ref):
+			_ref(ref) {}
+
+		child& _ref;
+	};
+
 	ListGraph(size_t size = 0, vertex_t const& default_v = vertex_t()):
 		_data(size, default_v), _connections(size), _size(size) {}
 
@@ -112,8 +105,9 @@ public:
 		return _data[index];
 	}
 
-	auto& children(index_t parent) {
-		return _connections[parent];
+	auto children(index_t parent) {
+		return _connections[parent]
+			| std::views::transform([](child& ref) -> child_ref {return {ref};});
 	}
 
 	size_t degree(index_t parent) const {
@@ -126,8 +120,8 @@ public:
 		_connections[child].emplace_back(parent, edge2, _connections[parent].size() - 1);
 	}
 
-	child& reverse(child const& original)
+	child_ref reverse(child_ref original)
 	requires reversible_v {
-		return _connections[original._index][original._rev];
+		return {_connections[original._ref._index][original._ref._rev]};
 	}
 };
