@@ -23,5 +23,6 @@ concept Graph = requires(G graph,
 
 	{graph.size()} -> std::same_as<typename G::size_t>;
 
+	{graph.children(u)} -> std::ranges::range;
 	requires std::same_as<std::ranges::range_value_t<decltype(graph.children(u))>, typename G::child_ref>;
 };
