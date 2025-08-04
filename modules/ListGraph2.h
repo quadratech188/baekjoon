@@ -47,13 +47,13 @@ public:
 	struct child_ref {
 		friend ListGraph;
 
-		index_t index() {
+		index_t index() const {
 			return _ref._index;
 		}
 		edge_t& edge() {
 			return _ref._edge;
 		}
-		operator index_t() {
+		operator index_t() const {
 			return _ref._index;
 		}
 

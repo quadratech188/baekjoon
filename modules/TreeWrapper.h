@@ -13,6 +13,7 @@ public:
 	template <typename T>
 	using storage_t = typename G::template storage_t<T>;
 	using size_t = G::size_t;
+	using child_ref = G::child_ref;
 
 private:
 	G& graph;
@@ -48,7 +49,7 @@ public:
 
 	auto children(index_t parent) {
 		index_t const root = parents[parent];
-		return graph.children(parent) | std::views::filter([root](auto& it) {
+		return graph.children(parent) | std::views::filter([root](auto it) {
 				return it != root;
 				});
 	}
