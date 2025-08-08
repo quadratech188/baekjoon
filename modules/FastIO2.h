@@ -78,6 +78,15 @@ namespace Fast {
 			return *this;
 		}
 
+		template <typename... Ts>
+		std::tuple<Ts...> get() {
+			std::tuple<Ts...> result;
+
+			std::apply([this](auto&... x) {(((*this) >> x), ...);}, result);
+
+			return result;
+		}
+
 		template <typename T>
 		std::vector<T> to_vec(uint size) {
 			std::vector<T> result(size);
