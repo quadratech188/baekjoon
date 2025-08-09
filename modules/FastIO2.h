@@ -1,13 +1,5 @@
-#include <algorithm>
-#include <array>
-#include <cassert>
-#include <cstdio>
-#include <iostream>
-#include <istream>
 #include <ranges>
-#include <type_traits>
 #include <unistd.h>
-#include <utility>
 #include <vector>
 
 #ifndef FASTISTREAM_BUFFER_SIZE
