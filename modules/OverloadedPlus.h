@@ -25,8 +25,13 @@ public:
 	OverloadedPlus operator+(OverloadedPlus const& other) {
 		return op(value, other.value);
 	}
+
+	OverloadedPlus operator+(T const& other) {
+		return op(value, other);
+	}
+
 	void reinit(OverloadedPlus const& l, OverloadedPlus const& r) {
-		value = op(l, r);
+		value = op(l.value, r.value);
 	}
 };
 
