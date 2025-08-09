@@ -1,5 +1,17 @@
+import argparse
 import pathlib
 import re
+
+parser = argparse.ArgumentParser(
+        description="Merge CPP files"
+        )
+
+parser.add_argument('filename')
+parser.add_argument('-I', '--include')
+
+args = parser.parse_args();
+
+include_paths = list(map(lambda p: pathlib.Path(p), args.include.split(';')))
 
 PRAGMA_ONCE_REGEX = re.compile('#pragma once')
 INCLUDE_QUOTES_REGEX = re.compile('#include "(?P<path>.+)"')
@@ -15,10 +27,19 @@ def parse_file(filepath: pathlib.Path):
 
             match = INCLUDE_QUOTES_REGEX.match(line);
             if match is not None:
-                parse_file(filepath.parent.joinpath(match.group('path')))
+                path = match.group('path')
+
+                candidates = [filepath.parent / path] + list(map(lambda p: p / path, include_paths))
+
+                for candidate in candidates:
+                    if candidate.exists():
+                        parse_file(candidate)
+                        break
+                else:
+                    raise FileNotFoundError(f'Failed to find included file {path} @ {filepath}.\nCandidates: {candidates}')
             else:
                 print(line, end='')
 
 import sys
 
-parse_file(pathlib.Path(sys.argv[1]))
+parse_file(pathlib.Path(args.filename))
