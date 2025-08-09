@@ -13,5 +13,6 @@ __pycache__/
 !comp
 !merge
 !callgrind
+!activate
 
 question-dev/
