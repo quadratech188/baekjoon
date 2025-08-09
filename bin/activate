@@ -5,6 +5,17 @@ BAEKJOON_MODULES=$BAEKJOON_HOME/modules
 BAEKJOON_BIN=$BAEKJOON_HOME/bin
 
 export BAEKJOON_HOME BAEKJOON_MODULES BAEKJOON_BIN
+export _OLD_PATH="$PATH"
 export PATH=$PATH:$BAEKJOON_BIN
+
+export _OLD_PS1="$PS1"
 export PS1="(baekjoon) $PS1"
 
+
+deactivate () {
+	export PS1="$_OLD_PS1"
+	unset _OLD_PS1
+	unset BAEKJOON_HOME BAEKJOON_MODULES BAEKJOON_BIN
+	export PATH="$_OLD_PATH"
+	unset -f deactivate
+}
