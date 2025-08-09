@@ -30,6 +30,10 @@ public:
 		return group[i];
 	}
 
+	uint size() {
+		return bin_counter;
+	}
+
 	std::vector<int> group;
 	int bin_counter;
 };
