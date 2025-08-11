@@ -1,18 +1,14 @@
 __pycache__/
 
-/target
-*.exe
-*.pdb
-*.ilk
 
 *
 !*/
 !*.*
-*.callgrind
 
 !comp
 !merge
 !callgrind
 !activate
 
-question-dev/
+*.callgrind
+.clangd
