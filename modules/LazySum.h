@@ -16,9 +16,9 @@ public:
 
 	LazySum():
 		value(), length(1), delta() {}
-	LazySum(T&& value):
+	LazySum(T const& value):
 		value(value), length(1), delta() {}
-	LazySum(T&& value, size_t length):
+	LazySum(T const& value, size_t length):
 		value(value), length(length), delta() {}
 
 private:
