@@ -19,7 +19,7 @@ public:
 	Matrix(): _values(), _size(Int2::zero()) {}
 
 	static Matrix identity(int n) {
-		Matrix result(n, n);
+		Matrix result(n, n, 0);
 		for (int i = 0; i < n; i++)
 			result(i, i) = 1;
 
@@ -78,7 +78,7 @@ public:
 		Matrix result(other._size.x, _size.y);
 
 		for (Int2 index: result.bounds()) {
-			T sum = T();
+			T sum = 0;
 			for (int depth = 0; depth < _size.x; depth++) {
 				sum += (*this)(depth, index.y) * other(index.x, depth);
 			}
