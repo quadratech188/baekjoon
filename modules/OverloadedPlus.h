@@ -18,7 +18,7 @@ public:
 		return value;
 	}
 
-	T const& val() {
+	T const& val() const {
 		return value;
 	}
 
