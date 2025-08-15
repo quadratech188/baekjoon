@@ -138,12 +138,16 @@ public:
 	}
 };
 
+template <uint16_t MOD>
+using sm16 = ModInt<uint16_t, uint32_t, StaticModPolicy<uint16_t, MOD>>;
+
 template <uint32_t MOD>
 using sm32 = ModInt<uint32_t, uint64_t, StaticModPolicy<uint32_t, MOD>>;
 
 template <uint64_t MOD>
 using sm64 = ModInt<uint64_t, uint64_t, StaticModPolicy<uint64_t, MOD>>;
 
+using sm16_1e4_7 = sm16<10'007>;
 using sm32_1e9_7 = sm32<1'000'000'007>;
 using sm64_1e9_7 = sm64<1'000'000'007>;
 
