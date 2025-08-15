@@ -45,23 +45,25 @@ hackable_private:
 
 public:
 	struct child_ref {
+		child_ref() {}
+
 		friend ListGraph;
 
 		index_t index() const {
-			return _ref._index;
+			return _ref->_index;
 		}
 		edge_t& edge() {
-			return _ref._edge;
+			return _ref->_edge;
 		}
 		operator index_t() const {
-			return _ref._index;
+			return _ref->_index;
 		}
 
 	hackable_private:
-		child_ref(child& ref):
+		child_ref(child* ref):
 			_ref(ref) {}
 
-		child& _ref;
+		child* _ref;
 	};
 
 	ListGraph(size_t size = 0, vertex_t const& default_v = vertex_t()):
@@ -107,7 +109,7 @@ public:
 
 	auto children(index_t parent) {
 		return _connections[parent]
-			| std::views::transform([](child& ref) -> child_ref {return {ref};});
+			| std::views::transform([](child& ref) -> child_ref {return {&ref};});
 	}
 
 	size_t degree(index_t parent) const {
@@ -122,6 +124,6 @@ public:
 
 	child_ref reverse(child_ref original)
 	requires reversible_v {
-		return {_connections[original._ref._index][original._ref._rev]};
+		return {&_connections[original._ref->_index][original._ref->_rev]};
 	}
 };
