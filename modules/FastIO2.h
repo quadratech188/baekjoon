@@ -71,12 +71,9 @@ namespace Fast {
 		}
 
 		template <typename... Ts>
-		std::tuple<Ts...> get() {
-			std::tuple<Ts...> result;
-
-			std::apply([this](auto&... x) {(((*this) >> x), ...);}, result);
-
-			return result;
+		inline istream& operator>>(std::tuple<Ts...>& tuple){
+			std::apply([this](auto&... x) {(((*this) >> x), ...);}, tuple);
+			return *this;
 		}
 
 		template <typename T>
