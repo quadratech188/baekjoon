@@ -74,13 +74,14 @@ public:
 		return *this;
 	}
 
-	Matrix operator*(const Matrix& other) const {
-		Matrix result(other._size.x, _size.y);
+	template <typename U>
+	Matrix operator*(const Matrix<U>& other) const {
+		Matrix result(_size.x, other._size.y);
 
 		for (Int2 index: result.bounds()) {
 			T sum = 0;
-			for (int depth = 0; depth < _size.x; depth++) {
-				sum += (*this)(depth, index.y) * other(index.x, depth);
+			for (int depth = 0; depth < _size.y; depth++) {
+				sum += (*this)(index.x, depth) * other(depth, index.y);
 			}
 			result[index] = sum;
 		}

@@ -28,8 +28,8 @@ class ModInt {
 public:
 	template <typename U>
 	constexpr ModInt(U val) noexcept {
-		if (val < 0) val += Policy::mod();
 		val %= Policy::mod();
+		if (val < 0) val += Policy::mod();
 		value = val;
 	}
 
