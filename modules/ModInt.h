@@ -128,6 +128,14 @@ public:
 		return value < other.value;
 	}
 
+	template <typename IS>
+	friend IS& operator>>(IS& is, ModInt& x) {
+		T v;
+		is >> v;
+		x = {v};
+		return is;
+	}
+
 	inline friend std::ostream& operator<<(std::ostream& os, ModInt const& val) {
 		os << val.value;
 		return os;
