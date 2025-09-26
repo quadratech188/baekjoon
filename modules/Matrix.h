@@ -25,6 +25,10 @@ private:
 	std::vector<T> _values;
 
 public:
+	Int2 size() {
+		return _size;
+	}
+
 	T& operator()(int i, int j) {
 		return _values[_size.y * i + j];
 	}

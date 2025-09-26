@@ -90,8 +90,8 @@ public:
 			connection.reserve(size);
 	}
 
-	void resize(size_t size) {
-		_data.resize(size);
+	void resize(size_t size, vertex_t const& new_vertex) {
+		_data.resize(size, new_vertex);
 		_connections.resize(size);
 		_size = size;
 	}
@@ -104,6 +104,12 @@ public:
 	}
 
 	vertex_t& operator[](index_t index) {
+		return _data[index];
+	}
+
+	vertex_t& safe_at(index_t index, vertex_t const& new_vertex = {}) {
+		if (index >= size())
+			resize(index + 1, new_vertex);
 		return _data[index];
 	}
 

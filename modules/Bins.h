@@ -26,7 +26,7 @@ public:
 		group[val] = bin_counter;
 	}
 
-	int operator[](uint i) {
+	int operator[](uint i) const {
 		return group[i];
 	}
 

@@ -46,6 +46,10 @@ public:
 		return ModInt(val, raw{});
 	}
 
+	constexpr static ModInt invalid() noexcept {
+		return ModInt(std::numeric_limits<T>::max(), raw{});
+	}
+
 	constexpr T val() const noexcept {
 		return value;
 	}
