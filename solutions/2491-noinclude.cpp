@@ -1,3 +1,5 @@
+#include <iostream>
+#include <limits>
 #include <ranges>
 #include <unistd.h>
 #include <vector>
@@ -13,11 +15,11 @@
 namespace Fast {
 	class istream {
 	private:
-		char buffer[FASTISTREAM_BUFFER_SIZE];
-		char* ptr = buffer;
-		char* end = buffer;
-
 		inline char getchar() {
+			static char buffer[FASTISTREAM_BUFFER_SIZE];
+			static char* ptr = buffer;
+			static char* end = buffer;
+
 			if (ptr == end) {
 				ssize_t size = read(STDIN_FILENO, buffer, sizeof(buffer));
 				if (size <= 0) return EOF;
@@ -98,4 +100,43 @@ namespace Fast {
 	};
 
 	istream cin;
+}
+
+int main() {
+	uint n;
+	Fast::cin >> n;
+	auto values = Fast::cin.to_vec<int>(n);
+
+	uint ptr = 0;
+	int prev = -1;
+	int cnt = 0;
+	int max = 0;
+	while (ptr < n) {
+		if (prev > values[ptr]) {
+			max = std::max(max, cnt);
+			cnt = 0;
+		}
+		prev = values[ptr];
+		ptr ++;
+		cnt ++;
+	}
+	max = std::max(max, cnt);
+	cnt = 1;
+
+	ptr = 0;
+	prev = std::numeric_limits<int>::max();
+	cnt = 0;
+	while (ptr < n) {
+		if (prev < values[ptr]) {
+			max = std::max(max, cnt);
+			cnt = 0;
+		}
+		prev = values[ptr];
+		ptr ++;
+		cnt ++;
+	}
+	max = std::max(max, cnt);
+	cnt = 1;
+
+	std::cout << max;
 }

@@ -3,7 +3,6 @@
 #include <vector>
 #include "Vec2.h"
 
-
 template <typename T>
 class Matrix {
 public:
@@ -36,6 +35,13 @@ public:
 		return _values[_size.y * i + j];
 	}
 
+	T& operator[](Int2 i) {
+		return (*this)(i.x, i.y);
+	}
+	T const& operator[](Int2 i) const {
+		return (*this)(i.x, i.y);
+	}
+
 	Matrix operator+(Matrix const& other) {
 		Matrix result(_size);
 
@@ -60,13 +66,16 @@ public:
 		return result;
 	}
 
-	Matrix identity() {
-		int size = _size.x = _size.y;
+	static Matrix identity(int size) {
 		Matrix result(size, size, 0);
 		for (int i = 0; i < size; i++) {
 			result(i, i) = 1;
 		}
 		return result;
+	}
+
+	Matrix identity() {
+		return identity(_size.x);
 	}
 
 	template <typename IS>

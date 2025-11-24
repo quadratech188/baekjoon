@@ -1,37 +1,38 @@
+#define FASTISTREAM_BUFFER_SIZE 1 << 18
+
 #include "FastIO2.h"
 #include "Matrix.h"
 #include "ModInt.h"
-#include <iostream>
+#include <cstdio>
 
 int main() {
-	uint t, n, d;
+	int t, n, d;
 	Fast::cin >> t >> n >> d;
 
-	std::vector<Matrix<sm32_1e9_7>> maps(t, Matrix<sm32_1e9_7>(n, n, 0));
+	auto total = Matrix<sm32_1e9_7>::identity(n);
+	auto remainder = Matrix<sm32_1e9_7>::identity(n);
 
-	for (uint i = 0; i < t; i ++) {
-		uint m;
+	for (int i = 0; i < t; i ++) {
+		Matrix<sm32_1e9_7> map(n, n, 0);
+		int m;
 		Fast::cin >> m;
-		for (uint _ = 0; _ < m; _ ++) {
-			uint a, b, c;
+		for (int _ = 0; _ < m; _ ++) {
+			int a, b, c;
 			Fast::cin >> a >> b >> c;
-			maps[i](b - 1, a - 1) = c;
+			map(a - 1, b - 1) = c;
+		}
+		total = total * map;
+		if (i < d % t) {
+			remainder = remainder * map;
 		}
 	}
-	
-	auto remainder = Matrix<sm32_1e9_7>::identity(n);
-	for (uint i = 0; i < d % t; i++)
-		remainder = remainder * maps[i];
 
-	auto total = remainder;
-	for (uint i = d % t; i < t; i++)
-		total = total * maps[i];
+	auto result = Math::power(total, d / t, total.identity()) * remainder;
 
-	auto result = Math::power(total, d / t, Matrix<sm32_1e9_7>::identity(n)) * remainder;
-
-	for (uint i = 0; i < n; i++) {
-		for (uint j = 0; j < n; j++)
-			std::cout << result(j, i) << ' ';
-		std::cout << '\n';
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			printf("%d ", result(i, j).val());
+		}
+		printf("\n");
 	}
 }
