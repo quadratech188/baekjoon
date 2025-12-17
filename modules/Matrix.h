@@ -42,6 +42,31 @@ public:
 		return (*this)(i.x, i.y);
 	}
 
+	bool bounds_check(int i, int j) const {
+		return 0 <= i && i < _size.x && 0 <= j && j < _size.y;
+	}
+	bool bounds_check(Int2 i) const {
+		return bounds_check(i.x, i.y);
+	}
+
+	auto keys() {
+		return std::ranges::iota_view(0, _size.x)
+			| std::views::transform([this](int i) {
+			return std::ranges::iota_view(0, _size.y)
+				| std::views::transform([i](int j) {
+				return Int2(i, j);
+				});
+			})
+			| std::views::join;
+	}
+
+	auto items() {
+		return keys()
+			| std::views::transform([this](Int2 i) -> std::pair<Int2, T&> {
+			return {i, (*this)[i]};
+			});
+	}
+
 	Matrix operator+(Matrix const& other) {
 		Matrix result(_size);
 

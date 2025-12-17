@@ -90,10 +90,10 @@ namespace Fast {
 		auto to_range(uint size) {
 			return std::views::iota(0u, size)
 				| std::views::transform([this](uint) {
-						T temp;
-						(*this) >> temp;
-						return temp;
-						});
+				T temp;
+				(*this) >> temp;
+				return temp;
+				});
 		}
 	};
 
