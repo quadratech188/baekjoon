@@ -1,0 +1,9 @@
+#heatmap {
+	width: 100%;
+}
+.user-menu {
+	font-size: 13px;
+	position: absolute;
+	right: 0;
+	padding-right: 15px;
+}
