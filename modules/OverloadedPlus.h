@@ -22,11 +22,11 @@ public:
 		return value;
 	}
 
-	OverloadedPlus operator+(OverloadedPlus const& other) {
+	OverloadedPlus operator+(OverloadedPlus const& other) const {
 		return op(value, other.value);
 	}
 
-	OverloadedPlus operator+(T const& other) {
+	OverloadedPlus operator+(T const& other) const {
 		return op(value, other);
 	}
 
